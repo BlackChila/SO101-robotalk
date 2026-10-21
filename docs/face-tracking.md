@@ -1,6 +1,6 @@
 # Face tracking during robot conversation
 
-ChatGPT Realtime, Lokal · Piper and Lokal · Qwen share the tracking controller. Local session
+ChatGPT Realtime, Local · Piper and Local · Qwen share the tracking controller. Local session
 registration replaces the Realtime connection gate; see
 [local Piper / Qwen conversation](local-piper-conversation.md). The lifecycle and motor
 limits below apply to both modes.
@@ -33,7 +33,7 @@ model blocks tracking and appears in the UI with the installation command.
 
 ## Operator controls
 
-Select **Gespräch** and **ChatGPT Realtime**. Tracking starts once per new call
+Select **Conversation** and **ChatGPT Realtime**. Tracking starts once per new call
 when positioning is complete, Realtime is connected, and cameras are ready.
 Camera readiness is refreshed even when conversation settings are closed, including
 when an already loaded MolmoAct2 camera worker is retained for the new call.
@@ -44,7 +44,7 @@ settings are open. Closing settings hides the image without stopping tracking;
 there is no separate tracking panel, preview button, or search checkbox.
 Wrist Roll adds occasional small head-tilt gestures during fresh face tracking.
 
-In **Gesprächseinstellungen**, **Suchstart: rechts / links** selects and remembers
+In **Conversation settings**, **Suchstart: rechts / links** selects and remembers
 the initial base search direction for the next activation. Search is enabled by
 default, sweeping at 16 degrees/s and reversing at the joint/search boundaries.
 With continuous fresh no-face frames, the wrist starts looking upward after
@@ -55,7 +55,7 @@ Only a tab that activated tracking may automatically stop it. Other open robot
 UI tabs can read status without disabling the active call. Browser tracking
 commands are also checked against the backend's active tracking session.
 Manipulation also disables gaze control; returning from a task does not re-enable it.
-The image disappears when tracking stops. **Roboter zurücksetzen**, whether called
+The image disappears when tracking stops. **Reset robot**, whether called
 from settings or the Realtime `reset_robot` tool, also disables tracking and
 moves directly to the final recorded intro pose without replay or greeting. Voice stays connected.
 Once the reset completes positioning and confirms a measured hold, the current Realtime call

@@ -2,7 +2,7 @@
 
 Diese Notizen sind Nachschlagewissen, kein Text zum vollständigen Vorlesen.
 Beantworte nur den gefragten Aspekt, normalerweise in ein bis drei Sätzen.
-`activeConversation` nennt den gewählten Gesprächspfad; die folgenden Alternativen
+`activeConversation` nennt den gewählten Conversationspfad; die folgenden Alternativen
 sind nicht automatisch gleichzeitig aktiv oder geladen. Stand: 21.10.2026.
 
 ## Zweck und Herkunft
@@ -27,9 +27,9 @@ Datensätzen und Demos bereit. LeRobot ist seine offene Python-/PyTorch-Biblioth
 für Robot Learning: Hardwareanbindung, Demonstrationsdaten, Training und
 Inferenz. Ziel ist eine niedrigere Einstiegshürde in lernende Robotik.
 
-## Architektur und Gesprächsmodelle
+## Architektur und Conversationsmodelle
 
-Das Gesprächsmodell versteht Fragen, antwortet und wählt strukturierte
+Das Conversationsmodell versteht Fragen, antwortet und wählt strukturierte
 Funktionsaufrufe. Das Backend führt sie aus; Text allein steuert keine Motoren.
 Szenenfragen können aktuelle Kameraschnappschüsse anfordern, Bewegungsaufträge
 die separate Robotik-Policy. Das Dialogmodell berechnet nicht selbst die
@@ -42,10 +42,10 @@ Funktionsaufruf → Sprachausgabe. Referenz/Dialogstandard ist Qwen3.8-27B mit r
 Speicherbedarf, nicht die nominelle Parameterzahl. Andere Modellschlüssel sind
 möglich; bei unbekannten Varianten keine Größe raten.
 
-„Lokal · Piper“ verwendet Piper für die neuronale Sprachausgabe auf der CPU.
+„Local · Piper“ verwendet Piper für die neuronale Sprachausgabe auf der CPU.
 Piper ist kein LLM und übernimmt weder Dialogplanung noch Robotik-Inferenz.
 Es gibt keine einheitliche Milliarden-Parameterzahl für alle Piper-Stimmen.
-„Lokal · Qwen“ nutzt denselben lokalen Dialog-/Werkzeugpfad mit
+„Local · Qwen“ nutzt denselben lokalen Dialog-/Werkzeugpfad mit
 Qwen3-TTS-12Hz-1.7B-CustomVoice für Sprachausgabe (rund 1,7 Milliarden Parameter,
 hier CUDA). Stimme und Dialogmodell sind unterschiedliche Komponenten.
 
@@ -56,7 +56,7 @@ als Stimme. Robotik-Inferenz und Motorsteuerung bleiben auf dem lokalen Rechner.
 
 ## Robotik, Kameras und Rechner
 
-Gesprächsaufträge verwenden MolmoAct2-SO100_101 von Ai2, hier über die
+Conversationsaufträge verwenden MolmoAct2-SO100_101 von Ai2, hier über die
 LeRobot-Konvertierung: ein Vision-Language-Action-Modell mit rund 5 Milliarden
 Parametern. Es verarbeitet Anweisung, Bilder und gemessenen Gelenkzustand und
 erzeugt kontinuierliche Gelenkaktionen. Der Checkpoint wurde bereits auf einer
@@ -66,13 +66,13 @@ Pick-and-place-Versuche ohne zusätzliches projektspezifisches Fine-Tuning.
 Das ist kein allgemeines Zuverlässigkeitsversprechen.
 
 Molmo-Eingaben sind Overhead und eine projizierte Insta360-X5-Ansicht;
-die Wrist-Kamera dient zusätzlich als Beobachter und fürs Gesichtstracking.
+die Wrist camera dient zusätzlich als Beobachter und fürs Gesichtstracking.
 Ein gemeinsamer Kamera-Worker liefert Bilder. Die separate Motorsteuerung
 besitzt den Arm und prüft Rückmeldungen. Stopp/Abbruch muss die gemessene Position
 mit verifiziert aktiviertem Drehmoment halten; nur explizites Torque-Aus löst es.
 Ein Werkzeug mit Hintergrundwissen startet keine Kamera und bewegt nichts.
 
-Die Gesprächsoberfläche ist die Hauptseite; eine separate Steuerungsseite oder
+Die Conversationsoberfläche ist die Hauptseite; eine separate Steuerungsseite oder
 Modellwahl für FLUX/Galaxea gehört nicht zu diesem Repository. Referenzrechner
 ist Linux ARM64 mit NVIDIA GB10 (DGX Spark bzw. kompatible Workstation),
 mit getrennten Python-Umgebungen und einem FastAPI-Backend samt Vite-/JavaScript-UI.

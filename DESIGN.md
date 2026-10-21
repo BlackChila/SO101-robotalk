@@ -1,5 +1,5 @@
 ---
-name: RoboTalk Gespräch
+name: RoboTalk Conversation
 description: Minimal conversation workspace with a persistent settings inspector
 colors:
   primary: "#436a57"
@@ -41,7 +41,7 @@ components:
     backgroundColor: "{colors.primary-hover}"
 ---
 
-# RoboTalk Gespräch
+# RoboTalk Conversation
 
 ## Overview
 
@@ -59,7 +59,7 @@ Use the existing Inter/system sans stack. A 32px desktop heading steps to 28px o
 
 ## Layout
 
-At desktop widths: broad conversation/camera workspace plus a 370px settings inspector. The main stage places identity/voice selection beside waveform and call action. The filmstrip contains exactly three views: Overhead, Insta360 and Wrist-Kamera. The Wrist slot shows its ordinary live image when idle and the upright marked tracking image during tracking. All three image frames share one height; the portrait Wrist column is narrower (16:16:9 column proportions). Open camera settings span the row below all previews. At 1180px, reduce inspector width and stack stage content; at 860px, place the inspector below the workspace; at 560px, stack the three cameras and camera settings without horizontal scrolling.
+At desktop widths: broad conversation/camera workspace plus a 370px settings inspector. The main stage places identity/voice selection beside waveform and call action. The filmstrip contains exactly three views: Overhead, Insta360 and Wrist camera. The Wrist slot shows its ordinary live image when idle and the upright marked tracking image during tracking. All three image frames share one height; the portrait Wrist column is narrower (16:16:9 column proportions). Open camera settings span the row below all previews. At 1180px, reduce inspector width and stack stage content; at 860px, place the inspector below the workspace; at 560px, stack the three cameras and camera settings without horizontal scrolling.
 
 With settings closed, use a single centered conversation composition rather than the inspector workspace's split stage: heading with inline voice selection, output waveform, primary action and feedback in one vertical group. The container is at most 640px wide; the action at most 304px. Use 32px group spacing and optical vertical centering within the remaining viewport, accounting for the 70px desktop or 112px mobile header. Heading sizes step from 36px to 32px to 28px. Hide the empty task label/divider only in this focused state; reveal the complete existing status area as soon as actual task feedback is present. Long messages may extend the page naturally.
 
@@ -77,11 +77,11 @@ Small 5–6px radii for controls and sections. The heading's voice selector is u
 
 - The voice menu is integrated directly in the heading name. Its native keyboard interaction and wheel gestures use one VoicePicker and the existing selectConversationSpeaker boundary. Keep mode-specific options, stored selection and Realtime locks. Keep the selector free of a visible helper tooltip; retain its accessible name and screen-reader description.
 - The opened voice menu uses the conversation green for the selected option, light green for hover/focus, and a green scrollbar. Use the native customizable select picker where supported, retaining native keyboard and accessibility behavior. The closed control is the green name directly in the heading.
-- Directly below the three voice modes, show a two-segment `Gesprächssprache` fieldset: `Deutsch` and `English`. Reuse the same segmented control styling and selected green, with a short note that it applies to the next call including its greeting. Lock it with the mode selector while a call or transition is active.
-- Robot reset spans the inspector width. Directly below it, `Model Run stoppen` and model unload share one row with equal widths and heights and a 10px gap. Torque actions follow. Reset semantics remain accessible through the heading info button and an action description. The run-stop button is enabled only for an active MolmoAct2 task; it stops the task while preserving the loaded model and voice connection.
+- Directly below the three voice modes, show a two-segment `Conversation language` fieldset: `German` and `English`. Reuse the same segmented control styling and selected green, with a short note that it applies to the next call including its greeting. Lock it with the mode selector while a call or transition is active.
+- Robot reset spans the inspector width. Directly below it, `Stop model run` and model unload share one row with equal widths and heights and a 10px gap. Torque actions follow. Reset semantics remain accessible through the heading info button and an action description. The run-stop button is enabled only for an active MolmoAct2 task; it stops the task while preserving the loaded model and voice connection.
 - Use the existing `.help-tip` info buttons beside the existing Suchstart and Roboter headings, without adding Modell or Drehmoment headings. German explanations appear on hover, focus or click; Escape and outside clicks dismiss them. The Roboter tip explains reset, run stop, unload and both torque actions. Keep accessible descriptions on action buttons without native title tooltips. Run-stop and unload stay side by side. Contain popovers within the inspector and place the Roboter tip above its trigger.
 - Keep one set of camera, camera-status/profile/reload and torque controls in the conversation workspace. Do not duplicate handlers or create another camera owner.
-- Keep the existing model-unload button and endpoint. Place it next to `Model Run stoppen`, with matching width and height; keep it visible but disabled if no policy is loaded. Unload preserves voice, cameras and the holder. Show progress, success and errors in the visible conversation task-feedback area.
+- Keep the existing model-unload button and endpoint. Place it next to `Stop model run`, with matching width and height; keep it visible but disabled if no policy is loaded. Unload preserves voice, cameras and the holder. Show progress, success and errors in the visible conversation task-feedback area.
 - Preserve independent brightness, supported exposure and projection apply/default actions. Keep live feedback and errors. The user removed the research/sources section and placeholder from the UI; web search remains a conversation tool without a visible results panel.
 
 ## Do's and Don'ts

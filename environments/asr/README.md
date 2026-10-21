@@ -52,7 +52,7 @@ local check); the UI displays the loading state and enables push-to-talk only
 when the model is ready. Later requests reuse the model. Transcription itself sends no motor command. In the full `Steuerung` UI,
 push-to-talk also dispatches the recognized instruction to a loaded policy when
 the camera and start-position gates pass; that can start a continuous physical
-run. The explicit `Roboter zurücksetzen` button invokes the separate shared robot-runtime
+run. The explicit `Reset robot` button invokes the separate shared robot-runtime
 motor holder. The reference pose currently records
 `automatic_travel_validated=true` and `ui_reset_scope=any_calibrated_start`,
 following original-robot commissioning. These settings do not validate another

@@ -73,7 +73,7 @@ eleven-second total recording; the full audio file must fit inside that period.
 
 ## Current conversation integration
 
-With a commissioned and connected Follower, **Gespräch starten** positions it
+With a commissioned and connected Follower, **Start conversation** positions it
 for the active gesture. The recorded trajectory is still used, but the bundled
 recorded audio is muted in the current conversation modes. Realtime speaks its
 generated greeting while connected; local Qwen/Piper generate their own greeting
@@ -85,12 +85,12 @@ Arm joints otherwise hold the measured pose unless another permitted controller
 behavior, such as tracking or a policy task, owns their targets. See
 [the speech guide](speech-interface.md) for mode differences.
 
-**Gespräch beenden** stops a running task, waits for its verified hold, and returns
-toward the take's recorded **start pose**. **Rückfahrt stoppen** interrupts that
+**End conversation** stops a running task, waits for its verified hold, and returns
+toward the take's recorded **start pose**. **Stop return** interrupts that
 return into a measured torque-on hold. During initial positioning or intro,
 ending the call cancels the current gesture through the controller cleanup path.
 A fault or disconnect holds the measured pose; an unconfirmed hold must remain
-visible. **Roboter zurücksetzen** instead restarts the controller to the take's
+visible. **Reset robot** instead restarts the controller to the take's
 **end pose**, preserving the conversation without replaying the intro or greeting.
 
 The operator confirmed an earlier intro replay in the UI. That does not validate

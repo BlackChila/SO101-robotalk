@@ -136,7 +136,7 @@ app.innerHTML = `
       </section>
       </section>
       <section id="camera-settings-3" class="insta360-controls camera-settings" aria-labelledby="camera-settings-heading-3" hidden>
-        <h2 id="camera-settings-heading-3">Wrist camera · Einstellungen</h2>
+        <h2 id="camera-settings-heading-3">Wrist camera · Settings</h2>
         ${exposureMarkup(3)}
         ${brightnessMarkup(3)}
       </section>

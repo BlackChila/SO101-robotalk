@@ -1,7 +1,7 @@
 # RoboTalk browser UI
 
 A Vite frontend without a UI framework, served by `scripts/asr_web.py`.
-The interface uses German labels. Start with [the project README](../README.md)
+The interface uses English labels. Start with [the project README](../README.md)
 and [Linux installation](../docs/getting-started.md); the UI does not install
 Python environments, models, or robot calibration.
 
@@ -36,7 +36,7 @@ serve its own built UI, but does not change Vite's proxy automatically.
 
 ## Conversation homepage
 
-The app opens directly to **Gespräch**. There is no tab selector, control page,
+The app opens directly to **Conversation**. There is no tab selector, control page,
 policy selector, or push-to-talk control workspace. Old `?conversation` links
 continue to reach the same page. FLUX.3 and Galaxea G0.5 are not included.
 
@@ -46,14 +46,14 @@ conversation features. MolmoAct2 remains the optional manipulation model used by
 conversation tools. Opening the page does not start a robot conversation or issue
 an operator motion command.
 
-`Modell entladen` releases only the policy worker, preserving cameras, voice and
+`Unload model` releases only the policy worker, preserving cameras, voice and
 the motor holder. Active runs, reset and lifecycle transitions block unloading.
-`Model Run stoppen` stops an active MolmoAct2 task while preserving the loaded
+`Stop model run` stops an active MolmoAct2 task while preserving the loaded
 model, voice and cameras. Local dialogue cancellation does not delay physical stop.
 
 Teleoperation can start without cameras. Missing or stale images produce a warning
 without blocking the dedicated Leader/Follower controller. Stopping must leave a
-verified measured hold with torque enabled; only the explicit `Torque Aus` action
+verified measured hold with torque enabled; only the explicit `Torque off` action
 releases torque.
 
 ## Cameras
@@ -83,7 +83,7 @@ Only a dropdown indicator sits beside it; no helper tooltip is shown.
 The former separate selection bar and previous/next buttons were removed. Realtime
 selection locks still apply during a call. Camera settings retain their separate
 apply/default actions, and the rotated tracking preview keeps its natural upright
-aspect ratio. The three views are Overhead, Insta360 and Wrist-Kamera, with equal
+aspect ratio. The three views are Overhead, Insta360 and Wrist camera, with equal
 image-frame heights and a narrower portrait Wrist column. During tracking, the
 marked preview replaces the raw Wrist image in the same slot. The raw image is
 rotated 90 degrees clockwise so Wrist stays upright even without tracking; the
@@ -112,11 +112,11 @@ uses the measured output amplitude. Reduced-motion settings keep the orb still.
 The settings gear shows camera previews, voice mode, conversation language,
 robot reset and model unload. Research/source panels and their placeholder text
 are removed; Realtime search runs without a DOM host and passes its results to
-the conversation model. Modes are `ChatGPT Realtime`, `Lokal · Qwen`,
-and `Lokal · Piper`; see [the speech guide](../docs/speech-interface.md) for their
+the conversation model. Modes are `ChatGPT Realtime`, `Local · Qwen`,
+and `Local · Piper`; see [the speech guide](../docs/speech-interface.md) for their
 pipelines, tool capabilities, and privacy differences.
 
-`Gesprächssprache` sits directly below the three voice modes. Its `Deutsch` /
+`Conversation language` sits directly below the three voice modes. Its `German` /
 `English` selection is stored locally, applies from the first generated greeting
 and is locked during a call, return or session transition. Realtime receives the
 language in both its initial system prompt and tool/greeting continuations.
@@ -137,9 +137,9 @@ following an announcement without a second confirmation. Both local modes dispat
 tool calls after its spoken announcement. All modes need the MolmoAct2 installation
 for manipulation and retain controller gates.
 
-`Roboter zurücksetzen` moves to the intro **end pose** through a controller restart,
-without restarting speech or replaying the intro. `Gespräch beenden` stops a task
-and returns toward the intro **start pose**. During return, `Rückfahrt stoppen`
+`Reset robot` moves to the intro **end pose** through a controller restart,
+without restarting speech or replaying the intro. `End conversation` stops a task
+and returns toward the intro **start pose**. During return, `Stop return`
 can interrupt into a measured hold. Recovery after an interrupted return checks
 controller status; a visible button alone is not proof of a verified hold.
 Only an explicit torque-off action releases torque.

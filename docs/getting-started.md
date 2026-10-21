@@ -140,14 +140,14 @@ requiring validation on the Linux host.
 ## Optional: conversation modes
 
 The maintainer reports Realtime and the fully local Piper workflow as working
-on the reference setup. `Lokal · Qwen` now shares Piper's tool/vision controller
+on the reference setup. `Local · Qwen` now shares Piper's tool/vision controller
 with Qwen3-TTS speech. Live Qwen and physical acceptance remain unverified.
 
 | Mode | Additional setup |
 | --- | --- |
 | ChatGPT Realtime | OpenAI API key; active model/API access and internet; local robot/camera runtime for robot features |
-| Lokal · Qwen | LM Studio tool/vision model, Qwen3-TTS environment/weights, ASR already installed |
-| Lokal · Piper | LM Studio + dialogue model, Piper environment/voices, ASR already installed |
+| Local · Qwen | LM Studio tool/vision model, Qwen3-TTS environment/weights, ASR already installed |
+| Local · Piper | LM Studio + dialogue model, Piper environment/voices, ASR already installed |
 
 For OpenAI, copy `.env.example` to `.env` **if you do not already have one**, then
 fill in the key locally. An exported `OPENAI_API_KEY` also works. See

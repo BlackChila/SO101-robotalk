@@ -1,6 +1,6 @@
 # Local robot conversation with Piper or Qwen TTS
 
-Select **Gespräch → Lokal · Piper** or **Lokal · Qwen**. Both modes use
+Select **Conversation → Local · Piper** or **Local · Qwen**. Both modes use
 Qwen3-ASR, the configured LM Studio tool/vision model, and one shared local
 conversation controller. Piper supplies CPU speech; Qwen supplies CUDA
 CustomVoice speech. No OpenAI service is used by these modes.
@@ -63,7 +63,7 @@ before physical use; mock protocol tests do not establish model reliability.
 Both local modes set `reasoning_effort` to `none`, including turns with
 tools and camera images.
 
-Set `Gesprächssprache` to `Deutsch` or `English` before starting the call. This
+Set `Conversation language` to `German` or `English` before starting the call. This
 choice controls recognition, dialogue, the opening greeting, tool announcements,
 scene descriptions, task feedback and synthesis for both local modes. Piper
 offers Thorsten/Kerstin for German and Amy/Ryan/Alan/Jenny for English; the UI

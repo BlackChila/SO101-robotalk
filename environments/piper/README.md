@@ -1,8 +1,8 @@
 # Piper TTS for local conversation
 
-This isolated CPU environment powers the `Lokal · Piper` conversation mode.
+This isolated CPU environment powers the `Local · Piper` conversation mode.
 It keeps Qwen3-ASR and LM Studio for transcription and reply generation. The
-Qwen3-TTS path is shown as `Lokal · Qwen` and shares the same tool/vision
+Qwen3-TTS path is shown as `Local · Qwen` and shares the same tool/vision
 conversation controller; its live speech and physical acceptance still need
 target-host validation. The maintainer reports Piper conversation
 as working. With a locally hosted LM Studio model, speech, dialogue, and
@@ -27,7 +27,7 @@ voice manifest is currently supplied. Review each voice's upstream model card
 and license before redistributing voice files or generated demo media.
 The UI selects Thorsten (medium quality), Kerstin (low quality), or one of four
 medium quality English voices: Amy and Ryan (US), Alan and Jenny (UK).
-Select `Gesprächssprache` (`Deutsch` or `English`) before the call. The UI filters
+Select `Conversation language` (`German` or `English`) before the call. The UI filters
 the voice list to that language: Thorsten/Kerstin for German and
 Amy/Ryan/Alan/Jenny for English. Voice changes apply on the next reply, including
 announcements and task feedback. The worker caches each selected model and serves

@@ -1,22 +1,22 @@
 # Speech interface: current modes and behavior
 
-The RoboTalk homepage is the `Gespräch` (Conversation) workspace. There is no
+The RoboTalk homepage is the `Conversation` (Conversation) workspace. There is no
 tab selector or separate push-to-talk control page.
 For installation, use [the Linux guide](getting-started.md); the mode descriptions
 below do not imply that models or hardware are already installed on a fresh clone.
 
 ## Conversation modes
 
-The maintainer reports **ChatGPT Realtime and Lokal · Piper as working** on the
-reference setup. **Lokal · Qwen** now shares Piper's conversation controller,
+The maintainer reports **ChatGPT Realtime and Local · Piper as working** on the
+reference setup. **Local · Qwen** now shares Piper's conversation controller,
 tool dispatch and image analysis, using Qwen3-TTS for speech. Hardware-free tests
 cover this integration; live Qwen and physical acceptance remain to be verified.
 
 | UI mode | Pipeline | Robot/task capabilities |
 | --- | --- | --- |
 | `ChatGPT Realtime` | Browser microphone/audio ↔ OpenAI Realtime | Explicit task dispatch/reset via tools, scene snapshots, web search; shared local motion/face tracking when commissioned |
-| `Lokal · Qwen` | Qwen3-ASR → LM Studio tool/vision API → Qwen3-TTS CustomVoice | Same announced task/reset tools, scene snapshots and tracking as Piper; no web-search tool |
-| `Lokal · Piper` | Qwen3-ASR → LM Studio tool/vision API → CPU Piper | Announced task/reset tools, scene snapshots, shared local motion/face tracking; no web-search tool |
+| `Local · Qwen` | Qwen3-ASR → LM Studio tool/vision API → Qwen3-TTS CustomVoice | Same announced task/reset tools, scene snapshots and tracking as Piper; no web-search tool |
+| `Local · Piper` | Qwen3-ASR → LM Studio tool/vision API → CPU Piper | Announced task/reset tools, scene snapshots, shared local motion/face tracking; no web-search tool |
 
 Realtime is the initial selection. Without a server-side OpenAI key it reports
 unavailable; choose an installed local mode explicitly. Local dialogue needs an
@@ -31,7 +31,7 @@ utterance, generate a reply, and play it before listening again; streaming TTS
 and spoken interruption are not implemented for those local paths.
 Realtime uses its own WebRTC audio and semantic voice-activity handling.
 
-The conversation settings include `Gesprächssprache` (`Deutsch` / `English`)
+The conversation settings include `Conversation language` (`German` / `English`)
 directly below the voice-mode selector. The stored choice is fixed for each call
 and controls the initial system prompt, first generated greeting, subsequent
 responses and local ASR/TTS language. Piper's voice list is restricted to that
@@ -68,7 +68,7 @@ When the configured Follower serial device is absent, conversation starts
 without intro, motor animation, or return movement. This does not bypass another
 active controller or erase an unconfirmed-hold warning.
 
-When that device is present, `Gespräch starten` can position the arm and replay
+When that device is present, `Start conversation` can position the arm and replay
 its active intro trajectory. Realtime connects during preparation, suppresses
 recorded intro audio, and speaks a generated greeting. Local Qwen/Piper also mute
 the recorded intro audio and generate their own greeting after positioning.
@@ -94,8 +94,8 @@ alone does not install those components.
 `reset_robot` and the UI reset control stop/invalidate the task and restart the
 motor controller through the positioning path to the recorded intro **end pose**.
 They preserve the voice conversation and do not replay the intro or repeat the
-previous task. `Gespräch beenden` stops tasks and returns toward the intro
-**start pose**. `Rückfahrt stoppen` interrupts that return into a measured hold.
+previous task. `End conversation` stops tasks and returns toward the intro
+**start pose**. `Stop return` interrupts that return into a measured hold.
 Interrupted return/recovery reports must be checked before another operation.
 
 Stop, faults, and disconnects must preserve a verified measured-position
