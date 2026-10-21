@@ -33,7 +33,7 @@ def validate_brightness(value: int, control: dict) -> int:
     if (isinstance(value, bool) or not isinstance(value, int)
             or not control["min"] <= value <= control["max"]
             or (value - control["min"]) % max(1, control["step"])):
-        raise ValueError("Helligkeit liegt außerhalb des Kamerabereichs.")
+        raise ValueError("Brightness is outside the camera range.")
     return value
 
 
@@ -43,7 +43,7 @@ def set_brightness(device: str, value: int, control: dict) -> dict:
                    capture_output=True, text=True, timeout=5, check=True)
     actual = probe_brightness(device)
     if actual is None or actual["value"] != value:
-        raise RuntimeError("Die Kamera hat die Helligkeit nicht bestätigt.")
+        raise RuntimeError("The camera did not confirm brightness.")
     return actual
 
 
@@ -53,7 +53,7 @@ def load_brightness() -> dict:
     saved = json.loads(SETTINGS_PATH.read_text())
     if not isinstance(saved, dict) or any(not isinstance(k, str) or isinstance(v, bool)
                                          or not isinstance(v, int) for k, v in saved.items()):
-        raise ValueError("Ungültige gespeicherte Kamerahelligkeit.")
+        raise ValueError("Invalid saved camera brightness.")
     return saved
 
 

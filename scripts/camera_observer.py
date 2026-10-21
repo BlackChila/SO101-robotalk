@@ -13,10 +13,10 @@ from camera_profiles import crop_4x3
 class OptionalCameraObserver:
     def __init__(self, config: dict):
         self.config = config
-        self.name = config.get("label", "Wrist-Kamera")
+        self.name = config.get("label", "Wrist camera")
         self.camera = None
         self.latest = None
-        self.error = "Kamera nicht gestartet."
+        self.error = "Camera not started."
         self.condition = threading.Condition()
         self.stop_event = threading.Event()
         self.thread = None
@@ -33,12 +33,12 @@ class OptionalCameraObserver:
         self.stop_event.clear()
         try:
             if not Path(self.config["path"]).exists():
-                raise RuntimeError(f"{self.name} nicht verbunden.")
+                raise RuntimeError(f"{self.name} is not connected.")
             if self.config.get("controls"):
                 apply_controls(self.config)
             self.camera = cv2.VideoCapture(self.config["path"], cv2.CAP_V4L2)
             if not self.camera.isOpened():
-                raise RuntimeError(f"{self.name} lässt sich nicht öffnen.")
+                raise RuntimeError(f"{self.name} could not be opened.")
             self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
             self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.config["width"])
             self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.config["height"])
@@ -51,7 +51,7 @@ class OptionalCameraObserver:
                     frame = candidate
                     frame_captured_at = captured_at
             if frame is None:
-                raise RuntimeError(f"{self.name} liefert kein gültiges Bild.")
+                raise RuntimeError(f"{self.name} is not providing a valid image.")
             with self.condition:
                 self.latest = (cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), frame_captured_at)
                 self.error = None
@@ -70,7 +70,7 @@ class OptionalCameraObserver:
                 ok, frame = self.camera.read()
                 captured_at = time.monotonic()
                 if not ok or not self._valid(frame):
-                    raise RuntimeError(f"Kein gültiges Bild: {self.name}.")
+                    raise RuntimeError(f"No valid image: {self.name}.")
                 rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 with self.condition:
                     self.latest = (rgb, captured_at)
@@ -88,7 +88,7 @@ class OptionalCameraObserver:
             while True:
                 if not self.available:
                     if after:
-                        raise RuntimeError(self.error or f"{self.name} nicht bereit.")
+                        raise RuntimeError(self.error or f"{self.name} is not ready.")
                     return None
                 if self.latest:
                     rgb, timestamp = self.latest
@@ -102,7 +102,7 @@ class OptionalCameraObserver:
                     return None
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
-                    raise TimeoutError(f"Kein frisches Bild: {self.name}.")
+                    raise TimeoutError(f"No fresh image: {self.name}.")
                 self.condition.wait(min(remaining, 0.05))
 
     def close(self) -> None:

@@ -29,7 +29,7 @@ class CameraObserverTests(unittest.TestCase):
             capture.assert_not_called()
             self.assertFalse(observer.available)
             self.assertIsNone(observer.snapshot())
-            self.assertIn("nicht verbunden", observer.error)
+            self.assertIn("not connected", observer.error)
         with patch("camera_observer.Path.exists", return_value=True), \
              patch("flux3_scene_setup.apply_controls"), \
              patch("camera_observer.cv2.VideoCapture") as capture:

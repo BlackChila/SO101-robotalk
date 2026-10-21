@@ -25,7 +25,7 @@ def validate_exposure(value: int, control: dict) -> int:
     if (isinstance(value, bool) or not isinstance(value, int)
             or not control["min"] <= value <= control["max"]
             or (value - control["min"]) % max(1, control["step"])):
-        raise ValueError("Belichtung liegt außerhalb des Kamerabereichs für 30 Bilder/s.")
+        raise ValueError("Exposure is outside the camera range for 30 frames/s.")
     return value
 
 
@@ -39,7 +39,7 @@ def set_exposure(device: str, value: int, control: dict) -> dict:
                           capture_output=True, text=True, timeout=5, check=True)
     manual = re.fullmatch(r"auto_exposure:\s*1(?:\s*\([^\n]*\))?", mode.stdout.strip())
     if actual is None or actual["value"] != value or not manual:
-        raise RuntimeError("Die Kamera hat die manuelle Belichtung nicht bestätigt.")
+        raise RuntimeError("The camera did not confirm manual exposure.")
     return actual
 
 
@@ -49,7 +49,7 @@ def load_exposure() -> dict:
     saved = json.loads(SETTINGS_PATH.read_text())
     if not isinstance(saved, dict) or any(not isinstance(k, str) or isinstance(v, bool)
                                          or not isinstance(v, int) for k, v in saved.items()):
-        raise ValueError("Ungültige gespeicherte Kamerabelichtung.")
+        raise ValueError("Invalid saved camera exposure.")
     return saved
 
 

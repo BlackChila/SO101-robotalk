@@ -33,7 +33,7 @@ def robot_persona(language_instruction: str = _DEFAULT_LANGUAGE) -> str:
 
 def conversation_language_instruction(language: str) -> str:
     if language not in {"German", "English"}:
-        raise ValueError("Gesprächssprache muss Deutsch oder Englisch sein.")
+        raise ValueError("Conversation language must be German or English.")
     return (
         f"Conversation language: {language}. Speak {language} from the very first greeting, "
         "including replies, action announcements, scene descriptions and tool feedback. "

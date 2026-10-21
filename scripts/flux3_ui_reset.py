@@ -34,7 +34,7 @@ MAX_HOLD_SECONDS = 300.0
 
 def require_commissioned(saved: dict) -> None:
     if saved.get("automatic_travel_validated") is not True:
-        raise RuntimeError("Automatische Fahrt zur Startposition ist noch nicht validiert")
+        raise RuntimeError("Automatic movement to the start position has not been validated")
 
 
 def assert_measured_in_bounds(actual: dict[str, float], bounds: dict) -> None:
@@ -42,7 +42,7 @@ def assert_measured_in_bounds(actual: dict[str, float], bounds: dict) -> None:
         value = actual[name]
         low, high = bounds[name]
         if not math.isfinite(value) or not low <= value <= high:
-            raise RuntimeError(f"Gemessene Startposition außerhalb der Kalibrierung: {name}={value}")
+            raise RuntimeError(f"Measured start position is outside calibration: {name}={value}")
 
 
 def assert_tracking(goal: dict[str, float], actual: dict[str, float]) -> None:
@@ -52,8 +52,8 @@ def assert_tracking(goal: dict[str, float], actual: dict[str, float]) -> None:
         error = abs(goal[name] - actual[name])
         if error > limit:
             raise RuntimeError(
-                f"Nachführfehler {name}: Ziel={goal[name]:.2f}, Ist={actual[name]:.2f}, "
-                f"Abweichung={error:.2f} > {limit:.2f}"
+                f"Tracking error {name}: target={goal[name]:.2f}, actual={actual[name]:.2f}, "
+                f"deviation={error:.2f} > {limit:.2f}"
             )
 
 
@@ -78,7 +78,7 @@ def assert_goal_echo(controller: FluxStartController, goal: dict[str, float]) ->
     for name in NAMES:
         limit = 1.0 if name == "gripper" else 0.25
         if abs(echoed[name] - goal[name]) > limit:
-            raise RuntimeError(f"Motorziel wurde nicht bestätigt: {name}")
+            raise RuntimeError(f"Motor goal was not confirmed: {name}")
 
 
 def move_monitored(controller: FluxStartController, telemetry: list[dict],
@@ -106,7 +106,7 @@ def move_monitored(controller: FluxStartController, telemetry: list[dict],
         if index >= len(plan) and at_start_pose(actual, controller.target):
             return actual
         if tick >= deadline:
-            raise RuntimeError(f"Startposition nicht rechtzeitig erreicht: {actual}")
+            raise RuntimeError(f"The start position was not reached in time: {actual}")
         if tick - progress_at >= PROGRESS_CHECK_SECONDS:
             for name in NAMES:
                 if name == "gripper" or abs(controller.target[name] - actual[name]) <= ARM_SETTLE_LIMIT_DEG:
@@ -114,7 +114,7 @@ def move_monitored(controller: FluxStartController, telemetry: list[dict],
                 reduction = (abs(controller.target[name] - progress_baseline[name]) -
                              abs(controller.target[name] - actual[name]))
                 if reduction < MIN_PROGRESS_DEG:
-                    raise RuntimeError(f"Keine gemessene Bewegung Richtung Startposition: {name}")
+                    raise RuntimeError(f"No measured movement towards the start position: {name}")
             progress_at = tick
             progress_baseline = actual
         planned = plan[index] if index < len(plan) else controller.target
@@ -122,7 +122,7 @@ def move_monitored(controller: FluxStartController, telemetry: list[dict],
         for name in NAMES:
             low, high = controller.bounds[name]
             if not low <= goal[name] <= high:
-                raise RuntimeError(f"Reset-Ziel außerhalb der Kalibrierung: {name}={goal[name]}")
+                raise RuntimeError(f"Reset target is outside calibration: {name}={goal[name]}")
         controller.health(expect_torque=1)
         controller.robot.bus.sync_write("Goal_Position", goal)
         assert_goal_echo(controller, goal)
@@ -139,7 +139,7 @@ def hold_until_release(controller: FluxStartController) -> str:
         controller.health(expect_torque=1)
         actual = controller.read("Present_Position")
         if not at_start_pose(actual, controller.target):
-            raise RuntimeError(f"Startposition während des Haltens verlassen: {actual}")
+            raise RuntimeError(f"The start position was left during holding: {actual}")
         if select.select([sys.stdin], [], [], 0.2)[0]:
             command = sys.stdin.readline()
             if not command or command.strip().lower() == "r":

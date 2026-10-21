@@ -289,7 +289,7 @@ class AsrWebTests(unittest.TestCase):
             with patch.object(asr_web, "_conversation_motion_process", process), \
                  patch.object(asr_web, "_conversation_motion_report", report), \
                  patch.object(asr_web, "_conversation_motion_id", "a" * 32):
-                with self.assertRaisesRegex(RuntimeError, "Anfangspose"):
+                with self.assertRaisesRegex(RuntimeError, "initial pose"):
                     asr_web.stop_conversation_motion("a" * 32, True)
 
     def test_conversation_speech_is_separate_from_robot_task(self) -> None:
@@ -735,7 +735,7 @@ class AsrWebTests(unittest.TestCase):
         ):
             result = asr_web.status()
         self.assertTrue(result["returnAvailable"])
-        self.assertIn("angehalten", result["returnMessage"])
+        self.assertIn("stopped", result["returnMessage"])
 
     def test_return_reservation_rejects_new_motor_task(self) -> None:
         with (
@@ -875,7 +875,7 @@ class AsrWebTests(unittest.TestCase):
             patch.object(asr_web, "_asr_error", None),
         ):
             not_started = TestClient(asr_web.app).get("/api/status").json()
-        self.assertEqual(not_started["asrMessage"], "Qwen3-ASR wurde noch nicht geladen.")
+        self.assertEqual(not_started["asrMessage"], "Qwen3-ASR has not been loaded yet.")
         with (
             patch.object(asr_web.torch.cuda, "is_available", return_value=True),
             patch.object(asr_web, "_model", None),
@@ -956,7 +956,7 @@ class AsrWebTests(unittest.TestCase):
                 client = TestClient(asr_web.app)
                 response = client.post("/api/reset", headers={"X-SO101-Reset": "operator-click"})
                 self.assertEqual(response.status_code, 409)
-                self.assertIn("nicht validiert", response.json()["detail"])
+                self.assertIn("not been validated", response.json()["detail"])
                 with patch.object(asr_web.torch.cuda, "is_available", return_value=True):
                     self.assertFalse(client.get("/api/status").json()["resetAvailable"])
                 start.assert_not_called()
@@ -987,7 +987,7 @@ class AsrWebTests(unittest.TestCase):
                 patch.object(asr_web, "_reset_fault", None),
                 patch.object(asr_web, "start_reset_process") as start,
                 patch.object(asr_web, "release_reset_process", return_value={
-                    "status": "released", "message": "Drehmoment aus."}) as release,
+                    "status": "released", "message": "Torque off."}) as release,
             ):
                 start.return_value.poll.return_value = None
                 client = TestClient(asr_web.app)

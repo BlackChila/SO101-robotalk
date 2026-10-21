@@ -20,13 +20,13 @@ class TeleoperationSessionTests(unittest.TestCase):
             session._process = MagicMock()
             session._process.poll.return_value = None
             session._report = root / "report.json"
-            for message in ("Teleoperation läuft · Gelenkgrenze erreicht: wrist_flex",
-                            "Teleoperation läuft. Follower folgt dem Leader."):
+            for message in ("Teleoperation is running · joint limit reached: wrist_flex",
+                            "Teleoperation is running. The Follower follows the Leader."):
                 session._report.write_text(json.dumps({"state": "active", "message": message}))
                 self.assertEqual(session.status()["message"], message)
             session._state = "stopping"
-            session._message = "Haltezustand wird geprüft."
-            self.assertEqual(session.status()["message"], "Haltezustand wird geprüft.")
+            session._message = "Checking hold state."
+            self.assertEqual(session.status()["message"], "Checking hold state.")
 
     def test_start_stop_waits_for_verified_hold(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -47,7 +47,7 @@ class TeleoperationSessionTests(unittest.TestCase):
             try:
                 self.assertEqual(session.start()["state"], "active")
                 self.assertTrue(session.status()["occupied"])
-                with self.assertRaisesRegex(RuntimeError, "bereits"):
+                with self.assertRaisesRegex(RuntimeError, "already"):
                     session.start()
                 stopped = session.stop()
                 self.assertEqual(stopped["state"], "stopped")

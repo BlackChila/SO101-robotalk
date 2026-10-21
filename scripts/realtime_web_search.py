@@ -29,11 +29,11 @@ def safe_url(value) -> bool:
 def search_result(payload: dict, query: str) -> dict:
     """Keep answer and inline citation positions bounded for the data channel."""
     if payload.get("status") != "completed":
-        raise RuntimeError("Die Internetsuche konnte nicht vollständig abgeschlossen werden.")
+        raise RuntimeError("The web search could not be completed.")
     output = payload.get("output", [])
     if not any(item.get("type") == "web_search_call" and item.get("status") == "completed"
                for item in output):
-        raise RuntimeError("OpenAI hat keine abgeschlossene Internetsuche geliefert.")
+        raise RuntimeError("OpenAI did not return a completed web search.")
     answer = ""
     citations = []
     for item in output:
@@ -57,7 +57,7 @@ def search_result(payload: dict, query: str) -> dict:
     answer = answer[:6000].rstrip()
     citations = [cite for cite in citations if cite["end"] <= len(answer)]
     if not answer or not citations:
-        raise RuntimeError("Die Internetsuche lieferte keine Antwort mit überprüfbaren Quellen.")
+        raise RuntimeError("The web search returned no answer with verifiable sources.")
     return {"status": "ok", "query": query, "answer": answer, "citations": citations,
             "searchedAt": datetime.now(timezone.utc).isoformat()}
 
@@ -65,10 +65,10 @@ def search_result(payload: dict, query: str) -> dict:
 async def search(query: str) -> dict:
     query = query.strip()
     if not query or len(query) > 500:
-        raise ValueError("Bitte eine Suchanfrage mit 1 bis 500 Zeichen angeben.")
+        raise ValueError("Enter a search query of 1 to 500 characters.")
     key = realtime_voice._api_key()
     if not key:
-        raise RuntimeError("OPENAI_API_KEY ist auf dem UI-Server nicht gesetzt.")
+        raise RuntimeError("OPENAI_API_KEY is not configured on the UI server.")
     payload = {
         "model": os.environ.get("SO101_WEB_SEARCH_MODEL", DEFAULT_MODEL),
         "store": False,
@@ -92,18 +92,18 @@ async def search(query: str) -> dict:
                 response.raise_for_status()
                 result = response.json()
     except (TimeoutError, httpx.TimeoutException) as exc:
-        raise RuntimeError("Die Internetsuche hat das Zeitlimit überschritten. Bitte erneut versuchen.") from exc
+        raise RuntimeError("The web search timed out. Please try again.") from exc
     except httpx.HTTPStatusError as exc:
         code = exc.response.status_code
         if code in (401, 403):
-            message = "OpenAI hat den Schlüssel oder den Zugriff auf das Suchmodell abgelehnt."
+            message = "OpenAI rejected the API key or access to the search model."
         elif code == 429:
-            message = "Die Internetsuche ist derzeit limitiert oder das OpenAI-Kontingent ist erschöpft."
+            message = "Web search is currently rate limited or the OpenAI quota is exhausted."
         else:
-            message = f"Die Internetsuche ist fehlgeschlagen (OpenAI HTTP {code})."
+            message = f"The web search failed (OpenAI HTTP {code})."
         raise RuntimeError(message) from exc
     except (httpx.RequestError, ValueError) as exc:
-        raise RuntimeError("Die Internetsuche ist momentan nicht erreichbar.") from exc
+        raise RuntimeError("Web search is currently unavailable.") from exc
     if not isinstance(result, dict):
-        raise RuntimeError("Die Internetsuche lieferte eine ungültige Antwort.")
+        raise RuntimeError("The web search returned an invalid response.")
     return search_result(result, query)

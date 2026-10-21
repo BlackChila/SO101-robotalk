@@ -42,14 +42,14 @@ class TeleoperationApiTests(unittest.TestCase):
                  "previews": {"cam0": {"jpeg": "a"}, "cam1": {"jpeg": "b"}},
                  "cameraSources": {"cam0": "overhead", "cam1": "x5"}}
         cases = [
-            (None, None, None, "Keine Live-Kameras"),
-            ("molmoact2", {**fresh, "capturedAt": 0}, None, "nicht frisch"),
-            ("molmoact2", {**fresh, "previews": {"cam0": {"jpeg": "a"}}}, None, "unvollständig"),
+            (None, None, None, "No live cameras"),
+            ("molmoact2", {**fresh, "capturedAt": 0}, None, "stale"),
+            ("molmoact2", {**fresh, "previews": {"cam0": {"jpeg": "a"}}}, None, "incomplete"),
             ("molmoact2", {**fresh, "cameraSources": {"cam0": "cam0", "cam1": "cam0"}},
-             None, "unabhängigen Livebilder"),
-            ("molmoact2", None, RuntimeError("Kamera getrennt"), "Kamera getrennt"),
-            ("molmoact2", None, OSError("USB-Fehler"), "USB-Fehler"),
-            ("molmoact2", None, TimeoutError("Zeitlimit"), "Zeitlimit"),
+             None, "independent live views"),
+            ("molmoact2", None, RuntimeError("Camera disconnected"), "Camera disconnected"),
+            ("molmoact2", None, OSError("USB error"), "USB error"),
+            ("molmoact2", None, TimeoutError("timeout"), "timeout"),
         ]
         for model, preview, error, warning in cases:
             with self.subTest(warning=warning):
@@ -58,12 +58,12 @@ class TeleoperationApiTests(unittest.TestCase):
                      patch.object(asr_web, "camera_session", camera), \
                      patch.object(asr_web, "run_in_threadpool", self.inline_threadpool), \
                      patch.object(asr_web.teleoperation_session, "start", return_value={
-                         "state": "active", "message": "Follower folgt dem Leader."}) as start:
+                         "state": "active", "message": "The Follower follows the Leader."}) as start:
                     result = asyncio.run(asr_web.start_teleoperation(browser))
                 self.assertEqual(result["state"], "active")
                 self.assertIn(warning, result["warning"])
-                self.assertIn("Warnung:", result["message"])
-                self.assertIn("Follower folgt dem Leader.", result["message"])
+                self.assertIn("Warning:", result["message"])
+                self.assertIn("The Follower follows the Leader.", result["message"])
                 start.assert_called_once_with()
                 if model is None:
                     camera.preview.assert_not_called()
@@ -95,7 +95,7 @@ class TeleoperationApiTests(unittest.TestCase):
              patch.object(asr_web, "TELEOP_RUNNER", Path(__file__)):
             self.assertIsNone(asr_web.teleop_blocker())
             with patch.object(asr_web, "follower_port_available", return_value=False):
-                self.assertIn("nicht verbunden", asr_web.teleop_blocker())
+                self.assertIn("not connected", asr_web.teleop_blocker())
 
     def test_busy_teleoperation_blocks_reset_and_model_motion(self) -> None:
         with patch.object(asr_web.teleoperation_session, "status", return_value={"occupied": True}):

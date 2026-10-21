@@ -24,4 +24,4 @@ def encode_scene_image(rgb, role: str, captured_at: float) -> dict:
                 return {"camera": role, "capturedAt": captured_at,
                         "width": image.shape[1], "height": image.shape[0],
                         "imageUrl": "data:image/jpeg;base64," + base64.b64encode(encoded).decode("ascii")}
-    raise RuntimeError("Kamerabild konnte nicht für Realtime komprimiert werden.")
+    raise RuntimeError("The camera image could not be compressed for Realtime.")

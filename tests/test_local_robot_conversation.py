@@ -50,7 +50,7 @@ class LocalRobotConversationTests(unittest.TestCase):
         call = plan['toolCalls'][0]
         self.assertEqual(set(call), {'id', 'name'})
         self.dispatch.assert_not_called()
-        with self.assertRaisesRegex(ValueError, 'Ankündigung'):
+        with self.assertRaisesRegex(ValueError, 'announcement'):
             self.sessions.execute(self.key, call['id'], False, self.dispatch)
         self.dispatch.assert_not_called()
         first = self.sessions.execute(self.key, call['id'], True, self.dispatch)
@@ -207,7 +207,7 @@ class LocalRobotConversationTests(unittest.TestCase):
 
     def test_overlapping_turns_are_rejected(self):
         session = self.sessions.get(self.key)
-        with session.lock, self.assertRaisesRegex(ValueError, 'läuft bereits'):
+        with session.lock, self.assertRaisesRegex(ValueError, 'already running'):
             self.plan()
 
     def test_cancel_does_not_block_new_turn_behind_obsolete_generation(self):
@@ -340,7 +340,7 @@ class PiperLanguageTests(unittest.TestCase):
         generate = Mock(return_value=answer(tool()))
         sessions = LocalConversations(generate)
         key = sessions.start('a' * 32, 'Alan')
-        with self.assertRaisesRegex(ValueError, 'Begrüßung'):
+        with self.assertRaisesRegex(ValueError, 'greeting'):
             sessions.greet(key)
         self.assertEqual(sessions.get(key).history, [])
         def end_call(*_):

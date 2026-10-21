@@ -65,7 +65,7 @@ class CameraCaptureWorkerTests(unittest.TestCase):
         with patch.object(worker.Path, "exists", return_value=False), \
              patch.object(worker.cv2, "VideoCapture") as open_camera, \
              patch("flux3_scene_setup.apply_controls") as controls:
-            with self.assertRaisesRegex(RuntimeError, "Keine MolmoAct2-Kamera bereit"):
+            with self.assertRaisesRegex(RuntimeError, "No MolmoAct2 camera is ready"):
                 pair.connect()
             open_camera.assert_not_called()
             controls.assert_not_called()

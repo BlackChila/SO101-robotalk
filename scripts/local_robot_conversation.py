@@ -57,11 +57,11 @@ def language_instruction(voice: str, engine: str = "piper", selected_language: s
         # Preserve the existing Qwen CustomVoice German synthesis setting.
         language, provider = "German", "Qwen TTS"
     else:
-        raise ValueError("Ungültige Stimme für die gewählte Sprachausgabe.")
+        raise ValueError("Invalid voice for the selected speech engine.")
     if selected_language is not None:
         prompt = conversation_language_instruction(selected_language)
         if engine == "piper" and language != selected_language:
-            raise ValueError("Piper-Stimme passt nicht zur gewählten Gesprächssprache.")
+            raise ValueError("The Piper voice does not match the selected conversation language.")
         return f"Selected {provider} voice: {voice}. " + prompt
     return (
         f"Selected {provider} voice: {voice}. Conversation language: {language}. "
@@ -128,7 +128,7 @@ class LocalConversations:
         with self.guard:
             session = self.sessions.get(key)
         if not session or not session.active:
-            raise ValueError("Lokales Gespräch ist nicht mehr aktiv.")
+            raise ValueError("The local conversation is no longer active.")
         return session
 
     def close(self, key: str):
@@ -143,7 +143,7 @@ class LocalConversations:
         with self.guard:
             session = self.sessions.get(key)
             if not session or not session.active:
-                raise ValueError("Lokales Gespräch ist nicht mehr aktiv.")
+                raise ValueError("The local conversation is no longer active.")
             session.active = False
             self.sessions[key] = Session(session.motion_id, voice=session.voice, engine=session.engine, language=session.language,
                                          history=deepcopy(session.history), greeting=session.greeting)
@@ -162,7 +162,7 @@ class LocalConversations:
     @staticmethod
     def check(session):
         if not session.active:
-            raise ValueError("Lokales Gespräch wurde beendet; Anfrage verworfen.")
+            raise ValueError("The local conversation ended; request discarded.")
 
     @staticmethod
     def messages(session, turn):
@@ -175,7 +175,7 @@ class LocalConversations:
     @staticmethod
     def acquire(session):
         if not session.lock.acquire(blocking=False):
-            raise ValueError("Ein lokaler Gesprächsschritt läuft bereits.")
+            raise ValueError("A local conversation turn is already running.")
 
     def greet(self, key: str, voice: str | None = None) -> dict:
         """Start a call with a model-generated, tool-free spoken turn."""
@@ -185,7 +185,7 @@ class LocalConversations:
             if session.greeting is not None:
                 return {"reply": session.greeting}
             if session.pending or session.history:
-                raise ValueError("Begrüßung ist nur vor dem ersten Gesprächsschritt möglich.")
+                raise ValueError("The greeting is only available before the first conversation turn.")
             if voice is not None:
                 language_instruction(voice, session.engine, session.language)
                 session.voice = voice
@@ -197,7 +197,7 @@ class LocalConversations:
             content = answer.get("content")
             if (answer.get("tool_calls") or not isinstance(content, str) or not content.strip()
                     or len(content) > 500 or "<think>" in content or "<tool_call" in content):
-                raise ValueError("Lokales Modell lieferte keine gültige Begrüßung.")
+                raise ValueError("The local model did not return a valid greeting.")
             session.greeting = content.strip()
             self.remember(session, [opening, {"role": "assistant", "content": session.greeting}])
             return {"reply": session.greeting}
@@ -209,7 +209,7 @@ class LocalConversations:
         self.acquire(session)
         try:
             if session.pending:
-                raise ValueError("Vorherigen Werkzeugaufruf zuerst abschließen.")
+                raise ValueError("Finish the previous tool call first.")
             if voice is not None:
                 language_instruction(voice, session.engine, session.language)
                 session.voice = voice
@@ -226,15 +226,15 @@ class LocalConversations:
                 function = call.get("function") or {}
                 name = function.get("name")
                 if name not in allowed or call.get("type") != "function":
-                    raise ValueError("Unzulässiges lokales Werkzeug.")
+                    raise ValueError("Unsupported local tool.")
                 args = json.loads(function.get("arguments", "{}"))
                 schema = allowed[name]
                 if not isinstance(args, dict) or set(args) != set(schema["required"]):
-                    raise ValueError("Ungültige Werkzeugargumente.")
+                    raise ValueError("Invalid tool arguments.")
                 if any(not isinstance(v, str) or not v.strip() or len(v) > 500 for v in args.values()):
-                    raise ValueError("Ungültiger Werkzeugtext.")
+                    raise ValueError("Invalid tool text.")
                 if name == "execute_molmo_task" and (len(args["instruction"]) > 180 or "\n" in args["instruction"]):
-                    raise ValueError("Bitte einen kurzen einzelnen Bewegungsauftrag verwenden.")
+                    raise ValueError("Use one short movement instruction.")
                 # Application IDs are unique, independent of model-generated IDs.
                 normalized.append({"id": uuid.uuid4().hex, "name": name, "args": args})
             motors = [c for c in normalized if c["name"] in MOTOR_TOOLS]
@@ -245,10 +245,10 @@ class LocalConversations:
                               + [c for c in normalized if c["name"] == "get_creator_info"][:1])
             content = answer.get("content") or ""
             if not isinstance(content, str) or len(content) > 500 or "<tool_call" in content or "<think>" in content:
-                raise ValueError("Lokales Modell lieferte keine gültige Sprachantwort.")
+                raise ValueError("The local model did not return a valid spoken response.")
             spoken = selected["args"]["announcement"].strip() if selected else content.strip()
             if not selected_calls and not spoken:
-                raise ValueError("Lokales Modell lieferte eine leere Antwort.")
+                raise ValueError("The local model returned an empty response.")
             message = {"role": "assistant", "content": spoken or None}
             if selected_calls:
                 message["tool_calls"] = [{"id": c["id"], "type": "function", "function": {
@@ -269,11 +269,11 @@ class LocalConversations:
             pending = session.pending
             call = next((c for c in pending["calls"] if c["id"] == call_id), None) if pending else None
             if not call:
-                raise ValueError("Werkzeuganfrage ist unbekannt oder abgelaufen.")
+                raise ValueError("The tool request is unknown or has expired.")
             if call_id in pending["results"]:
                 return self.public_result(pending["results"][call_id])
             if call["name"] in MOTOR_TOOLS and not announced:
-                raise ValueError("Die gesprochene Ankündigung muss zuerst abgespielt werden.")
+                raise ValueError("The spoken announcement must be played first.")
             self.check(session)
             try:
                 result = dispatch(session, call)
@@ -295,7 +295,7 @@ class LocalConversations:
         try:
             pending = session.pending
             if not pending or len(pending["results"]) != len(pending["calls"]):
-                raise ValueError("Werkzeugergebnisse sind noch nicht vollständig.")
+                raise ValueError("Tool results are not complete yet.")
             turn = deepcopy(pending["messages"])
             images = []
             for call in pending["calls"]:
@@ -313,7 +313,7 @@ class LocalConversations:
             if any(call["name"] in MOTOR_TOOLS for call in pending["calls"]):
                 self.check(session)
                 if session.pending is not pending:
-                    raise ValueError("Gesprächsschritt wurde abgebrochen.")
+                    raise ValueError("The conversation turn was cancelled.")
                 self.remember(session, turn)
                 session.pending = None
                 return {"reply": "", "toolCalls": []}
@@ -324,7 +324,7 @@ class LocalConversations:
                 answer = {}
             self.check(session)
             if session.pending is not pending:
-                raise ValueError("Gesprächsschritt wurde abgebrochen.")
+                raise ValueError("The conversation turn was cancelled.")
             content = answer.get("content")
             if answer.get("tool_calls") or not isinstance(content, str) or not content.strip() or len(content) > 500 or "<think>" in content or "<tool_call" in content:
                 subject = "technical information" if any(c["name"] == "get_project_info" for c in pending["calls"]) else "camera result"
@@ -346,7 +346,7 @@ class LocalConversations:
         self.acquire(session)
         try:
             if session.pending:
-                raise ValueError("Werkzeugantwort läuft noch.")
+                raise ValueError("A tool response is still running.")
             if voice is not None:
                 language_instruction(voice, session.engine, session.language)
                 session.voice = voice
@@ -360,7 +360,7 @@ class LocalConversations:
             content = answer.get("content")
             if (answer.get("tool_calls") or not isinstance(content, str) or
                     not content.strip() or len(content) > 500 or "<think>" in content or "<tool_call" in content):
-                raise ValueError("Keine gültige lokale Statusantwort.")
+                raise ValueError("No valid local status response.")
             turn.append({"role": "assistant", "content": content.strip()})
             self.remember(session, turn)
             return {"reply": content.strip()}

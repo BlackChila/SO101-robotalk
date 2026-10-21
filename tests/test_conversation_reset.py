@@ -108,7 +108,7 @@ class ConversationResetTests(unittest.TestCase):
         self.stack.enter_context(patch.object(asr_web.time, 'monotonic', side_effect=[0, 46]))
         with self.assertRaises(asr_web.HTTPException) as error:
             self.call()
-        self.assertIn('Modell bleibt geladen', error.exception.detail)
+        self.assertIn('model remains loaded', error.exception.detail)
         self.command.assert_not_called()
         fake_lock.release.assert_not_called()
         self.assertEqual(self.policy.mock_calls, [])
@@ -185,13 +185,13 @@ class ControllerRestartTests(unittest.TestCase):
             self.finish_old()
             self.path.write_text(self.json.dumps({'state': 'failed', 'follower_torque_holding': False}))
         self.old.wait.side_effect = unverified
-        with self.assertRaisesRegex(RuntimeError, 'nicht bestätigt'):
+        with self.assertRaisesRegex(RuntimeError, 'not confirmed'):
             asr_web.restart_conversation_motion(self.sid)
         self.launch.assert_not_called()
 
     def test_old_controller_timeout_prevents_second_motor_owner(self):
         self.old.wait.side_effect = asr_web.subprocess.TimeoutExpired('controller', 12)
-        with self.assertRaisesRegex(RuntimeError, 'läuft noch'):
+        with self.assertRaisesRegex(RuntimeError, 'still running'):
             asr_web.restart_conversation_motion(self.sid)
         self.launch.assert_not_called()
         self.assertIs(asr_web._conversation_motion_process, self.old)
@@ -201,7 +201,7 @@ class ControllerRestartTests(unittest.TestCase):
             self.finish_old()
             asr_web._conversation_robot_reset_cancel.set()
         self.old.wait.side_effect = end_during_wait
-        with self.assertRaisesRegex(RuntimeError, 'abgebrochen'):
+        with self.assertRaisesRegex(RuntimeError, 'cancelled'):
             asr_web.restart_conversation_motion(self.sid)
         self.launch.assert_not_called()
 
@@ -238,7 +238,7 @@ class ControllerRestartTests(unittest.TestCase):
             return result
         self.launch.side_effect = launch_and_cancel
         with patch.object(asr_web, 'stop_conversation_motion') as stop:
-            with self.assertRaisesRegex(RuntimeError, 'abgebrochen'):
+            with self.assertRaisesRegex(RuntimeError, 'cancelled'):
                 asr_web.restart_conversation_motion(self.sid)
             stop.assert_called_once_with(self.sid)
 
@@ -251,6 +251,6 @@ class ControllerRestartTests(unittest.TestCase):
         with patch.object(asr_web.time, 'monotonic', side_effect=[0, 0, 151]), \
              patch.object(asr_web.time, 'sleep'), \
              patch.object(asr_web, 'stop_conversation_motion') as stop:
-            with self.assertRaisesRegex(RuntimeError, 'nicht rechtzeitig bereit'):
+            with self.assertRaisesRegex(RuntimeError, 'not ready in time'):
                 asr_web.restart_conversation_motion(self.sid)
             stop.assert_called_once_with(self.sid)

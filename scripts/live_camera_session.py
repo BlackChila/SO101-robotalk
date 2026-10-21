@@ -45,21 +45,21 @@ class LiveCameraSession:
                     failed = line.startswith(b"ERROR_JSON:")
                     payload = json.loads(line.split(b":", 1)[1])
                     if failed:
-                        raise RuntimeError(payload.get("error", "Kamera-Worker fehlgeschlagen."))
+                        raise RuntimeError(payload.get("error", "The camera worker failed."))
                     return payload
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                raise TimeoutError("Kameraantwort hat das Zeitlimit überschritten.")
+                raise TimeoutError("The camera response timed out.")
             readable, _, _ = select.select([self._process.stdout], [], [], min(remaining, 1))
             if readable:
                 data = os.read(self._process.stdout.fileno(), 65536)
                 if not data:
-                    raise RuntimeError("Kamera-Worker wurde beendet.")
+                    raise RuntimeError("The camera worker exited.")
                 self._buffer.extend(data)
                 if len(self._buffer) > 8 * 1024 * 1024:
-                    raise RuntimeError("Kameraantwort ist zu groß.")
+                    raise RuntimeError("The camera response is too large.")
             elif self._process.poll() is not None:
-                raise RuntimeError("Kamera-Worker wurde beendet.")
+                raise RuntimeError("The camera worker exited.")
 
     def _call(self, operation: str, timeout_s: float = 15, **payload) -> dict:
         assert self._process and self._process.stdin
@@ -69,7 +69,7 @@ class LiveCameraSession:
 
     def select(self, model_id: str) -> dict:
         if model_id not in MODEL_IDS:
-            raise ValueError("Unbekanntes Kameraprofil.")
+            raise ValueError("Unknown camera profile.")
         with self._lock:
             if self.model_id == model_id:
                 try:
@@ -82,7 +82,7 @@ class LiveCameraSession:
 
     def restart(self, model_id: str) -> dict:
         if model_id not in MODEL_IDS:
-            raise ValueError("Unbekanntes Kameraprofil.")
+            raise ValueError("Unknown camera profile.")
         with self._lock:
             with camera_switch_guard():
                 self._stop_locked()
@@ -90,7 +90,7 @@ class LiveCameraSession:
 
     def _start_locked(self, model_id: str) -> dict:
         if not CAMERA_PYTHON.is_file():
-            raise RuntimeError("Kamera-Python-Umgebung fehlt.")
+            raise RuntimeError("The camera Python environment is missing.")
         log_dir = ROOT / "outputs/model-sessions"
         log_dir.mkdir(parents=True, exist_ok=True)
         self._log = (log_dir / "cameras.log").open("ab")
@@ -113,23 +113,23 @@ class LiveCameraSession:
     def preview(self, model_id: str) -> dict:
         with self._lock:
             if self.model_id != model_id:
-                raise RuntimeError("Das ausgewählte Kameraprofil ist nicht aktiv.")
+                raise RuntimeError("The selected camera profile is not active.")
             return self._call("preview")
 
     def scene_snapshot(self) -> dict:
         with self._lock:
             if self.model_id is None:
-                raise RuntimeError("Die Kameras sind nicht aktiv.")
+                raise RuntimeError("The cameras are not active.")
             return self._call("scene_snapshot")
 
     def capture(self, model_id: str) -> dict:
         with self._lock:
             if self.model_id != model_id:
-                raise RuntimeError("Live-Kameras für dieses Modell sind nicht aktiv.")
+                raise RuntimeError("Live cameras for this model are not active.")
             result = self._call("capture", timeout_s=30)
             path = Path(result["path"])
             if result.get("model") != model_id or path.parent != ROOT / "outputs/ui-camera-inputs":
-                raise RuntimeError("Kamera-Worker lieferte einen ungültigen Schnappschuss.")
+                raise RuntimeError("The camera worker returned an invalid snapshot.")
             if self._snapshot:
                 self._snapshot.unlink(missing_ok=True)
             self._snapshot = path
@@ -141,7 +141,7 @@ class LiveCameraSession:
         with self._lock:
             with camera_switch_guard():
                 if model_id not in {"molmoact2", "conversation"} or self.model_id != model_id:
-                    raise RuntimeError("Das Insta360-Kameraprofil ist nicht aktiv.")
+                    raise RuntimeError("The Insta360 camera profile is not active.")
                 return self._call("insta360_view", view=view)
 
     def face_tracking(self, action: str = "status") -> dict:
@@ -156,14 +156,14 @@ class LiveCameraSession:
         with self._lock:
             with camera_switch_guard():
                 if self.model_id != model_id:
-                    raise RuntimeError("Das Kameraprofil ist nicht aktiv.")
+                    raise RuntimeError("The camera profile is not active.")
                 return self._call("brightness", role=role, value=value)
 
     def set_camera_exposure(self, model_id: str, role: str, value: int) -> dict:
         with self._lock:
             with camera_switch_guard():
                 if self.model_id != model_id:
-                    raise RuntimeError("Das Kameraprofil ist nicht aktiv.")
+                    raise RuntimeError("The camera profile is not active.")
                 return self._call("exposure", role=role, value=value)
 
     def _stop_locked(self) -> None:

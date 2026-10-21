@@ -79,7 +79,7 @@ class SharedCameraStreamTests(unittest.TestCase):
             server = PhysicalFrameServer(FakePair(), socket_path)
             server.start()
             try:
-                with self.assertRaisesRegex(RuntimeError, "Kameraprofil passt nicht"):
+                with self.assertRaisesRegex(RuntimeError, "Camera profile mismatch"):
                     SharedCameraClient("conversation", socket_path=socket_path,
                                        lease_path=Path(directory) / "lease.lock").connect()
             finally:

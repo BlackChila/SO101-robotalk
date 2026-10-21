@@ -396,7 +396,7 @@ class RealtimeVoiceTests(unittest.TestCase):
             self.assertIn("ohne zu sagen, welches Detail", session["instructions"])
             self.assertIn("Prüfe bei look_at_scene beide verfügbaren Perspektiven", session["instructions"])
             self.assertIn("bereits aufrecht gedreht", session["instructions"])
-            self.assertNotIn("Wrist-Kamera kann seitlich", session["instructions"])
+            self.assertNotIn("Wrist camera kann seitlich", session["instructions"])
             self.assertIn("erwähne ihn nicht", session["instructions"])
             self.assertIn("without naming cameras", session["tools"][2]["description"])
             self.assertIn("ohne feste Schlüsselwörter", session["instructions"])

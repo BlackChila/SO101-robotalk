@@ -15,18 +15,18 @@ ZOOM_LIMITS = (1.0, 2.0)
 
 def validate_view(view: dict) -> dict:
     if not isinstance(view, dict) or set(view) not in (set(VIEW_LIMITS), set(DEFAULT_VIEW)):
-        raise ValueError("Insta360 benötigt yaw, pitch, roll und optional zoom.")
+        raise ValueError("Insta360 requires yaw, pitch, roll and optional zoom.")
     result = {}
     for key, (low, high) in VIEW_LIMITS.items():
         value = view[key]
         if (isinstance(value, bool) or not isinstance(value, (int, float))
                 or not math.isfinite(value) or not low <= value <= high):
-            raise ValueError(f"Insta360 {key} muss zwischen {low}° und {high}° liegen.")
+            raise ValueError(f"Insta360 {key} must be between {low}° and {high}°.")
         result[key] = float(value)
     zoom = view.get("zoom", 1.0)
     if (isinstance(zoom, bool) or not isinstance(zoom, (int, float))
             or not math.isfinite(zoom) or not ZOOM_LIMITS[0] <= zoom <= ZOOM_LIMITS[1]):
-        raise ValueError("Insta360-Zoom muss zwischen 1 und 2 liegen.")
+        raise ValueError("Insta360 zoom must be between 1 and 2.")
     result["zoom"] = float(zoom)
     return result
 

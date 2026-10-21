@@ -282,7 +282,7 @@ def conversation_motion_status() -> dict:
     state = report.get("state", "starting" if process and process.poll() is None else "idle")
     if process is not None and process.poll() is not None and state not in {"stopped", "failed"}:
         state = "failed"
-        fault = "Bewegungscontroller endete ohne Abschlussbericht. Haltezustand prüfen."
+        fault = "The motion controller exited without a final report. Check the hold state."
     return {"state": state, "sessionId": session_id,
             "active": process is not None and process.poll() is None,
             "occupied": process is not None,
@@ -342,10 +342,10 @@ def send_conversation_motion(session_id: str, command: dict, *, mark_return: boo
     with _conversation_motion_guard:
         process = _conversation_motion_process
         if session_id != _conversation_motion_id or process is None or process.poll() is not None:
-            raise RuntimeError("Gesprächsbewegung ist nicht aktiv.")
+            raise RuntimeError("Conversation motion is not active.")
         encoded = (json.dumps(command, allow_nan=False) + "\n").encode()
         if len(encoded) > 4096 or os.write(process.stdin.fileno(), encoded) != len(encoded):
-            raise RuntimeError("Bewegungscontroller konnte nicht erreicht werden.")
+            raise RuntimeError("The motion controller could not be reached.")
         if mark_return:
             _conversation_motion_return_requested = True
 
@@ -370,13 +370,13 @@ async def conversation_face_tracking_status() -> dict:
 @app.post("/api/conversation/face-tracking")
 async def conversation_face_tracking(request: FaceTrackingRequest, browser: Request) -> dict:
     if browser.headers.get("x-so101-conversation") != "operator-face-tracking":
-        raise HTTPException(status_code=403, detail="Face-Tracking erfordert eine ausdrückliche Auswahl.")
+        raise HTTPException(status_code=403, detail="Face tracking requires an explicit selection.")
     def apply():
         # Serializes enable with the beginning of a manipulation request.
         with _conversation_task_start_guard:
             if (request.action == "enable" and request.sessionId not in _realtime_motion_sessions
                     and not local_conversations.has_motion(request.sessionId)):
-                raise RuntimeError("Face-Tracking erfordert eine aktive Realtime- oder Piper-Gesprächssitzung.")
+                raise RuntimeError("Face tracking requires an active Realtime or local conversation session.")
             return face_tracking_session.command(request.action, request.sessionId, request.search,
                                                  request.searchDirection, require_owner=True)
     try:
@@ -393,14 +393,14 @@ def stop_conversation_motion(session_id: str, return_to_start: bool = False) -> 
         _conversation_robot_reset_cancel.set()
     with _task_guard:
         if (_active_task is not None and _active_task.get("conversationSessionId") == session_id):
-            raise RuntimeError("Zuerst MolmoAct2 stoppen und den Follower-Halt abwarten.")
-    face_tracking_session.disable("Gespräch wird beendet.")
+            raise RuntimeError("Stop MolmoAct2 first and wait for the Follower hold to be confirmed.")
+    face_tracking_session.disable("Ending conversation.")
     _realtime_motion_sessions.discard(session_id)
     with _conversation_motion_guard:
         process = _conversation_motion_process
         path = _conversation_motion_report
         if session_id != _conversation_motion_id or path is None:
-            raise RuntimeError("Diese Gesprächssitzung ist nicht aktiv.")
+            raise RuntimeError("This conversation session is not active.")
         state = None
         if process is not None and process.poll() is None:
             try:
@@ -411,7 +411,7 @@ def stop_conversation_motion(session_id: str, return_to_start: bool = False) -> 
                 try:
                     command = b'{"op":"return_to_start"}\n' if return_to_start else b'{"op":"stop"}\n'
                     if os.write(process.stdin.fileno(), command) != len(command):
-                        raise RuntimeError("Bewegungscontroller konnte den Stop-Befehl nicht empfangen.")
+                        raise RuntimeError("The motion controller could not receive the stop command.")
                 except (OSError, RuntimeError):
                     process.terminate()
             else:
@@ -422,7 +422,7 @@ def stop_conversation_motion(session_id: str, return_to_start: bool = False) -> 
         if process is not None:
             process.wait(timeout=90 if return_to_start and state == "holding" else 12)
     except subprocess.TimeoutExpired as exc:
-        raise RuntimeError("Rückfahrt oder Halt antwortet nicht; Haltezustand prüfen.") from exc
+        raise RuntimeError("Return or hold is not responding; check the hold state.") from exc
     try:
         report = json.loads(path.read_text()) if path else {}
     except (OSError, ValueError):
@@ -435,11 +435,11 @@ def stop_conversation_motion(session_id: str, return_to_start: bool = False) -> 
             if _conversation_motion_process is process:
                 _conversation_motion_process = None
         raise RuntimeError(report.get("cleanup_error") or report.get("error") or
-                           "Follower-Halt konnte nicht bestätigt werden.")
+                           "The Follower hold could not be confirmed.")
     interrupted = report.get("error") == "KeyboardInterrupt: SIGTERM"
     if return_to_start and report.get("returned_to_start") is not True and not interrupted:
         raise RuntimeError(report.get("cleanup_error") or report.get("error") or
-                           "Rückfahrt zur Anfangspose konnte nicht bestätigt werden.")
+                           "Return to the initial pose could not be confirmed.")
     with _conversation_motion_guard:
         if (_conversation_motion_id == session_id and _conversation_motion_report == path
                 and (_conversation_motion_process is process or _conversation_motion_process is None)):
@@ -498,28 +498,28 @@ def restart_conversation_motion(session_id: str) -> dict:
         path = _conversation_motion_report
         if (session_id != _conversation_motion_id or old is None or old.poll() is not None
                 or _conversation_motion_return_requested or _conversation_robot_reset_cancel.is_set()):
-            raise RuntimeError("Gespräch wurde beendet; Controller-Neustart abgebrochen.")
+            raise RuntimeError("The conversation ended; controller restart cancelled.")
         # Normal stop verifies the measured hold and disconnects with torque on.
         try:
             command = b'{"op":"stop"}\n'
             if os.write(old.stdin.fileno(), command) != len(command):
-                raise OSError("Stop-Befehl unvollständig")
+                raise OSError("Incomplete stop command")
         except OSError:
             old.terminate()
     try:
         old.wait(timeout=12)
     except subprocess.TimeoutExpired as exc:
-        raise RuntimeError("Alter Controller läuft noch; kein neuer Controller gestartet. Haltezustand prüfen.") from exc
+        raise RuntimeError("The previous controller is still running; no new controller was started. Check the hold state.") from exc
     try:
         report = json.loads(path.read_text()) if path else {}
     except (OSError, ValueError):
         report = {}
     if report.get("follower_torque_holding") is not True or report.get("cleanup_error"):
-        raise RuntimeError(report.get("cleanup_error") or "Follower-Halt beim Controller-Wechsel nicht bestätigt.")
+        raise RuntimeError(report.get("cleanup_error") or "The Follower hold was not confirmed during controller handover.")
     with _conversation_motion_guard:
         if (session_id != _conversation_motion_id or _conversation_motion_process is not old
                 or _conversation_motion_return_requested or _conversation_robot_reset_cancel.is_set()):
-            raise RuntimeError("Gespräch wurde beendet; Controller-Neustart abgebrochen.")
+            raise RuntimeError("The conversation ended; controller restart cancelled.")
         process = launch_conversation_motion_locked(session_id, intro_end_pose=True)
     deadline = time.monotonic() + 150
     while time.monotonic() < deadline:
@@ -527,10 +527,10 @@ def restart_conversation_motion(session_id: str) -> dict:
             motion = conversation_motion_status()
             if motion["sessionId"] == session_id and motion["active"]:
                 stop_conversation_motion(session_id)
-            raise RuntimeError("Controller-Neustart durch Gesprächsende abgebrochen.")
+            raise RuntimeError("Controller restart cancelled because the conversation ended.")
         motion = conversation_motion_status()
         if motion["sessionId"] != session_id or not motion["active"]:
-            raise RuntimeError(motion.get("error") or "Neuer Controller endete vor der Startbestätigung. Haltezustand prüfen.")
+            raise RuntimeError(motion.get("error") or "The new controller exited before confirming startup. Check the hold state.")
         if motion["state"] == "holding" and motion.get("initialHoldVerified") is True:
             return {"status": "reset", "followerTorqueHolding": True,
                     "speechGripperAvailable": motion["speechGripperAvailable"],
@@ -539,7 +539,7 @@ def restart_conversation_motion(session_id: str) -> dict:
         time.sleep(.05)
     # A failed startup must not leave a positioning controller running silently.
     stop_conversation_motion(session_id)
-    raise RuntimeError("Neuer Controller nicht rechtzeitig bereit; Follower hält die gemessene Position.")
+    raise RuntimeError("The new controller was not ready in time; the Follower is holding its measured position.")
 
 
 @app.post("/api/conversation/motion/start")
@@ -547,26 +547,26 @@ async def conversation_motion_start(request: Request, options: ConversationMotio
     global _conversation_motion_process, _conversation_motion_report, _conversation_motion_id
     global _conversation_motion_return_requested
     if request.headers.get("x-so101-conversation") != "operator-call":
-        raise HTTPException(status_code=403, detail="Gesprächsbewegung erfordert einen ausdrücklichen Anruf.")
+        raise HTTPException(status_code=403, detail="Conversation motion requires an explicit call start.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft noch.")
+        raise HTTPException(status_code=409, detail="A model run is still active.")
     try:
         if teleoperation_session.status()["occupied"]:
-            raise HTTPException(status_code=409, detail="Teleoperation belegt den Follower.")
+            raise HTTPException(status_code=409, detail="Teleoperation is using the Follower.")
         if reset_state()[0] != "idle" or torque_state()[0] != "idle":
-            raise HTTPException(status_code=409, detail="Follower ist bereits durch die UI belegt.")
+            raise HTTPException(status_code=409, detail="The Follower is already in use by the UI.")
         with _conversation_motion_guard:
             retire_failed_conversation_motion_locked(include_stopped=True)
             if _conversation_motion_process is not None and _conversation_motion_process.poll() is None:
-                raise HTTPException(status_code=409, detail="Eine Gesprächsbewegung läuft bereits.")
+                raise HTTPException(status_code=409, detail="Conversation motion is already running.")
             if not follower_port_available():
                 return {"status": "voice-only", "sessionId": None}
             if not INTRO_TAKE.is_file() or not CONVERSATION_MOTION_RUNNER.is_file() or not FLUX_PYTHON.is_file():
-                raise HTTPException(status_code=503, detail="Intro-Aufnahme oder Bewegungscontroller fehlt.")
+                raise HTTPException(status_code=503, detail="The intro recording or motion controller is missing.")
             if _conversation_motion_fault:
                 raise HTTPException(status_code=409, detail=_conversation_motion_fault)
             if _conversation_motion_process is not None:
-                raise HTTPException(status_code=409, detail="Eine Gesprächsbewegung läuft bereits.")
+                raise HTTPException(status_code=409, detail="Conversation motion is already running.")
             session_id = uuid.uuid4().hex
             launch_conversation_motion_locked(session_id, skip_intro=bool(options and options.skipIntro),
                                               realtime_intro=bool(options and options.realtimeIntro))
@@ -599,24 +599,24 @@ async def conversation_motion_return_stopped(request: ConversationMotionSession,
     global _conversation_motion_process, _conversation_motion_report, _conversation_motion_id
     global _conversation_motion_return_requested, _conversation_motion_fault
     if browser.headers.get("x-so101-conversation") != "operator-end":
-        raise HTTPException(status_code=403, detail="Rückfahrt erfordert Gespräch beenden.")
+        raise HTTPException(status_code=403, detail="End the conversation to request a return.")
     if not INTRO_TAKE.is_file() or not CONVERSATION_MOTION_RUNNER.is_file() or not FLUX_PYTHON.is_file():
-        raise HTTPException(status_code=503, detail="Intro-Aufnahme oder Bewegungscontroller fehlt.")
+        raise HTTPException(status_code=503, detail="The intro recording or motion controller is missing.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft noch.")
+        raise HTTPException(status_code=409, detail="A model run is still active.")
     try:
         if teleoperation_session.status()["occupied"]:
-            raise HTTPException(status_code=409, detail="Teleoperation belegt den Follower.")
+            raise HTTPException(status_code=409, detail="Teleoperation is using the Follower.")
         if reset_state()[0] != "idle" or torque_state()[0] != "idle":
-            raise HTTPException(status_code=409, detail="Follower ist bereits durch die UI belegt.")
+            raise HTTPException(status_code=409, detail="The Follower is already in use by the UI.")
         with _conversation_motion_guard:
             process = _conversation_motion_process
             if process is not None and process.poll() is None:
-                raise HTTPException(status_code=409, detail="Eine Gesprächsbewegung läuft bereits.")
+                raise HTTPException(status_code=409, detail="Conversation motion is already running.")
             if process is not None and _conversation_motion_id != request.sessionId:
-                raise HTTPException(status_code=409, detail="Eine andere Gesprächssitzung ist noch belegt.")
+                raise HTTPException(status_code=409, detail="Another conversation session is still in use.")
             if recoverable_conversation_report(request.sessionId) is None:
-                raise HTTPException(status_code=409, detail="Rückfahrt ist für diese Sitzung nicht mehr verfügbar.")
+                raise HTTPException(status_code=409, detail="Return is no longer available for this session.")
             report_path = ROOT / "outputs" / f"conversation-return-{request.sessionId}.json"
             previous_report = report_path.read_text() if report_path.exists() else None
             if previous_report is not None:
@@ -656,7 +656,7 @@ def conversation_motion_level(request: ConversationMotionLevel) -> dict:
     if motion["state"] in {"task", "resetting"} or _conversation_robot_reset_session is not None or not motion.get("speechGripperAvailable", True):
         return {"status": "ignored"}
     if motion["state"] != "holding" and not (motion["state"] == "intro" and motion.get("realtimeIntro")):
-        raise HTTPException(status_code=409, detail="Intro ist noch nicht abgeschlossen.")
+        raise HTTPException(status_code=409, detail="The intro has not finished yet.")
     try:
         send_conversation_motion(request.sessionId, {"op": "speech_level", "level": request.level,
                                                      "sent_at": time.monotonic()})
@@ -692,13 +692,13 @@ def conversation_motion_return(request: ConversationMotionSession) -> dict:
     local_conversations.close_motion(request.sessionId)
     if _conversation_robot_reset_session == request.sessionId:
         _conversation_robot_reset_cancel.set()
-    face_tracking_session.disable("Rückfahrt zur Startposition.")
+    face_tracking_session.disable("Returning to the start position.")
     with _task_guard:
         if (_active_task is not None and _active_task.get("conversationSessionId") == request.sessionId):
-            raise HTTPException(status_code=409, detail="Zuerst MolmoAct2 stoppen und den Follower-Halt abwarten.")
+            raise HTTPException(status_code=409, detail="Stop MolmoAct2 first and wait for the Follower hold to be confirmed.")
         motion = conversation_motion_status()
         if motion["state"] not in {"starting", "positioning", "intro", "holding"}:
-            raise HTTPException(status_code=409, detail="Rückfahrt ist im aktuellen Bewegungszustand nicht verfügbar.")
+            raise HTTPException(status_code=409, detail="Return is unavailable in the current motion state.")
         try:
             send_conversation_motion(request.sessionId, {"op": "return_to_start"}, mark_return=True)
         except (RuntimeError, OSError) as exc:
@@ -720,7 +720,7 @@ def conversation_robot_reset(request: ConversationRobotReset, browser: Request) 
     """Restart the motor controller without closing voice or unloading weights."""
     origin = browser.headers.get("x-so101-conversation")
     if origin not in {"operator-reset", "realtime-tool"}:
-        raise HTTPException(status_code=403, detail="Reset erfordert einen Bedien- oder Sprachauftrag.")
+        raise HTTPException(status_code=403, detail="Reset requires an operator action or a spoken request.")
     return reset_conversation_robot(request, origin=origin)
 
 
@@ -734,21 +734,21 @@ def reset_conversation_robot(request: ConversationRobotReset, *, origin: str, au
         if key in _conversation_robot_reset_results:
             return _conversation_robot_reset_results[key]
         if _conversation_robot_reset_session is not None:
-            raise HTTPException(status_code=409, detail="Roboter wird bereits zurückgesetzt.")
+            raise HTTPException(status_code=409, detail="The robot is already resetting.")
         motion = conversation_motion_status()
         if (motion.get("sessionId") != request.sessionId or not motion.get("active")
                 or motion["state"] not in {"holding", "task"} or motion.get("returnRequested")):
-            raise HTTPException(status_code=409, detail="Reset erfordert einen aktiven Gesprächsarm.")
+            raise HTTPException(status_code=409, detail="Reset requires an active conversation robot session.")
         if origin == "realtime-tool" and request.sessionId not in _realtime_motion_sessions:
-            raise HTTPException(status_code=409, detail="Realtime-Sitzung ist nicht aktiv.")
+            raise HTTPException(status_code=409, detail="The Realtime session is not active.")
         with _task_guard:
             if _active_task and _active_task.get("conversationSessionId") != request.sessionId:
-                raise HTTPException(status_code=409, detail="Ein anderer Auftrag belegt den Arm.")
+                raise HTTPException(status_code=409, detail="Another task is using the arm.")
         _conversation_robot_reset_cancel.clear()
         _conversation_robot_reset_session = request.sessionId
     policy_locked = False
     try:
-        face_tracking_session.disable("Roboter wird zurückgesetzt.")
+        face_tracking_session.disable("Resetting the robot.")
         request_physical_task_stop()
         # Wait for the in-flight prediction and verified task hold. Do not use
         # wait_for_stopped_task: its timeout fallback unloads the model worker.
@@ -757,22 +757,22 @@ def reset_conversation_robot(request: ConversationRobotReset, *, origin: str, au
             motion = conversation_motion_status()
             if (motion.get("sessionId") != request.sessionId or not motion.get("active")
                     or motion.get("returnRequested")):
-                raise RuntimeError("Gespräch wurde beendet; Reset abgebrochen.")
+                raise RuntimeError("The conversation ended; reset cancelled.")
             if _policy_lock.acquire(timeout=.1):
                 policy_locked = True
                 break
         if not policy_locked:
-            raise RuntimeError("Auftrag noch nicht angehalten; Reset nicht gestartet. Modell bleibt geladen.")
+            raise RuntimeError("The task has not stopped yet; reset was not started. The model remains loaded.")
         motion = conversation_motion_status()
         if (motion.get("sessionId") != request.sessionId or motion["state"] != "holding"
                 or motion.get("returnRequested") or not motion.get("active")):
-            raise RuntimeError("Follower-Halt vor Reset nicht bestätigt.")
+            raise RuntimeError("The Follower hold was not confirmed before reset.")
         if authorize:
             authorize()
         result = restart_conversation_motion(request.sessionId)
         if (result.get("status") != "reset" or result.get("followerTorqueHolding") is not True
                 or result.get("controllerRestarted") is not True):
-            raise RuntimeError("Controller-Neustart und Follower-Halt wurden nicht bestätigt.")
+            raise RuntimeError("Controller restart and the Follower hold were not confirmed.")
         result = {**result, "sessionId": request.sessionId, "modelReloaded": False}
         _conversation_robot_reset_results[key] = result
         if len(_conversation_robot_reset_results) > 256:
@@ -790,7 +790,7 @@ def reset_conversation_robot(request: ConversationRobotReset, *, origin: str, au
 def conversation_task_start(request: ConversationTaskRequest, browser: Request) -> dict:
     """Start/update the announced Realtime instruction, with one motor owner."""
     if browser.headers.get("x-so101-conversation") != "realtime-tool":
-        raise HTTPException(status_code=403, detail="Auftrag erfordert ChatGPT Realtime.")
+        raise HTTPException(status_code=403, detail="The task requires ChatGPT Realtime.")
     return start_conversation_task(request)
 
 
@@ -798,10 +798,10 @@ def start_conversation_task(request: ConversationTaskRequest, *, authorize=None,
                             timeout_s: float = 425) -> dict:
     """One shared MolmoAct2 handoff for both conversation providers."""
     if _conversation_robot_reset_session is not None:
-        raise HTTPException(status_code=409, detail="Roboter wird zurückgesetzt; danach neuen Auftrag geben.")
+        raise HTTPException(status_code=409, detail="The robot is resetting; give a new instruction afterwards.")
     instruction = request.instruction.strip().rstrip(".!? ")
     if not instruction or "\n" in instruction or re.search(r"[.!?](?=\s+\S)", instruction):
-        raise HTTPException(status_code=422, detail="Bitte genau einen kurzen Befehl formulieren.")
+        raise HTTPException(status_code=422, detail="Provide exactly one short instruction.")
     # Warmup owns the same policy lock as inference, without an active task.
     # Retry the handoff after it finishes; never hold the start guard while
     # waiting, so reset/end can revoke the session and local tool permission.
@@ -812,7 +812,7 @@ def start_conversation_task(request: ConversationTaskRequest, *, authorize=None,
             return result
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise HTTPException(status_code=504, detail="MolmoAct2-Vorbereitung hat das Zeitlimit überschritten; Auftrag nicht gestartet.")
+            raise HTTPException(status_code=504, detail="MolmoAct2 preparation timed out; the task was not started.")
         time.sleep(min(.1, remaining))
 
 
@@ -824,16 +824,16 @@ def try_start_conversation_task(request: ConversationTaskRequest, instruction: s
         if authorize:
             authorize()
         if _conversation_robot_reset_session is not None:
-            raise HTTPException(status_code=409, detail="Roboter wird gerade zurückgesetzt.")
+            raise HTTPException(status_code=409, detail="The robot is currently resetting.")
         motion = conversation_motion_status()
         if (motion["sessionId"] != request.sessionId or motion["state"] not in {"holding", "task"}
                 or motion.get("active") is False or motion.get("returnRequested")):
-            raise HTTPException(status_code=409, detail="Gesprächsarm ist nicht bereit.")
+            raise HTTPException(status_code=409, detail="The conversation robot is not ready.")
         call_key = (request.sessionId, request.callId)
         if call_key in _conversation_task_calls:
             return _conversation_task_calls[call_key]
         try:
-            face_tracking_session.disable("MolmoAct2 übernimmt den Arm.")
+            face_tracking_session.disable("MolmoAct2 is taking control of the arm.")
         except (RuntimeError, OSError) as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         if authorize:
@@ -848,19 +848,19 @@ def try_start_conversation_task(request: ConversationTaskRequest, instruction: s
                 run["generation"] += 1
                 run["prompt"] = instruction
                 _write_task_epoch(run)
-                run["message"] = "Neue Anweisung übernommen; alter Aktionsblock wird verworfen."
+                run["message"] = "New instruction accepted; discarding the previous action block."
                 result = {"status": "updated", "taskRun": task_status_unlocked(run)}
             else:
                 result = None
         if result is None:
             if motion["state"] != "holding":
-                raise HTTPException(status_code=409, detail="Ein Modelllauf wird noch beendet. Bitte kurz warten.")
+                raise HTTPException(status_code=409, detail="A model run is still stopping. Please wait.")
             if not _policy_lock.acquire(blocking=False):
                 return None
             run_id = uuid.uuid4().hex
             run = {"id": run_id, "model": "molmoact2", "prompt": instruction,
                    "state": "loading", "chunks": 0, "actions": 0, "startedAt": time.time(),
-                   "endedAt": None, "message": "MolmoAct2 wird vorbereitet.",
+                   "endedAt": None, "message": "Preparing MolmoAct2.",
                    "generation": 0, "inferenceGeneration": -1, "executedGeneration": -1,
                    "stop": threading.Event(), "conversationSessionId": request.sessionId,
                    "epochPath": ROOT / "outputs" / f"ui-robot-epoch-{run_id}.txt"}
@@ -869,12 +869,12 @@ def try_start_conversation_task(request: ConversationTaskRequest, instruction: s
                 motion = conversation_motion_status()
                 if (motion["sessionId"] != request.sessionId or motion["state"] != "holding"
                         or motion.get("active") is False or motion.get("returnRequested")):
-                    raise RuntimeError("Gesprächsarm ist nicht mehr bereit; Auftrag nicht gestartet.")
+                    raise RuntimeError("The conversation robot is no longer ready; the task was not started.")
                 if authorize:
                     authorize()
                 with _task_guard:
                     if _active_task is not None:
-                        raise RuntimeError("Ein Modelllauf läuft bereits.")
+                        raise RuntimeError("A model run is already active.")
                     _write_task_epoch(run)
                     _active_task = run
                 threading.Thread(target=physical_task_loop, args=(run,),
@@ -920,17 +920,17 @@ def conversation_status(mode: str = "local", voice: str = "Thorsten") -> dict:
 @app.post("/api/conversation/realtime/token")
 async def conversation_realtime_token(request: Request, selection: RealtimeVoiceRequest | None = None) -> JSONResponse:
     if request.headers.get("x-so101-conversation") != "operator-call":
-        raise HTTPException(status_code=403, detail="Realtime erfordert einen ausdrücklichen Anruf.")
+        raise HTTPException(status_code=403, detail="Realtime requires an explicit call start.")
     if not realtime_voice.configured():
-        raise HTTPException(status_code=503, detail="OPENAI_API_KEY ist auf dem UI-Server nicht gesetzt.")
+        raise HTTPException(status_code=503, detail="OPENAI_API_KEY is not configured on the UI server.")
     motion = conversation_motion_status()
     if selection and selection.voiceOnly:
         if motion["active"]:
-            raise HTTPException(status_code=409, detail="Eine Gesprächsbewegung ist noch aktiv.")
+            raise HTTPException(status_code=409, detail="Conversation motion is still active.")
     elif motion["state"] != "holding" and not (
             motion.get("realtimeIntro") and motion.get("active")
             and motion["state"] in {"starting", "positioning", "intro"}):
-        raise HTTPException(status_code=409, detail="Gesprächsbewegung hält noch nicht.")
+        raise HTTPException(status_code=409, detail="Conversation motion is not holding yet.")
     try:
         secret = await run_in_threadpool(realtime_voice.create_client_secret,
                                          selection.voice if selection else "marin",
@@ -953,7 +953,7 @@ class RealtimeWebSearchRequest(BaseModel):
 @app.post("/api/conversation/realtime/search")
 async def conversation_realtime_search(request: Request, search: RealtimeWebSearchRequest) -> JSONResponse:
     if request.headers.get("x-so101-conversation") != "realtime-tool":
-        raise HTTPException(status_code=403, detail="Internetsuche erfordert einen Realtime-Werkzeugaufruf.")
+        raise HTTPException(status_code=403, detail="Web search requires a Realtime tool call.")
     try:
         result = await realtime_web_search.search(search.query)
     except ValueError as exc:
@@ -967,11 +967,11 @@ async def conversation_realtime_search(request: Request, search: RealtimeWebSear
 def conversation_realtime_project_info(request: Request) -> JSONResponse:
     """Curated context only: independent of camera, model and motor ownership."""
     if request.headers.get("x-so101-conversation") != "realtime-tool":
-        raise HTTPException(status_code=403, detail="Setup-Informationen erfordern einen Realtime-Werkzeugaufruf.")
+        raise HTTPException(status_code=403, detail="Setup information requires a Realtime tool call.")
     try:
         result = get_project_info("realtime", realtime_model=realtime_voice.REALTIME_MODEL)
     except (RuntimeError, OSError) as exc:
-        raise HTTPException(status_code=503, detail="Technische Hintergrundinformationen sind nicht verfügbar.") from exc
+        raise HTTPException(status_code=503, detail="Technical background information is unavailable.") from exc
     return JSONResponse(result, headers={"Cache-Control": "no-store"})
 
 
@@ -979,11 +979,11 @@ def conversation_realtime_project_info(request: Request) -> JSONResponse:
 def conversation_realtime_creator_info(request: Request) -> JSONResponse:
     """Small attribution lookup, without fetching a profile or acquiring devices."""
     if request.headers.get("x-so101-conversation") != "realtime-tool":
-        raise HTTPException(status_code=403, detail="Projektinformationen erfordern einen Realtime-Werkzeugaufruf.")
+        raise HTTPException(status_code=403, detail="Project information requires a Realtime tool call.")
     try:
         result = get_creator_info()
     except (RuntimeError, OSError) as exc:
-        raise HTTPException(status_code=503, detail="Informationen zur Projektperson sind nicht verfügbar.") from exc
+        raise HTTPException(status_code=503, detail="Creator information is unavailable.") from exc
     return JSONResponse(result, headers={"Cache-Control": "no-store"})
 
 
@@ -991,7 +991,7 @@ def conversation_realtime_creator_info(request: Request) -> JSONResponse:
 async def conversation_realtime_scene(request: Request) -> JSONResponse:
     """Read shared camera streams; never acquire a robot or switch camera profiles."""
     if request.headers.get("x-so101-conversation") != "realtime-tool":
-        raise HTTPException(status_code=403, detail="Kamerabilder erfordern einen Realtime-Werkzeugaufruf.")
+        raise HTTPException(status_code=403, detail="Camera images require a Realtime tool call.")
     try:
         result = await run_in_threadpool(camera_session.scene_snapshot)
     except (RuntimeError, TimeoutError, OSError) as exc:
@@ -1003,17 +1003,17 @@ async def conversation_realtime_scene(request: Request) -> JSONResponse:
 async def conversation_realtime_molmo_preload(request: Request, selection: RealtimePreloadRequest) -> dict:
     """Warm policy weights before the intro, without opening cameras or motors."""
     if request.headers.get("x-so101-conversation") != "operator-call":
-        raise HTTPException(status_code=403, detail="MolmoAct2-Vorladen erfordert einen ausdrücklichen Anruf.")
+        raise HTTPException(status_code=403, detail="Preloading MolmoAct2 requires an explicit call start.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft bereits.")
+        raise HTTPException(status_code=409, detail="A model run is already active.")
     try:
         motion = conversation_motion_status()
         if selection.sessionId:
             # Compatibility with an already open client using post-intro warmup.
             if motion["sessionId"] != selection.sessionId or motion["state"] != "holding":
-                raise HTTPException(status_code=409, detail="Gesprächsarm hält noch nicht.")
+                raise HTTPException(status_code=409, detail="The conversation robot is not holding yet.")
         elif motion["occupied"] or reset_state()[0] != "idle" or torque_state()[0] != "idle":
-            raise HTTPException(status_code=409, detail="Vorbereitung erfordert eine freie Gesprächssitzung.")
+            raise HTTPException(status_code=409, detail="Preparation requires an available conversation session.")
         selected = next(model for model in available_models(
             cuda_available=torch.cuda.is_available()) if model["id"] == "molmoact2")
         if not selected["available"]:
@@ -1022,10 +1022,10 @@ async def conversation_realtime_molmo_preload(request: Request, selection: Realt
             raise HTTPException(status_code=409, detail="Steuerungsmodell zuerst freigeben.")
         loaded = await run_in_threadpool(policy_session.preload, "molmoact2")
         if loaded.get("ready") is not True or loaded.get("hardwareCommands") is not False:
-            raise RuntimeError("MolmoAct2 wurde nicht ohne Hardwarebefehle geladen.")
+            raise RuntimeError("MolmoAct2 did not confirm loading without hardware commands.")
         return {"model": "molmoact2", "ready": True, "hardwareCommands": False}
     except (subprocess.TimeoutExpired, TimeoutError) as exc:
-        raise HTTPException(status_code=504, detail="MolmoAct2-Laden hat das Zeitlimit überschritten.") from exc
+        raise HTTPException(status_code=504, detail="Loading MolmoAct2 timed out.") from exc
     except (RuntimeError, OSError) as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     finally:
@@ -1036,25 +1036,25 @@ async def conversation_realtime_molmo_preload(request: Request, selection: Realt
 async def conversation_prepare(request: PrepareConversationRequest | None = None) -> dict:
     """Warm speech models after the Steuerung policy and cameras are released."""
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Steuerungsmodell wird noch geladen oder verwendet.")
+        raise HTTPException(status_code=409, detail="The control model is still loading or in use.")
     try:
         mode = request.mode if request else "local"
         if (policy_session.model_id not in (None, "molmoact2") or
                 camera_session.model_id not in (None, "conversation", "molmoact2") or
                 conversation_motion_status()["active"] or
                 (task_status() or {}).get("state") in {"loading", "running", "stopping"}):
-            raise HTTPException(status_code=409, detail="Lokale Vorbereitung erfordert eine freie Gesprächssitzung.")
+            raise HTTPException(status_code=409, detail="Local preparation requires an available conversation session.")
         if mode == "piper":
             voice = request.voice if request else "Thorsten"
             if not piper_voice_ready(voice):
-                raise HTTPException(status_code=503, detail="Piper oder die gewählte Stimme ist nicht installiert.")
+                raise HTTPException(status_code=503, detail="Piper or the selected voice is not installed.")
             worker = piper_worker
         else:
             if not TTS_PYTHON.is_file() or not TTS_MANIFEST.is_file():
-                raise HTTPException(status_code=503, detail="Qwen3-TTS CustomVoice ist nicht installiert.")
+                raise HTTPException(status_code=503, detail="Qwen3-TTS CustomVoice is not installed.")
             worker = tts_worker
         if follower_port_available() and (not INTRO_TAKE.is_file() or not CONVERSATION_MOTION_RUNNER.is_file() or not FLUX_PYTHON.is_file()):
-            raise HTTPException(status_code=503, detail="Intro-Aufnahme oder Bewegungscontroller fehlt.")
+            raise HTTPException(status_code=503, detail="The intro recording or motion controller is missing.")
         try:
             dialogue = await run_in_threadpool(conversation_llm.ensure_model_loaded)
             await run_in_threadpool(worker.ensure_ready)
@@ -1090,7 +1090,7 @@ class LocalConversationTool(BaseModel):
 
 def require_local_conversation_browser(browser: Request):
     if browser.headers.get("x-so101-conversation") != "local-conversation":
-        raise HTTPException(status_code=403, detail="Lokales Gespräch muss ausdrücklich gestartet werden.")
+        raise HTTPException(status_code=403, detail="The local conversation must be started explicitly.")
 
 
 def require_local_motion(session):
@@ -1099,7 +1099,7 @@ def require_local_motion(session):
     if (not session.motion_id or motion.get("sessionId") != session.motion_id or
             not motion.get("active") or motion.get("state") not in {"holding", "task"} or
             motion.get("returnRequested")):
-        raise RuntimeError("Der lokale Gesprächsarm ist nicht mehr bereit.")
+        raise RuntimeError("The local conversation robot is no longer ready.")
 
 
 @app.post("/api/conversation/local/start")
@@ -1111,9 +1111,9 @@ def local_conversation_start(options: LocalConversationStart, browser: Request) 
             if (motion.get("sessionId") != options.motionSessionId or not motion.get("active") or
                     motion.get("state") != "holding" or motion.get("returnRequested") or
                     options.motionSessionId in _realtime_motion_sessions):
-                raise HTTPException(status_code=409, detail="Lokales Gespräch erfordert einen bereiten Gesprächsarm.")
+                raise HTTPException(status_code=409, detail="Local conversation requires a ready conversation robot.")
         elif motion.get("active"):
-            raise HTTPException(status_code=409, detail="Ein anderes Gespräch belegt den Arm.")
+            raise HTTPException(status_code=409, detail="Another conversation is using the arm.")
         try:
             session_id = local_conversations.start(options.motionSessionId, options.voice, options.engine, options.language)
         except ValueError as exc:
@@ -1175,7 +1175,7 @@ def dispatch_local_tool(session, call):
     def authorize():
         require_local_motion(session)
         if not session.pending or not any(c is call for c in session.pending["calls"]):
-            raise RuntimeError("Lokaler Auftrag wurde abgebrochen.")
+            raise RuntimeError("The local task was cancelled.")
     if call["name"] == "reset_robot":
         return reset_conversation_robot(ConversationRobotReset(**kwargs), origin="local-tool", authorize=authorize)
     return start_conversation_task(ConversationTaskRequest(**kwargs, instruction=call["args"]["instruction"]), authorize=authorize)
@@ -1224,18 +1224,18 @@ async def conversation_reply(request: ConversationRequest) -> dict:
         return await run_in_threadpool(conversation_llm.reply, request.text, request.previousResponseId)
     except (RuntimeError, TimeoutError, OSError, ValueError) as exc:
         logging.getLogger(__name__).exception("Conversation generation failed")
-        raise HTTPException(status_code=503, detail=f"Antwortmodell fehlgeschlagen: {exc}") from exc
+        raise HTTPException(status_code=503, detail=f"The response model failed: {exc}") from exc
 
 
 @app.post("/api/conversation/speak")
 async def conversation_speak(request: SpeakRequest) -> Response:
     if request.engine == "piper":
         if not piper_voice_ready(request.voice):
-            raise HTTPException(status_code=503, detail="Piper oder die gewählte Stimme ist nicht installiert.")
+            raise HTTPException(status_code=503, detail="Piper or the selected voice is not installed.")
         worker = piper_worker
     else:
         if not TTS_PYTHON.is_file() or not TTS_MANIFEST.is_file():
-            raise HTTPException(status_code=503, detail="Qwen3-TTS CustomVoice ist nicht installiert.")
+            raise HTTPException(status_code=503, detail="Qwen3-TTS CustomVoice is not installed.")
         worker = tts_worker
     with tempfile.TemporaryDirectory(prefix="so101-tts-") as temp_dir:
         path = Path(temp_dir) / "speech.wav"
@@ -1245,7 +1245,7 @@ async def conversation_speak(request: SpeakRequest) -> Response:
             audio = path.read_bytes()
         except (RuntimeError, TimeoutError, OSError, ValueError) as exc:
             logging.getLogger(__name__).exception("TTS generation failed")
-            raise HTTPException(status_code=503, detail=f"Sprachausgabe fehlgeschlagen: {exc}") from exc
+            raise HTTPException(status_code=503, detail=f"Speech output failed: {exc}") from exc
     return Response(audio, media_type="audio/wav", headers={"Cache-Control": "no-store"})
 
 
@@ -1259,7 +1259,7 @@ async def require_local_browser_origin(request, call_next):
         }:
             return JSONResponse(
                 status_code=403,
-                content={"detail": "Nur lokale Browser dürfen diese API verwenden."},
+                content={"detail": "Only local browsers may use this API."},
             )
     return await call_next(request)
 
@@ -1269,52 +1269,52 @@ def static_reset_blocker() -> str | None:
         pose = json.loads(POSE_CONFIG.read_text())
         if not pose.get("automatic_travel_validated", False):
             return str(pose.get("automatic_travel_blocker") or
-                       "Automatische Fahrt zur Startposition ist noch nicht validiert.")
+                       "Automatic movement to the start position has not been validated.")
         calibration = Path(pose["calibration_path"])
         if hashlib.sha256(calibration.read_bytes()).hexdigest() != pose["calibration_sha256"]:
-            return "Die gespeicherte Startposition passt nicht zur aktuellen Kalibrierung."
+            return "The saved start position does not match the current calibration."
         if not Path(pose["port"]).exists():
-            return "Der gespeicherte Follower-Anschluss ist nicht verfügbar."
+            return "The saved Follower port is unavailable."
         if not FLUX_PYTHON.is_file() or not RESET_RUNNER.is_file():
-            return "Der gemeinsame SO-101-Controller ist nicht installiert."
+            return "The shared SO-101 controller is not installed."
     except (OSError, ValueError, KeyError):
-        return "Die gespeicherte Startposition ist nicht verfügbar."
+        return "The saved start position is unavailable."
     return None
 
 
 def reset_blocker() -> str | None:
     if teleoperation_session.status()["occupied"]:
-        return "Teleoperation belegt den Follower. Zuerst Teleoperation stoppen."
+        return "Teleoperation is using the Follower. Stop teleoperation first."
     if conversation_motion_status()["occupied"]:
-        return "Gesprächsbewegung belegt den Follower. Zuerst Gespräch beenden."
+        return "Conversation motion is using the Follower. End the conversation first."
     state, fault = reset_state()
     if state != "idle":
-        return "Eine Fahrt zur Startposition oder ein überwachtes Halten läuft bereits."
+        return "Movement to the start position or monitored holding is already active."
     if torque_state()[0] != "idle":
-        return "Drehmoment wird durch die UI gehalten oder geändert. Zuerst lösen."
+        return "The UI is holding or changing torque. Release it first."
     if fault:
-        return f"Letzter Reset abgebrochen; Hardware prüfen: {fault}"
+        return f"The last reset was aborted; check the hardware: {fault}"
     return static_reset_blocker()
 
 
 def teleop_blocker() -> str | None:
     if teleoperation_session.status()["occupied"]:
-        return "Teleoperation läuft bereits."
+        return "Teleoperation is already running."
     if reset_state()[0] != "idle" or _return_running:
-        return "Startpositions-Controller belegt den Follower."
+        return "The start-position controller is using the Follower."
     if torque_state()[0] != "idle":
-        return "Drehmoment-Controller belegt den Follower. Zuerst Drehmoment ausschalten."
+        return "The torque controller is using the Follower. Turn torque off first."
     if conversation_motion_status()["occupied"]:
-        return "Gesprächsbewegung belegt den Follower."
+        return "Conversation motion is using the Follower."
     task = task_status()
     if task and task["state"] in {"loading", "running", "stopping"}:
-        return "Ein Modelllauf ist noch aktiv."
+        return "A model run is still active."
     if _policy_lock.locked():
-        return "Modell- oder Robotersteuerung ist gerade beschäftigt."
+        return "The model or robot controller is currently busy."
     if not follower_port_available() or not LEADER_PORT.exists():
-        return "Leader oder Follower ist nicht verbunden."
+        return "Leader or Follower is not connected."
     if not FLUX_PYTHON.is_file() or not TELEOP_RUNNER.is_file():
-        return "Teleoperations-Controller ist nicht installiert."
+        return "The teleoperation controller is not installed."
     return None
 
 
@@ -1327,7 +1327,7 @@ def reset_state() -> tuple[str, str | None]:
             except (OSError, ValueError):
                 report = {}
             if report.get("outcome") == "holding_after_disconnect":
-                _reset_fault = "Motor-Controller getrennt; Halteziel und Drehmoment waren beim Trennen bestätigt."
+                _reset_fault = "Motor controller disconnected; the hold goal and torque were confirmed at disconnection."
             elif report.get("outcome") != "released_after_hold":
                 _reset_fault = report.get("cleanup_error") or report.get("error") or \
                     "Reset-Prozess endete unerwartet."
@@ -1370,7 +1370,7 @@ def torque_state() -> tuple[str, str | None]:
                 report = {}
             if report.get("outcome") != "torque_released":
                 _torque_fault = report.get("cleanup_error") or report.get("error") or \
-                    "Drehmoment-Halteprozess endete unerwartet."
+                    "The torque-hold process exited unexpectedly."
             else:
                 _torque_fault = None
                 _torque_verified_off = True
@@ -1393,7 +1393,7 @@ def warm_asr_model() -> None:
         with _model_lock:
             get_model()
     except Exception:
-        _asr_error = "Qwen3-ASR konnte nicht geladen werden. Dienstprotokoll prüfen."
+        _asr_error = "Qwen3-ASR could not be loaded. Check the service log."
         logging.getLogger(__name__).exception("Qwen3-ASR warm-up failed")
     finally:
         _asr_loading = False
@@ -1454,13 +1454,13 @@ def decode_audio(source: Path, destination: Path) -> None:
             check=True, capture_output=True, text=True, timeout=45,
         )
     except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-        raise HTTPException(status_code=422, detail="Audio konnte nicht dekodiert werden.") from exc
+        raise HTTPException(status_code=422, detail="Audio could not be decoded.") from exc
     try:
         info = sf.info(str(destination))
     except RuntimeError as exc:
-        raise HTTPException(status_code=422, detail="Dekodiertes Audio ist ungültig.") from exc
+        raise HTTPException(status_code=422, detail="Decoded audio is invalid.") from exc
     if not 0 < info.duration <= MAX_AUDIO_SECONDS:
-        raise HTTPException(status_code=413, detail="Aufnahme muss zwischen 0 und 30 Sekunden lang sein.")
+        raise HTTPException(status_code=413, detail="The recording must be between 0 and 30 seconds long.")
 
 
 @app.get("/api/status")
@@ -1479,9 +1479,9 @@ def status() -> dict:
     task = task_status()
     with _reset_guard:
         return_running = _return_running
-    return_blocker = ("Gesprächsbewegung belegt den Follower."
+    return_blocker = ("Conversation motion is using the Follower."
                       if conversation_motion["occupied"] else
-                      "Der laufende Motor-Controller unterstützt die Rückfahrt noch nicht."
+                      "The running motor controller does not support return yet."
                       if state == "holding" and not holder_supports_return() else
                       static_reset_blocker())
     # Both warmup and prediction own the worker locks for a long time. Status
@@ -1507,9 +1507,9 @@ def status() -> dict:
         "returnAvailable": state == "holding" and holder_supports_return()
                            and not return_running and return_blocker is None,
         "returnRunning": return_running,
-        "returnMessage": return_blocker or ("Der Modelllauf wird vor der Rückfahrt angehalten."
+        "returnMessage": return_blocker or ("The model run will be stopped before returning."
                                             if task and task["state"] in {"running", "stopping"} else
-                                            "Rückfahrt zur Startposition ist verfügbar."),
+                                            "Return to the start position is available."),
         "physicalReady": not teleop["occupied"] and physical_holder_ready() and ready_model is not None
                          and camera_model == ready_model,
         "taskRun": task,
@@ -1522,21 +1522,21 @@ def status() -> dict:
                             and not teleop["occupied"]
                             and TORQUE_RUNNER.is_file() and FLUX_PYTHON.is_file()
                             and (torque_action == "off" or static_reset_blocker() is None)),
-        "torqueMessage": torque_fault or ("Teleoperation läuft; Drehmoment aus stoppt sie zuerst."
+        "torqueMessage": torque_fault or ("Teleoperation is running; turning torque off stops it first."
                                     if teleop["occupied"] else
-                                    "Gesprächsbewegung hält den Follower."
+                                    "Conversation motion is holding the Follower."
                                     if conversation_motion["occupied"] else
-                                    "Drehmoment wird überwacht gehalten."
+                                    "Torque is being held under monitoring."
                                     if torque_mode == "holding" else
-                                    "Drehmoment aus wurde bestätigt."
+                                    "Torque off was confirmed."
                                     if _torque_verified_off else
-                                    "Motorzustand unbekannt: zuerst Drehmoment ausschalten und prüfen."),
-        "message": blocker or "Reset-Controller ist bereit.",
+                                    "Motor state unknown: turn torque off and verify it first."),
+        "message": blocker or "The reset controller is ready.",
         "asrMessage": None if available else (
-            "Qwen3-ASR-Modell fehlt." if not model_installed else
-            "CUDA ist für Qwen3-ASR nicht verfügbar." if not cuda_available else
-            "Qwen3-ASR wird geladen …" if _asr_loading else
-            _asr_error or "Qwen3-ASR wurde noch nicht geladen."
+            "The Qwen3-ASR model is missing." if not model_installed else
+            "CUDA is unavailable for Qwen3-ASR." if not cuda_available else
+            "Loading Qwen3-ASR …" if _asr_loading else
+            _asr_error or "Qwen3-ASR has not been loaded yet."
         ),
     }
 
@@ -1552,13 +1552,13 @@ async def select_model(model_id: str) -> dict:
     selected = next((model for model in available_models(
         cuda_available=torch.cuda.is_available()) if model["id"] == model_id), None)
     if selected is None:
-        raise HTTPException(status_code=404, detail="Unbekanntes Modell.")
+        raise HTTPException(status_code=404, detail="Unknown model.")
     if not selected["available"]:
         raise HTTPException(status_code=503, detail=selected["message"])
     if reset_state()[0] not in {"idle", "holding"}:
-        raise HTTPException(status_code=409, detail="Während des Hardware-Resets ist kein Modellwechsel möglich.")
+        raise HTTPException(status_code=409, detail="Models cannot be switched during a hardware reset.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft bereits.")
+        raise HTTPException(status_code=409, detail="A model run is already active.")
     try:
         require_no_physical_client()
         if policy_session.model_id not in (None, model_id):
@@ -1569,7 +1569,7 @@ async def select_model(model_id: str) -> dict:
     except PhysicalCameraLeaseBusy as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except (subprocess.TimeoutExpired, TimeoutError) as exc:
-        raise HTTPException(status_code=504, detail="Modellladen hat das Zeitlimit überschritten.") from exc
+        raise HTTPException(status_code=504, detail="Loading the model timed out.") from exc
     except (RuntimeError, OSError) as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     finally:
@@ -1579,17 +1579,17 @@ async def select_model(model_id: str) -> dict:
 @app.post("/api/cameras/{model_id}/select")
 async def select_camera_model(model_id: str) -> dict:
     if model_id not in {"molmoact2", "conversation"}:
-        raise HTTPException(status_code=404, detail="Unbekanntes Kameraprofil.")
+        raise HTTPException(status_code=404, detail="Unknown camera profile.")
     if reset_state()[0] not in {"idle", "holding"}:
-        raise HTTPException(status_code=409, detail="Während des Hardware-Resets sind Kameras gesperrt.")
+        raise HTTPException(status_code=409, detail="Cameras are locked during a hardware reset.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft bereits.")
+        raise HTTPException(status_code=409, detail="A model run is already active.")
     try:
         if camera_session.model_id != model_id:
             require_no_physical_client()
         if policy_session.model_id not in (None, model_id):
             if model_id == "conversation":
-                raise HTTPException(status_code=409, detail="Das geladene Modell nutzt ein anderes Kameraprofil.")
+                raise HTTPException(status_code=409, detail="The loaded model uses a different camera profile.")
             await run_in_threadpool(policy_session.stop)
         return await run_in_threadpool(camera_session.select, model_id)
     except PhysicalCameraLeaseBusy as exc:
@@ -1603,7 +1603,7 @@ async def select_camera_model(model_id: str) -> dict:
 @app.get("/api/cameras/{model_id}/preview")
 async def camera_preview(model_id: str) -> dict:
     if model_id not in {"molmoact2", "conversation"}:
-        raise HTTPException(status_code=404, detail="Unbekanntes Kameraprofil.")
+        raise HTTPException(status_code=404, detail="Unknown camera profile.")
     try:
         return await run_in_threadpool(camera_session.preview, model_id)
     except (RuntimeError, TimeoutError, OSError) as exc:
@@ -1614,14 +1614,14 @@ async def camera_preview(model_id: str) -> dict:
 async def reload_camera_model(model_id: str) -> dict:
     """Restart only the camera worker while keeping the policy worker loaded."""
     if model_id not in {"molmoact2", "conversation"}:
-        raise HTTPException(status_code=404, detail="Unbekanntes Kameraprofil.")
+        raise HTTPException(status_code=404, detail="Unknown camera profile.")
     if reset_state()[0] not in {"idle", "holding"}:
-        raise HTTPException(status_code=409, detail="Während des Hardware-Resets sind Kameras gesperrt.")
+        raise HTTPException(status_code=409, detail="Cameras are locked during a hardware reset.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft bereits.")
+        raise HTTPException(status_code=409, detail="A model run is already active.")
     try:
         if policy_session.model_id not in (None, model_id):
-            raise HTTPException(status_code=409, detail="Das geladene Modell nutzt ein anderes Kameraprofil.")
+            raise HTTPException(status_code=409, detail="The loaded model uses a different camera profile.")
         require_no_physical_client()
         return await run_in_threadpool(camera_session.restart, model_id)
     except PhysicalCameraLeaseBusy as exc:
@@ -1635,11 +1635,11 @@ async def reload_camera_model(model_id: str) -> dict:
 @app.post("/api/cameras/{model_id}/insta360-view")
 async def set_insta360_camera_view(model_id: str, request: Insta360ViewRequest) -> dict:
     if model_id not in {"molmoact2", "conversation"}:
-        raise HTTPException(status_code=404, detail="Dieses Kameraprofil nutzt keine Insta360.")
+        raise HTTPException(status_code=404, detail="This camera profile does not use Insta360.")
     if reset_state()[0] not in {"idle", "holding"}:
-        raise HTTPException(status_code=409, detail="Während des Hardware-Resets sind Kameras gesperrt.")
+        raise HTTPException(status_code=409, detail="Cameras are locked during a hardware reset.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Lauf zuerst stoppen, bevor der Kameraausschnitt geändert wird.")
+        raise HTTPException(status_code=409, detail="Stop the run before changing the camera view.")
     try:
         return await run_in_threadpool(camera_session.set_insta360_view, model_id, request.model_dump())
     except PhysicalCameraLeaseBusy as exc:
@@ -1654,11 +1654,11 @@ async def set_insta360_camera_view(model_id: str, request: Insta360ViewRequest) 
 async def set_camera_brightness(model_id: str, role: str, request: CameraBrightnessRequest) -> dict:
     roles = {"conversation": {"cam0", "cam1", "wrist"}, "molmoact2": {"cam0", "cam1", "wrist"}}
     if role not in roles.get(model_id, set()):
-        raise HTTPException(status_code=404, detail="Unbekannte Kamera.")
+        raise HTTPException(status_code=404, detail="Unknown camera.")
     if reset_state()[0] not in {"idle", "holding"}:
-        raise HTTPException(status_code=409, detail="Während des Hardware-Resets sind Kameras gesperrt.")
+        raise HTTPException(status_code=409, detail="Cameras are locked during a hardware reset.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Lauf zuerst stoppen, bevor die Helligkeit geändert wird.")
+        raise HTTPException(status_code=409, detail="Stop the run before changing brightness.")
     try:
         return await run_in_threadpool(camera_session.set_camera_brightness, model_id, role, request.value)
     except PhysicalCameraLeaseBusy as exc:
@@ -1675,11 +1675,11 @@ async def set_camera_brightness(model_id: str, role: str, request: CameraBrightn
 async def set_camera_exposure(model_id: str, role: str, request: CameraExposureRequest) -> dict:
     roles = {"conversation": {"cam0", "cam1", "wrist"}, "molmoact2": {"cam0", "cam1", "wrist"}}
     if role not in roles.get(model_id, set()):
-        raise HTTPException(status_code=404, detail="Unbekannte Kamera.")
+        raise HTTPException(status_code=404, detail="Unknown camera.")
     if reset_state()[0] not in {"idle", "holding"}:
-        raise HTTPException(status_code=409, detail="Während des Hardware-Resets sind Kameras gesperrt.")
+        raise HTTPException(status_code=409, detail="Cameras are locked during a hardware reset.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Lauf zuerst stoppen, bevor die Belichtung geändert wird.")
+        raise HTTPException(status_code=409, detail="Stop the run before changing exposure.")
     try:
         return await run_in_threadpool(camera_session.set_camera_exposure, model_id, role, request.value)
     except PhysicalCameraLeaseBusy as exc:
@@ -1695,14 +1695,14 @@ async def set_camera_exposure(model_id: str, role: str, request: CameraExposureR
 @app.post("/api/models/{model_id}/infer")
 async def model_infer(model_id: str, request: ModelRequest) -> dict:
     if model_id not in {"molmoact2"}:
-        raise HTTPException(status_code=404, detail="Unbekanntes Modell.")
+        raise HTTPException(status_code=404, detail="Unknown model.")
     prompt = request.prompt.strip()
     if not prompt:
-        raise HTTPException(status_code=422, detail="Bitte einen Befehl eingeben.")
+        raise HTTPException(status_code=422, detail="Enter an instruction.")
     if reset_state()[0] not in {"idle", "holding"}:
-        raise HTTPException(status_code=409, detail="Während der Fahrt zur Startposition ist keine Inferenz möglich.")
+        raise HTTPException(status_code=409, detail="Inference is unavailable while moving to the start position.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft bereits.")
+        raise HTTPException(status_code=409, detail="A model run is already active.")
     try:
         require_no_physical_client()
         with camera_switch_guard():
@@ -1716,7 +1716,7 @@ async def model_infer(model_id: str, request: ModelRequest) -> dict:
                 }}
             return await run_in_threadpool(run_model_inference, model_id, prompt)
     except (subprocess.TimeoutExpired, TimeoutError) as exc:
-        raise HTTPException(status_code=504, detail="Modelllauf hat das Zeitlimit überschritten.") from exc
+        raise HTTPException(status_code=504, detail="The model run timed out.") from exc
     except PhysicalCameraLeaseBusy as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except (RuntimeError, OSError) as exc:
@@ -1734,7 +1734,7 @@ def holder_command(command: dict, *, timeout_s: float = 90) -> dict:
             if (_reset_state != "holding" or process is None or process.poll() is not None
                     or not isinstance(args, (list, tuple)) or len(args) < 2
                     or Path(args[1]).name != "ui_robot_holder.py"):
-                raise RuntimeError("Startposition muss vom neuen UI-Controller überwacht gehalten werden.")
+                raise RuntimeError("The start position must be held under monitoring by the current UI controller.")
         reply_path = ROOT / "outputs" / f"ui-robot-reply-{uuid.uuid4().hex}.json"
         command = {**command, "reply_path": str(reply_path)}
         try:
@@ -1742,18 +1742,18 @@ def holder_command(command: dict, *, timeout_s: float = 90) -> dict:
             # PIPE_BUF and cannot interleave with an operator release byte.
             encoded = (json.dumps(command, ensure_ascii=False) + "\n").encode()
             if len(encoded) > 4096 or os.write(process.stdin.fileno(), encoded) != len(encoded):
-                raise RuntimeError("Motor-Controller-Befehl konnte nicht atomar gesendet werden.")
+                raise RuntimeError("The motor-controller command could not be sent atomically.")
             deadline = time.monotonic() + timeout_s
             while time.monotonic() < deadline:
                 if reply_path.is_file():
                     result = json.loads(reply_path.read_text())
                     if result.get("status") == "rejected":
-                        raise RuntimeError(result.get("error") or "Motor-Controller hat den Aktionsblock abgelehnt.")
+                        raise RuntimeError(result.get("error") or "The motor controller rejected the action block.")
                     return result
                 if process.poll() is not None:
-                    raise RuntimeError("Motor-Controller endete vor der Bestätigung.")
+                    raise RuntimeError("The motor controller exited before confirming.")
                 time.sleep(0.05)
-            raise TimeoutError("Motor-Controller antwortete nicht; Drehmomentzustand prüfen.")
+            raise TimeoutError("The motor controller did not respond; check the torque state.")
         finally:
             reply_path.unlink(missing_ok=True)
 
@@ -1765,24 +1765,24 @@ def conversation_holder_command(session_id: str, command: dict, *, timeout_s: fl
             process = _conversation_motion_process
             if (_conversation_motion_id != session_id or process is None
                     or process.poll() is not None or process.stdin is None):
-                raise RuntimeError("Gesprächs-Controller hält den Follower nicht mehr.")
+                raise RuntimeError("The conversation controller is no longer holding the Follower.")
             reply_path = ROOT / "outputs" / f"ui-robot-reply-{uuid.uuid4().hex}.json"
             encoded = (json.dumps({**command, "reply_path": str(reply_path)},
                                   ensure_ascii=False) + "\n").encode()
             if len(encoded) > 4096 or os.write(process.stdin.fileno(), encoded) != len(encoded):
-                raise RuntimeError("Gesprächs-Controller-Befehl konnte nicht atomar gesendet werden.")
+                raise RuntimeError("The conversation-controller command could not be sent atomically.")
         try:
             deadline = time.monotonic() + timeout_s
             while time.monotonic() < deadline:
                 if reply_path.is_file():
                     result = json.loads(reply_path.read_text())
                     if result.get("status") == "rejected":
-                        raise RuntimeError(result.get("error") or "Gesprächs-Controller lehnte die Aufgabe ab.")
+                        raise RuntimeError(result.get("error") or "The conversation controller rejected the task.")
                     return result
                 if process.poll() is not None:
-                    raise RuntimeError("Gesprächs-Controller endete vor der Bestätigung.")
+                    raise RuntimeError("The conversation controller exited before confirming.")
                 time.sleep(0.05)
-            raise TimeoutError("Gesprächs-Controller antwortete nicht; Drehmomentzustand prüfen.")
+            raise TimeoutError("The conversation controller did not respond; check the torque state.")
         finally:
             reply_path.unlink(missing_ok=True)
 
@@ -1802,7 +1802,7 @@ def _run_generation(run: dict) -> tuple[int, str, bool]:
 def physical_task_loop(run: dict) -> None:
     """Reobserve and replan until operator Stop or a controller failure."""
     global _active_task, _last_task
-    outcome, message = "stopped", "Durch Stopp angehalten; Drehmoment wird gehalten."
+    outcome, message = "stopped", "Stopped by request; torque is being held."
     conversation_id = run.get("conversationSessionId")
     command_owner = (lambda command: conversation_holder_command(conversation_id, command)) \
         if conversation_id else holder_command
@@ -1821,7 +1821,7 @@ def physical_task_loop(run: dict) -> None:
             with _task_guard:
                 if not run["stop"].is_set():
                     run["state"] = "running"
-                    run["message"] = "MolmoAct2 läuft mit frischen Kamerabildern."
+                    run["message"] = "MolmoAct2 is running with fresh camera images."
         while True:
             generation, prompt, stopped = _run_generation(run)
             if stopped:
@@ -1834,7 +1834,7 @@ def physical_task_loop(run: dict) -> None:
                 if (observed.get("status") != "observed" or observed.get("model") != run["model"]
                         or observed.get("observation_path") != str(observation_path)
                         or not observation_path.is_file()):
-                    raise RuntimeError("Motor-Controller lieferte keine gültige Live-Beobachtung.")
+                    raise RuntimeError("The motor controller returned no valid live observation.")
                 with _task_guard:
                     if run["stop"].is_set() or run["generation"] != generation:
                         continue
@@ -1863,7 +1863,7 @@ def physical_task_loop(run: dict) -> None:
                         run["executedGeneration"] = generation
                     if execution["status"] == "executed":
                         run["chunks"] += 1
-                    run["message"] = f'{run["chunks"]} Blöcke, {run["actions"]} Aktionen ausgeführt.'
+                    run["message"] = f'{run["chunks"]} chunks, {run["actions"]} actions executed.'
             finally:
                 observation_path.unlink(missing_ok=True)
                 actions_path.unlink(missing_ok=True)
@@ -1878,7 +1878,7 @@ def physical_task_loop(run: dict) -> None:
                     run["speechGripperAvailable"] = inactive.get("speechGripperAvailable", False)
             except (RuntimeError, TimeoutError, OSError):
                 logging.getLogger(__name__).exception("Could not end active task hold")
-                outcome, message = "failed", "Follower-Halt nach Aufgabe nicht bestätigt; Zustand prüfen."
+                outcome, message = "failed", "The Follower hold was not confirmed after the task; check its state."
         with _task_guard:
             run["state"] = outcome
             run["message"] = message
@@ -1901,7 +1901,7 @@ def request_physical_task_stop() -> dict | None:
             run["stop"].set()
             _write_task_epoch(run)
         run["state"] = "stopping"
-        run["message"] = "Stopp angefordert; Motor-Controller hält die gemessene Position."
+        run["message"] = "Stop requested; the motor controller is holding the measured position."
         return task_status_unlocked(run)
 
 
@@ -1919,30 +1919,30 @@ def wait_for_stopped_task(*, timeout_s: float = 45, interrupt_after_s: float = 5
             if task_active:
                 policy_session.interrupt_active_request()
                 interrupted = True
-    raise TimeoutError("Modelllauf wurde nicht vollständig angehalten; Rückfahrt nicht gestartet.")
+    raise TimeoutError("The model run did not stop completely; return was not started.")
 
 
 @app.post("/api/models/{model_id}/task")
 async def execute_model_task(model_id: str, request: ModelRequest, browser: Request) -> dict:
     global _active_task
     if browser.headers.get("x-so101-execute") != "operator-ptt":
-        raise HTTPException(status_code=403, detail="Motorlauf erfordert eine ausdrückliche Push-to-Talk-Betätigung.")
+        raise HTTPException(status_code=403, detail="Motor execution requires an explicit push-to-talk action.")
     if model_id not in {"molmoact2"}:
-        raise HTTPException(status_code=404, detail="Unbekanntes Modell.")
+        raise HTTPException(status_code=404, detail="Unknown model.")
     if not request.liveCamera:
-        raise HTTPException(status_code=422, detail="Physische Inferenz benötigt Live-Kameras.")
+        raise HTTPException(status_code=422, detail="Physical inference requires live cameras.")
     if conversation_motion_status()["occupied"]:
-        raise HTTPException(status_code=409, detail="Gesprächsbewegung belegt den Follower.")
+        raise HTTPException(status_code=409, detail="Conversation motion is using the Follower.")
     if teleoperation_session.status()["occupied"]:
-        raise HTTPException(status_code=409, detail="Teleoperation belegt den Follower.")
+        raise HTTPException(status_code=409, detail="Teleoperation is using the Follower.")
     prompt = request.prompt.strip()
     if not prompt:
-        raise HTTPException(status_code=422, detail="Bitte einen Befehl eingeben.")
+        raise HTTPException(status_code=422, detail="Enter an instruction.")
     if not physical_holder_ready():
-        raise HTTPException(status_code=409, detail="Zuerst Startposition mit dem aktuellen UI-Controller anfahren.")
+        raise HTTPException(status_code=409, detail="Move to the start position with the current UI controller first.")
     with _reset_guard:
         if _return_running:
-            raise HTTPException(status_code=409, detail="Rückfahrt zur Startposition läuft bereits.")
+            raise HTTPException(status_code=409, detail="Return to the start position is already running.")
         with _task_guard:
             if _active_task is not None:
                 if _active_task["model"] != model_id or _active_task["stop"].is_set():
@@ -1950,12 +1950,12 @@ async def execute_model_task(model_id: str, request: ModelRequest, browser: Requ
                 _active_task["generation"] += 1
                 _active_task["prompt"] = prompt
                 _write_task_epoch(_active_task)
-                _active_task["message"] = "Neue Anweisung übernommen; alter Aktionsblock wird verworfen."
+                _active_task["message"] = "New instruction accepted; discarding the previous action block."
                 return {"status": "updated", "taskRun": task_status_unlocked(_active_task)}
     if policy_session.ready_model_id != model_id or camera_session.model_id != model_id:
-        raise HTTPException(status_code=409, detail="Ausgewähltes Modell und Kameraprofil sind nicht geladen.")
+        raise HTTPException(status_code=409, detail="The selected model and camera profile are not loaded.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft bereits.")
+        raise HTTPException(status_code=409, detail="A model run is already active.")
     run_id = uuid.uuid4().hex
     run = {"id": run_id, "model": model_id, "prompt": prompt, "state": "running",
            "chunks": 0, "actions": 0, "startedAt": time.time(), "endedAt": None,
@@ -1966,10 +1966,10 @@ async def execute_model_task(model_id: str, request: ModelRequest, browser: Requ
     try:
         with _reset_guard:
             if _return_running:
-                raise RuntimeError("Rückfahrt zur Startposition läuft bereits.")
+                raise RuntimeError("Return to the start position is already running.")
             with _task_guard:
                 if _active_task is not None:
-                    raise RuntimeError("Ein Modelllauf läuft bereits.")
+                    raise RuntimeError("A model run is already active.")
                 _write_task_epoch(run)
                 _active_task = run
         threading.Thread(target=physical_task_loop, args=(run,),
@@ -1987,10 +1987,10 @@ async def execute_model_task(model_id: str, request: ModelRequest, browser: Requ
 @app.post("/api/task/stop")
 async def stop_physical_task(browser: Request) -> dict:
     if browser.headers.get("x-so101-stop") != "operator-click":
-        raise HTTPException(status_code=403, detail="Stopp erfordert eine ausdrückliche UI-Betätigung.")
+        raise HTTPException(status_code=403, detail="Stopping requires an explicit UI action.")
     task = request_physical_task_stop()
     if task is None:
-        raise HTTPException(status_code=409, detail="Keine laufende Aufgabe.")
+        raise HTTPException(status_code=409, detail="No task is running.")
     return {"status": "stopping", "taskRun": task}
 
 
@@ -2003,7 +2003,7 @@ def physical_task_status() -> dict:
 @app.delete("/api/session")
 async def stop_model_session() -> dict:
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft noch.")
+        raise HTTPException(status_code=409, detail="A model run is still active.")
     try:
         try:
             require_no_physical_client()
@@ -2022,9 +2022,9 @@ async def stop_model_session() -> dict:
 async def unload_current_model() -> dict:
     """Free the policy worker without closing the camera preview or robot holder."""
     if reset_state()[0] not in {"idle", "holding"}:
-        raise HTTPException(status_code=409, detail="Während des Hardware-Resets ist kein Entladen möglich.")
+        raise HTTPException(status_code=409, detail="Models cannot be unloaded during a hardware reset.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft noch.")
+        raise HTTPException(status_code=409, detail="A model run is still active.")
     try:
         try:
             await run_in_threadpool(policy_session.stop)
@@ -2039,7 +2039,7 @@ async def unload_current_model() -> dict:
 async def transcribe_upload(audio: UploadFile = File(...),
                             language: Literal["German", "English", "Auto"] = Form("German")) -> dict:
     if not MODEL_PATH.is_dir() or not torch.cuda.is_available():
-        raise HTTPException(status_code=503, detail="Qwen3-ASR oder CUDA ist nicht verfügbar.")
+        raise HTTPException(status_code=503, detail="Qwen3-ASR or CUDA is unavailable.")
 
     with tempfile.TemporaryDirectory(prefix="so101-ptt-") as temp_dir:
         source = Path(temp_dir) / "recording"
@@ -2049,7 +2049,7 @@ async def transcribe_upload(audio: UploadFile = File(...),
             while chunk := await audio.read(1024 * 1024):
                 total += len(chunk)
                 if total > MAX_UPLOAD_BYTES:
-                    raise HTTPException(status_code=413, detail="Audiodatei ist zu groß.")
+                    raise HTTPException(status_code=413, detail="The audio file is too large.")
                 output.write(chunk)
         await audio.close()
         if total == 0:
@@ -2064,7 +2064,7 @@ async def transcribe_upload(audio: UploadFile = File(...),
 
             return await run_in_threadpool(infer)
         except Exception as exc:
-            raise HTTPException(status_code=500, detail="Qwen3-ASR-Transkription fehlgeschlagen.") from exc
+            raise HTTPException(status_code=500, detail="Qwen3-ASR transcription failed.") from exc
 
 
 def start_reset_process(report_path: Path) -> subprocess.Popen:
@@ -2086,9 +2086,9 @@ def start_reset_process(report_path: Path) -> subprocess.Popen:
             if report.get("outcome") == "aborted":
                 process.wait()
                 raise RuntimeError(report.get("cleanup_error") or report.get("error") or
-                                   "Reset abgebrochen.")
+                                   "Reset cancelled.")
         if process.poll() is not None:
-            raise RuntimeError(f"Reset-Prozess endete vor dem Halten (exit={process.returncode}).")
+            raise RuntimeError(f"The reset process exited before holding (exit={process.returncode}).")
         time.sleep(0.1)
 
 
@@ -2106,21 +2106,21 @@ def release_reset_process(process: subprocess.Popen, report_path: Path) -> dict:
             try:
                 process.wait(timeout=15)
             except subprocess.TimeoutExpired as exc:
-                raise RuntimeError("Reset-Controller reagiert nicht; Hardware-Stromabschaltung verwenden.") from exc
+                raise RuntimeError("The reset controller is not responding; use the physical power cutoff.") from exc
     try:
         report = json.loads(report_path.read_text())
     except (OSError, ValueError) as exc:
-        raise RuntimeError("Reset-Controller hat keinen Abschlussbericht geschrieben.") from exc
+        raise RuntimeError("The reset controller did not write a final report.") from exc
     if process.returncode or report.get("outcome") != "released_after_hold":
         raise RuntimeError(report.get("cleanup_error") or report.get("error") or
-                           "Drehmoment-Abschaltung wurde nicht bestätigt.")
-    return {"status": "released", "message": "Drehmoment ausgeschaltet und bestätigt."}
+                           "Torque off was not confirmed.")
+    return {"status": "released", "message": "Torque was turned off and verified."}
 
 
 @app.post("/api/teleoperation/start")
 async def start_teleoperation(request: Request) -> dict:
     if request.headers.get("x-so101-teleop") != "operator-click":
-        raise HTTPException(status_code=403, detail="Teleoperation erfordert einen ausdrücklichen UI-Klick.")
+        raise HTTPException(status_code=403, detail="Teleoperation requires an explicit UI click.")
     blocker = teleop_blocker()
     if blocker:
         raise HTTPException(status_code=409, detail=blocker)
@@ -2128,18 +2128,18 @@ async def start_teleoperation(request: Request) -> dict:
     try:
         camera_model = camera_session.model_id
         if camera_model is None:
-            camera_warning = "Keine Live-Kameras aktiv."
+            camera_warning = "No live cameras are active."
         else:
             preview = await run_in_threadpool(camera_session.preview, camera_model)
             if (time.time() - float(preview.get("capturedAt", 0)) > 3
                     or len(preview.get("previews", {})) < 2):
-                camera_warning = "Live-Kamerabilder sind nicht frisch oder unvollständig."
+                camera_warning = "Live camera images are stale or incomplete."
             else:
                 sources = preview.get("cameraSources", {})
                 if camera_model == "molmoact2" and sources.get("cam0") == sources.get("cam1"):
-                    camera_warning = "Overhead und X5 liefern keine zwei unabhängigen Livebilder."
+                    camera_warning = "Overhead and X5 are not providing two independent live views."
     except (RuntimeError, OSError, ValueError, TypeError) as exc:
-        camera_warning = f"Live-Kamerabilder nicht verfügbar: {exc}"
+        camera_warning = f"Live camera images are unavailable: {exc}"
     try:
         blocker = teleop_blocker()
         if blocker:
@@ -2147,8 +2147,8 @@ async def start_teleoperation(request: Request) -> dict:
         result = await run_in_threadpool(teleoperation_session.start)
         if camera_warning:
             result["warning"] = camera_warning
-            result["message"] = (f"{result.get('message') or 'Teleoperation läuft.'} "
-                                 f"Warnung: {camera_warning} Kameras sind für Teleoperation optional.")
+            result["message"] = (f"{result.get('message') or 'Teleoperation is running.'} "
+                                 f"Warning: {camera_warning} Cameras are optional for teleoperation.")
         return result
     except (RuntimeError, OSError) as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
@@ -2157,7 +2157,7 @@ async def start_teleoperation(request: Request) -> dict:
 @app.post("/api/teleoperation/stop")
 async def stop_teleoperation(request: Request) -> dict:
     if request.headers.get("x-so101-teleop") != "operator-click":
-        raise HTTPException(status_code=403, detail="Teleoperations-Stopp erfordert einen ausdrücklichen UI-Klick.")
+        raise HTTPException(status_code=403, detail="Stopping teleoperation requires an explicit UI click.")
     try:
         return await run_in_threadpool(teleoperation_session.stop)
     except (RuntimeError, OSError) as exc:
@@ -2168,20 +2168,20 @@ async def stop_teleoperation(request: Request) -> dict:
 async def reset(request: Request) -> dict:
     global _reset_state, _reset_process, _reset_report_path, _reset_fault, _torque_verified_off
     if request.headers.get("x-so101-reset") != "operator-click":
-        raise HTTPException(status_code=403, detail="Reset erfordert eine ausdrückliche UI-Betätigung.")
+        raise HTTPException(status_code=403, detail="Reset requires an explicit UI action.")
     blocker = reset_blocker()
     if blocker:
         raise HTTPException(status_code=409, detail=blocker)
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft noch.")
+        raise HTTPException(status_code=409, detail="A model run is still active.")
     try:
         if torque_state()[0] != "idle":
-            raise HTTPException(status_code=409, detail="Drehmoment wird bereits gehalten oder geändert.")
+            raise HTTPException(status_code=409, detail="Torque is already being held or changed.")
         with _reset_guard:
             if _reset_state != "idle":
-                raise HTTPException(status_code=409, detail="Eine Fahrt läuft bereits.")
+                raise HTTPException(status_code=409, detail="A movement is already running.")
             if teleoperation_session.status()["occupied"]:
-                raise HTTPException(status_code=409, detail="Teleoperation belegt den Follower.")
+                raise HTTPException(status_code=409, detail="Teleoperation is using the Follower.")
             _reset_state = "starting"
         _torque_verified_off = False
     finally:
@@ -2198,7 +2198,7 @@ async def reset(request: Request) -> dict:
             _reset_process = process
             _reset_report_path = report_path
             _reset_state = "holding"
-        return {"status": "holding", "message": "Startposition erreicht und überwacht gehalten."}
+        return {"status": "holding", "message": "The start position was reached and is held under monitoring."}
     except BaseException as exc:
         with _reset_guard:
             _reset_state = "idle"
@@ -2214,15 +2214,15 @@ async def return_to_start(request: Request) -> dict:
     """Return through the current Follower owner, leaving its torque hold active."""
     global _return_running
     if request.headers.get("x-so101-reset") != "operator-click":
-        raise HTTPException(status_code=403, detail="Rückfahrt erfordert eine ausdrückliche UI-Betätigung.")
+        raise HTTPException(status_code=403, detail="Return requires an explicit UI action.")
     if conversation_motion_status()["occupied"] or not holder_supports_return():
-        raise HTTPException(status_code=409, detail="Kein geeigneter UI-Motor-Controller hält den Follower.")
+        raise HTTPException(status_code=409, detail="No suitable UI motor controller is holding the Follower.")
     blocker = static_reset_blocker()
     if blocker:
         raise HTTPException(status_code=409, detail=blocker)
     with _reset_guard:
         if _return_running:
-            raise HTTPException(status_code=409, detail="Rückfahrt läuft bereits.")
+            raise HTTPException(status_code=409, detail="Return is already running.")
         _return_running = True
     policy_owned = False
     try:
@@ -2233,16 +2233,16 @@ async def return_to_start(request: Request) -> dict:
         else:
             policy_owned = _policy_lock.acquire(blocking=False)
             if not policy_owned:
-                raise HTTPException(status_code=409, detail="Modellwechsel läuft; Rückfahrt noch nicht verfügbar.")
+                raise HTTPException(status_code=409, detail="The model is switching; return is not available yet.")
         with _task_guard:
             if _active_task is not None:
-                raise RuntimeError("Modelllauf wurde nicht vollständig angehalten.")
+                raise RuntimeError("The model run did not stop completely.")
         if not holder_supports_return():
-            raise RuntimeError("Motor-Controller hält den Follower nicht mehr für die Rückfahrt.")
+            raise RuntimeError("The motor controller is no longer holding the Follower for return.")
         result = await run_in_threadpool(holder_command, {"op": "return_to_start"}, timeout_s=150)
         if result.get("status") != "returned":
-            raise RuntimeError("Motor-Controller hat die Rückfahrt nicht bestätigt.")
-        return {"status": "returned", "message": "Startposition erreicht; Drehmoment bleibt eingeschaltet.",
+            raise RuntimeError("The motor controller did not confirm return.")
+        return {"status": "returned", "message": "Start position reached; torque remains enabled.",
                 "measuredAfter": result["measured_after"]}
     except (RuntimeError, TimeoutError, OSError) as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
@@ -2257,10 +2257,10 @@ async def return_to_start(request: Request) -> dict:
 async def release_reset(request: Request) -> dict:
     global _reset_state, _reset_process, _reset_report_path, _reset_fault, _torque_verified_off
     if request.headers.get("x-so101-reset") != "operator-click":
-        raise HTTPException(status_code=403, detail="Lösen erfordert eine ausdrückliche UI-Betätigung.")
+        raise HTTPException(status_code=403, detail="Releasing requires an explicit UI action.")
     with _reset_guard:
         if _reset_state != "holding" or _reset_process is None or _reset_report_path is None:
-            raise HTTPException(status_code=409, detail="Es wird keine Startposition gehalten.")
+            raise HTTPException(status_code=409, detail="No start position is being held.")
         process, report_path = _reset_process, _reset_report_path
         _reset_state = "releasing"
     try:
@@ -2303,13 +2303,13 @@ def start_torque_process(report_path: Path) -> subprocess.Popen:
             if report.get("outcome") == "aborted":
                 process.wait()
                 raise RuntimeError(report.get("cleanup_error") or report.get("error") or
-                                   "Drehmoment konnte nicht aktiviert werden.")
+                                   "Torque could not be enabled.")
         if process.poll() is not None:
-            raise RuntimeError(f"Drehmoment-Prozess endete vor der Haltebestätigung (exit={process.returncode}).")
+            raise RuntimeError(f"The torque process exited before confirming hold (exit={process.returncode}).")
         time.sleep(0.1)
     process.terminate()
     process.wait(timeout=10)
-    raise TimeoutError("Drehmoment-Haltebestätigung blieb aus.")
+    raise TimeoutError("Torque-hold confirmation was not received.")
 
 
 def release_torque_process(process: subprocess.Popen, report_path: Path) -> dict:
@@ -2327,15 +2327,15 @@ def release_torque_process(process: subprocess.Popen, report_path: Path) -> dict
             try:
                 process.wait(timeout=10)
             except subprocess.TimeoutExpired as exc:
-                raise RuntimeError("Drehmoment-Controller reagiert nicht; Hardware-Stromabschaltung verwenden.") from exc
+                raise RuntimeError("The torque controller is not responding; use the physical power cutoff.") from exc
     try:
         report = json.loads(report_path.read_text())
     except (OSError, ValueError) as exc:
-        raise RuntimeError("Drehmoment-Controller hat keinen Abschlussbericht geschrieben.") from exc
+        raise RuntimeError("The torque controller did not write a final report.") from exc
     if process.returncode or report.get("outcome") != "torque_released":
         raise RuntimeError(report.get("cleanup_error") or report.get("error") or
-                           "Drehmoment-Abschaltung wurde nicht bestätigt.")
-    return {"status": "off", "message": "Drehmoment ausgeschaltet und bestätigt."}
+                           "Torque off was not confirmed.")
+    return {"status": "off", "message": "Torque was turned off and verified."}
 
 
 def turn_off_unmanaged(report_path: Path) -> dict:
@@ -2349,11 +2349,11 @@ def turn_off_unmanaged(report_path: Path) -> dict:
     try:
         report = json.loads(report_path.read_text())
     except (OSError, ValueError) as exc:
-        raise RuntimeError("Drehmoment-Abschaltung hat keinen Ergebnisbericht geschrieben.") from exc
+        raise RuntimeError("Torque off did not produce a result report.") from exc
     if process.returncode or report.get("outcome") != "torque_off_verified":
         raise RuntimeError(report.get("error") or report.get("cleanup_error") or
-                           "Drehmoment-Abschaltung wurde nicht bestätigt.")
-    return {"status": "off", "message": "Drehmoment ausgeschaltet und bestätigt.",
+                           "Torque off was not confirmed.")
+    return {"status": "off", "message": "Torque was turned off and verified.",
             "before": report["before"], "after": report["after"]}
 
 
@@ -2361,26 +2361,26 @@ def turn_off_unmanaged(report_path: Path) -> dict:
 async def torque_on(request: Request) -> dict:
     global _torque_state, _torque_process, _torque_report_path, _torque_fault, _torque_verified_off
     if request.headers.get("x-so101-torque") != "operator-click":
-        raise HTTPException(status_code=403, detail="Drehmoment erfordert eine ausdrückliche UI-Betätigung.")
+        raise HTTPException(status_code=403, detail="Torque control requires an explicit UI action.")
     if reset_state()[0] != "idle":
-        raise HTTPException(status_code=409, detail="Während Startpositionsfahrt oder Halten ist Drehmoment bereits belegt.")
+        raise HTTPException(status_code=409, detail="Torque is already in use while moving to or holding the start position.")
     if conversation_motion_status()["occupied"]:
-        raise HTTPException(status_code=409, detail="Gesprächsbewegung hält den Follower bereits.")
+        raise HTTPException(status_code=409, detail="Conversation motion is already holding the Follower.")
     if teleoperation_session.status()["occupied"]:
-        raise HTTPException(status_code=409, detail="Teleoperation hält den Follower bereits.")
+        raise HTTPException(status_code=409, detail="Teleoperation is already holding the Follower.")
     blocker = static_reset_blocker()
     if blocker:
         raise HTTPException(status_code=409, detail=blocker)
     if not TORQUE_RUNNER.is_file():
-        raise HTTPException(status_code=409, detail="Drehmoment-Controller ist nicht installiert.")
+        raise HTTPException(status_code=409, detail="The torque controller is not installed.")
     if not _policy_lock.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="Ein Modelllauf läuft noch.")
+        raise HTTPException(status_code=409, detail="A model run is still active.")
     try:
         if reset_state()[0] != "idle":
-            raise HTTPException(status_code=409, detail="Startpositions-Controller ist aktiv.")
+            raise HTTPException(status_code=409, detail="The start-position controller is active.")
         with _torque_guard:
             if _torque_state != "idle" or _torque_process is not None:
-                raise HTTPException(status_code=409, detail="Drehmoment wird bereits gehalten oder geändert.")
+                raise HTTPException(status_code=409, detail="Torque is already being held or changed.")
             _torque_state = "starting"
         report_path = ROOT / "outputs" / f"ui-torque-{uuid.uuid4().hex}.json"
         process = await run_in_threadpool(start_torque_process, report_path)
@@ -2390,7 +2390,7 @@ async def torque_on(request: Request) -> dict:
             _torque_state = "holding"
             _torque_fault = None
         _torque_verified_off = False
-        return {"status": "holding", "message": "Aktuelle Pose wird mit Drehmoment überwacht gehalten."}
+        return {"status": "holding", "message": "The current pose is held with torque under monitoring."}
     except BaseException as exc:
         with _torque_guard:
             _torque_state = "idle"
@@ -2409,7 +2409,7 @@ async def torque_off(request: Request) -> dict:
     global _conversation_motion_process, _conversation_motion_report, _conversation_motion_id
     global _conversation_motion_return_requested
     if request.headers.get("x-so101-torque") != "operator-click":
-        raise HTTPException(status_code=403, detail="Drehmoment erfordert eine ausdrückliche UI-Betätigung.")
+        raise HTTPException(status_code=403, detail="Torque control requires an explicit UI action.")
     if teleoperation_session.status()["occupied"]:
         try:
             await run_in_threadpool(teleoperation_session.stop)
@@ -2428,12 +2428,12 @@ async def torque_off(request: Request) -> dict:
             if process is not None and process.poll() is None:
                 raise HTTPException(status_code=409, detail=str(exc)) from exc
     if reset_state()[0] != "idle":
-        raise HTTPException(status_code=409, detail="Startpositions-Controller ist aktiv; dort Drehmoment lösen.")
+        raise HTTPException(status_code=409, detail="The start-position controller is active; release torque through it.")
     if not TORQUE_RUNNER.is_file() or not FLUX_PYTHON.is_file():
-        raise HTTPException(status_code=409, detail="Drehmoment-Controller ist nicht installiert.")
+        raise HTTPException(status_code=409, detail="The torque controller is not installed.")
     with _torque_guard:
         if _torque_state not in {"idle", "holding"}:
-            raise HTTPException(status_code=409, detail="Drehmoment wird bereits geändert.")
+            raise HTTPException(status_code=409, detail="Torque is already being changed.")
         process, report_path = _torque_process, _torque_report_path
         _torque_state = "releasing"
     try:
@@ -2471,7 +2471,7 @@ async def torque_off(request: Request) -> dict:
 @app.get("/")
 def index() -> FileResponse:
     if not (UI_DIST / "index.html").is_file():
-        raise HTTPException(status_code=503, detail="UI noch nicht gebaut. Siehe ui/README.md.")
+        raise HTTPException(status_code=503, detail="The UI has not been built yet. See ui/README.md.")
     return FileResponse(UI_DIST / "index.html")
 
 

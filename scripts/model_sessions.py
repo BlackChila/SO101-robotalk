@@ -56,7 +56,7 @@ class ModelSession:
         python = ROOT / "environments" / env_name / ".venv/bin/python"
         script = ROOT / "scripts" / script_name
         if not python.is_file() or not script.is_file():
-            raise RuntimeError(f"{model_id}: Sitzungs-Worker oder Python-Umgebung fehlt.")
+            raise RuntimeError(f"{model_id}: session worker or Python environment is missing.")
         log_dir = ROOT / "outputs/model-sessions"
         log_dir.mkdir(parents=True, exist_ok=True)
         self._log = (log_dir / f"{model_id}.log").open("ab")
@@ -77,7 +77,7 @@ class ModelSession:
     def preload(self, model_id: str, timeout_s: float = 420) -> dict:
         """Load checkpoint weights now, without generating an action or opening hardware."""
         if model_id not in WORKERS:
-            raise ValueError("Unbekanntes Modell.")
+            raise ValueError("Unknown model.")
         with self._lock:
             if model_id != self.model_id:
                 self._stop_locked()
@@ -91,7 +91,7 @@ class ModelSession:
                 result = self._next_record(timeout_s)
                 if (result.get("model") != model_id or result.get("ready") is not True
                         or result.get("hardwareCommands") is not False):
-                    raise RuntimeError(result.get("error") or "Modell wurde nicht geladen.")
+                    raise RuntimeError(result.get("error") or "The model was not loaded.")
                 self._ready = True
                 return result
             except BaseException:
@@ -109,38 +109,38 @@ class ModelSession:
                     try:
                         result = json.loads(line[len(RESULT_PREFIX):])
                     except (UnicodeError, ValueError) as exc:
-                        raise RuntimeError("Modell-Worker lieferte ungültiges JSON.") from exc
+                        raise RuntimeError("The model worker returned invalid JSON.") from exc
                     if not isinstance(result, dict):
-                        raise RuntimeError("Modell-Worker lieferte keinen Ergebnisbericht.")
+                        raise RuntimeError("The model worker returned no result report.")
                     return result
                 if line.startswith(ERROR_PREFIX):
                     try:
                         failure = json.loads(line[len(ERROR_PREFIX):])
                     except (UnicodeError, ValueError) as exc:
-                        raise RuntimeError("Modell-Worker lieferte eine ungültige Fehlermeldung.") from exc
+                        raise RuntimeError("The model worker returned an invalid error message.") from exc
                     detail = failure.get("error") if isinstance(failure, dict) else None
-                    raise RuntimeError(str(detail or "Modell-Worker meldete einen Fehler."))
+                    raise RuntimeError(str(detail or "The model worker reported an error."))
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                raise TimeoutError("Modelllauf hat das Zeitlimit überschritten.")
+                raise TimeoutError("The model run timed out.")
             readable, _, _ = select.select([self._process.stdout], [], [], min(remaining, 1.0))
             if readable:
                 data = os.read(self._process.stdout.fileno(), 65536)
                 if not data:
-                    raise RuntimeError(f"Modell-Worker endete vor dem Ergebnis (exit={self._process.poll()}).")
+                    raise RuntimeError(f"The model worker exited before returning a result (exit={self._process.poll()}).")
                 self._stdout.extend(data)
                 if len(self._stdout) > 4 * 1024 * 1024:
-                    raise RuntimeError("Modell-Worker lieferte zu viele Ausgabedaten.")
+                    raise RuntimeError("The model worker returned too much output data.")
             elif self._process.poll() is not None:
-                raise RuntimeError(f"Modell-Worker endete vor dem Ergebnis (exit={self._process.returncode}).")
+                raise RuntimeError(f"The model worker exited before returning a result (exit={self._process.returncode}).")
 
     def set_task(self, model_id: str, task: str, *, camera_npz: str | None = None,
                  timeout_s: float = 420) -> dict:
         if model_id not in WORKERS:
-            raise ValueError("Unbekanntes Modell.")
+            raise ValueError("Unknown model.")
         task = task.strip()
         if not task or len(task) > 500:
-            raise ValueError("Die Anweisung muss 1 bis 500 Zeichen enthalten.")
+            raise ValueError("The instruction must contain 1 to 500 characters.")
         with self._lock:
             if model_id != self.model_id:
                 self._stop_locked()
@@ -165,10 +165,10 @@ class ModelSession:
                       state: dict, timeout_s: float = 420) -> dict:
         """Predict from live holder data without opening hardware or preloading a new model."""
         if model_id not in WORKERS or model_id != self.ready_model_id:
-            raise RuntimeError("Das ausgewählte Modell muss vor dem Motorlauf geladen sein.")
+            raise RuntimeError("The selected model must be loaded before motor execution.")
         task = task.strip()
         if not task or len(task) > 500:
-            raise ValueError("Die Anweisung muss 1 bis 500 Zeichen enthalten.")
+            raise ValueError("The instruction must contain 1 to 500 characters.")
         with self._lock:
             assert self._process and self._process.stdin
             command = {"op": "predict_chunk", "task": task,
@@ -212,9 +212,9 @@ class ModelSession:
                     except subprocess.TimeoutExpired as exc:
                         # Keep the reference so another model cannot start
                         # while this process might still hold GPU allocations.
-                        raise RuntimeError("Alter Modellprozess konnte nicht beendet werden.") from exc
+                        raise RuntimeError("The previous model process could not be stopped.") from exc
             if process.poll() is None:
-                raise RuntimeError("Alter Modellprozess läuft weiterhin.")
+                raise RuntimeError("The previous model process is still running.")
             # A worker crash must not leave descendants holding GPU memory.
             try:
                 os.killpg(process.pid, signal.SIGTERM)
@@ -240,7 +240,7 @@ class ModelSession:
                         break
                     time.sleep(0.05)
                 else:
-                    raise RuntimeError("Alter Modellprozess oder Kindprozess läuft weiterhin.")
+                    raise RuntimeError("The previous model process or a child process is still running.")
             if process.stdin:
                 try:
                     process.stdin.close()
