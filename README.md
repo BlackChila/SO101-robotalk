@@ -24,10 +24,12 @@ MolmoAct2 installation. See [known setup gaps](docs/configuration.md#known-setup
 
 ## Demo video
 
-Full SO-101 demonstration, including pick-and-place: **2:14, 1080p, 26.8 MB**.
-Click the preview to open or download the compressed MP4.
+Full SO-101 demonstration, including pick-and-place: **2:14**.
+Play the web version below (**720p, 8.7 MB**).
 
-[![SO-101 pick-and-place demonstration](assets/demo/SO101-robotalk-preview.jpg)](assets/demo/SO101-robotalk.mp4?raw=true)
+https://github.com/user-attachments/assets/1c9bc67e-cf57-4142-bd8b-7698402a0ae5
+
+[Download the 1080p MP4 (26.8 MB)](https://github.com/BlackChila/SO101-robotalk/raw/refs/heads/main/assets/demo/SO101-robotalk.mp4).
 
 ## What you can do
 
