@@ -1,52 +1,93 @@
 {
-  "viewport": {
-    "width": 1440,
-    "height": 1000
+  "withoutSettings": {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "devicePixelRatio": 1,
+    "settingsOpen": false,
+    "settings": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "settingsToggle": {
+      "x": 1376,
+      "y": 14,
+      "width": 40,
+      "height": 40
+    },
+    "camerasVisible": false,
+    "media": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "columns": "minmax(0px, 16fr) minmax(0px, 16fr) minmax(0px, 9fr)",
+    "gap": "12px",
+    "overheadFrame": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "sideFrame": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "wristHidden": true,
+    "overflow": false
   },
-  "devicePixelRatio": 1,
-  "media": {
-    "x": 24,
-    "y": 447.5,
-    "width": 998,
-    "height": 379.453125
-  },
-  "columns": "380.094px 380.094px 213.812px",
-  "gap": "12px",
-  "overhead": {
-    "x": 25,
-    "y": 542.890625,
-    "width": 378.09375,
-    "height": 283.0625
-  },
-  "side": {
-    "x": 417.09375,
-    "y": 542.890625,
-    "width": 378.09375,
-    "height": 283.0625
-  },
-  "overheadFrame": {
-    "x": 24,
-    "y": 541.890625,
-    "width": 380.09375,
-    "height": 285.0625
-  },
-  "sideFrame": {
-    "x": 416.09375,
-    "y": 541.890625,
-    "width": 380.09375,
-    "height": 285.0625
-  },
-  "wristHidden": true,
-  "settings": {
-    "x": 1046,
-    "y": 71,
-    "width": 370,
-    "height": 929
-  },
-  "overflow": false,
-  "expected": {
-    "cameraFrameWidth": 380.0975609756098,
-    "cameraFrameHeight": 285.0731707317073
+  "withSettings": {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "devicePixelRatio": 1,
+    "settingsOpen": true,
+    "settings": {
+      "x": 1046,
+      "y": 71,
+      "width": 370,
+      "height": 929
+    },
+    "settingsToggle": {
+      "x": 1376,
+      "y": 14,
+      "width": 40,
+      "height": 40
+    },
+    "camerasVisible": true,
+    "media": {
+      "x": 24,
+      "y": 447.5,
+      "width": 998,
+      "height": 379.453125
+    },
+    "columns": "380.094px 380.094px 213.812px",
+    "gap": "12px",
+    "overheadFrame": {
+      "x": 24,
+      "y": 541.890625,
+      "width": 380.09375,
+      "height": 285.0625
+    },
+    "sideFrame": {
+      "x": 416.09375,
+      "y": 541.890625,
+      "width": 380.09375,
+      "height": 285.0625
+    },
+    "wristHidden": true,
+    "overflow": false,
+    "expected": {
+      "cameraFrameWidth": 380.0975609756098,
+      "cameraFrameHeight": 285.0731707317073
+    }
   },
   "errors": []
 }

@@ -1,10 +1,19 @@
-# Conversation UI preview
+# Conversation UI previews
 
-`conversation-camera-preview.png` is an illustrative composite rendered from the
-actual application at a 1440 × 1000 CSS-pixel viewport and device pixel ratio 1.
-The renderer uses the current application HTML, JavaScript and CSS unchanged,
-with simulated backend responses containing two archived camera captures.
-It is not a live hardware-session screenshot.
+Both screenshots are rendered from the current English application at a
+1440 × 1000 CSS-pixel viewport and device pixel ratio 1:
+
+| Screenshot | App state |
+| --- | --- |
+| `conversation-home.png` | Settings closed: the focused conversation homepage. Camera previews are hidden by the application in this state. |
+| `conversation-camera-preview.png` | Settings open: conversation controls, settings panel, overhead camera and Insta360 X5 side view. |
+
+The renderer uses the application HTML, JavaScript and CSS unchanged, with
+simulated backend responses. The settings view includes two archived camera
+captures. These are illustrative previews, not live hardware-session screenshots.
+The settings gear and the panel's close control were used normally between
+captures; no CSS or DOM layout overrides were applied. Geometry for both states
+is recorded in `layout-measurements.json`.
 
 ## Camera source and edits
 
