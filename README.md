@@ -6,6 +6,20 @@ It combines OpenAI Realtime or local speech, camera previews, face tracking,
 teleoperation, and optional MolmoAct2 robot tasks. The interface is in English;
 the spoken conversation language can be set separately to German or English.
 
+## Demo video
+
+Full SO-101 demonstration, including pick-and-place: **2:14**.
+
+### Play demo
+
+Play directly in your browser (**720p, 9.7 MB**):
+
+https://github.com/user-attachments/assets/19da021a-d9f2-432e-9729-7bec39585895
+
+[Download the 1080p MP4 (26.8 MB)](https://github.com/BlackChila/SO101-robotalk/raw/refs/heads/main/assets/demo/SO101-robotalk.mp4).
+
+## Project overview
+
 This repository continues the conversation functionality of
 [2026-PG-robotalk](https://github.com/BlackChila/2026-PG-robotalk). The separate
 control workspace and FLUX.3/Galaxea G0.5 experiments are omitted.
@@ -21,38 +35,6 @@ reports successful MolmoAct2 pick-and-place trials. General task reliability
 and all current motion paths have not been established. A fresh clone
 does not include models, Python environments, robot calibration, or the external
 MolmoAct2 installation. See [known setup gaps](docs/configuration.md#known-setup-gaps).
-
-## Interface
-
-The interface is in English. Click the **gear icon in the top-right corner** to
-open **Conversation settings**, with voice, language, tracking and robot controls.
-The camera previews appear alongside the settings. Each camera's own gear opens
-its camera controls. Click the top-right gear again or the panel's upward chevron
-to close the settings and return to the focused conversation view.
-
-**Conversation view — settings closed:**
-
-![English conversation homepage with settings closed](assets/screenshots/conversation-home.png)
-
-**Settings open — overhead camera and Insta360 X5 side view:**
-
-![English conversation settings with overhead and side camera previews](assets/screenshots/conversation-camera-preview.png)
-
-These illustrative previews use the actual app layout and archived camera stills
-edited to remove the loose cable; they are not live hardware captures.
-See [screenshot notes](assets/screenshots/README.md).
-
-## Demo video
-
-Full SO-101 demonstration, including pick-and-place: **2:14**.
-
-### Play demo
-
-Play directly in your browser (**720p, 9.7 MB**):
-
-https://github.com/user-attachments/assets/19da021a-d9f2-432e-9729-7bec39585895
-
-[Download the 1080p MP4 (26.8 MB)](https://github.com/BlackChila/SO101-robotalk/raw/refs/heads/main/assets/demo/SO101-robotalk.mp4).
 
 ## What you can do
 
@@ -189,6 +171,26 @@ Other features use the conversation lifecycle or explicit UI controls:
 
 See [speech modes and tool behavior](docs/speech-interface.md) and
 [UI controls](ui/README.md) for prerequisites and lifecycle details.
+
+## Interface
+
+The interface is in English. Click the **gear icon in the top-right corner** to
+open **Conversation settings**, with voice, language, tracking and robot controls.
+The camera previews appear alongside the settings. Each camera's own gear opens
+its camera controls. Click the top-right gear again or the panel's upward chevron
+to close the settings and return to the focused conversation view.
+
+**Conversation view — settings closed:**
+
+![English conversation homepage with settings closed](assets/screenshots/conversation-home.png)
+
+**Settings open — overhead camera and Insta360 X5 side view:**
+
+![English conversation settings with overhead and side camera previews](assets/screenshots/conversation-camera-preview.png)
+
+These illustrative previews use the actual app layout and archived camera stills
+edited to remove the loose cable; they are not live hardware captures.
+See [screenshot notes](assets/screenshots/README.md).
 
 ## Getting started on the reference Linux system
 
