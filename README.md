@@ -35,6 +35,13 @@ Conversation page with settings open:
 
 ![Conversation page with the settings panel open](assets/screenshots/conversation-settings.png)
 
+## Demo video
+
+Full SO-101 demonstration, including pick-and-place: **2:14, 1080p, 26.8 MB**.
+Click the preview to open or download the compressed MP4.
+
+[![SO-101 pick-and-place demonstration](assets/demo/SO101-robotalk-preview.jpg)](assets/demo/SO101-robotalk.mp4?raw=true)
+
 ## What you can do
 
 | Feature | What it uses |
