@@ -31,9 +31,9 @@ The high-resolution preview links to the browser player below.
 
 ### Play demo
 
-Play directly in your browser (**720p, 8.7 MB**):
+Play directly in your browser (**720p, 9.7 MB**):
 
-https://github.com/user-attachments/assets/1b9a116c-c55f-4739-a865-316ae2c05b2d
+https://github.com/user-attachments/assets/19da021a-d9f2-432e-9729-7bec39585895
 
 [Download the 1080p MP4 (26.8 MB)](https://github.com/BlackChila/SO101-robotalk/raw/refs/heads/main/assets/demo/SO101-robotalk.mp4).
 
