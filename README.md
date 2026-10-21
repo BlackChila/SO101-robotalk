@@ -25,17 +25,15 @@ MolmoAct2 installation. See [known setup gaps](docs/configuration.md#known-setup
 ## Demo video
 
 Full SO-101 demonstration, including pick-and-place: **2:14**.
-Click the full-resolution preview to open the **1080p MP4 (26.8 MB)**,
-with balanced speech levels.
+The high-resolution preview links to the browser player below.
 
-[![SO-101 robot placing a ball in a bowl — 1080p demo preview](assets/demo/SO101-robotalk-preview.jpg)](https://github.com/BlackChila/SO101-robotalk/raw/refs/heads/main/assets/demo/SO101-robotalk.mp4)
+[![SO-101 robot placing a ball in a bowl — jump to the video player](assets/demo/SO101-robotalk-preview.jpg)](#play-demo)
 
-<details>
-<summary>Play the smaller web version directly here (720p, 8.7 MB)</summary>
+### Play demo
+
+Play directly in your browser (**720p, 8.7 MB**):
 
 https://github.com/user-attachments/assets/1b9a116c-c55f-4739-a865-316ae2c05b2d
-
-</details>
 
 [Download the 1080p MP4 (26.8 MB)](https://github.com/BlackChila/SO101-robotalk/raw/refs/heads/main/assets/demo/SO101-robotalk.mp4).
 
