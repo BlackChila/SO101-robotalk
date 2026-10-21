@@ -48,6 +48,6 @@ test('call end during reset prevents stale readiness changes', async () => {
 test('old backend reset without controller restart is not accepted as success', async () => {
   const { context } = harness();
   context.fetch = async () => ({ status: 'reset', followerTorqueHolding: true });
-  await assert.rejects(context.resetConversationRobot('old-backend'), /Motorcontrollers/);
+  await assert.rejects(context.resetConversationRobot('old-backend'), /Motor controller restart/);
   assert.equal(context.conversationActive, true);
 });

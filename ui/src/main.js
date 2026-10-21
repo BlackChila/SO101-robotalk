@@ -21,48 +21,48 @@ const app = document.querySelector('#app');
 const cameraGear = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="m9 3-.6 2.4-2 .9L4.2 5.6 2 9.4l1.8 1.7v1.8L2 14.6l2.2 3.8 2.2-.7 2 .9L9 21h6l.6-2.4 2-.9 2.2.7 2.2-3.8-1.8-1.7v-1.8L22 9.4l-2.2-3.8-2.2.7-2-.9L15 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/></svg>`;
 function brightnessMarkup(index) {
   return `<div id="camera-brightness-${index}" class="camera-brightness">
-    <label for="camera-brightness-input-${index}"><span>Helligkeit</span><output for="camera-brightness-input-${index}">—</output></label>
+    <label for="camera-brightness-input-${index}"><span>Brightness</span><output for="camera-brightness-input-${index}">—</output></label>
     <input id="camera-brightness-input-${index}" type="range" min="0" max="1" step="1" value="0" disabled />
     <div class="insta360-controls__actions">
-      <button type="button" data-brightness-apply disabled>Helligkeit übernehmen</button>
-      <button type="button" data-brightness-reset disabled>Standardhelligkeit</button>
+      <button type="button" data-brightness-apply disabled>Apply brightness</button>
+      <button type="button" data-brightness-reset disabled>Default brightness</button>
     </div>
-    <p data-brightness-message role="status">Helligkeit der Kamera manuell einstellen.</p>
+    <p data-brightness-message role="status">Adjust camera brightness manually.</p>
   </div>`;
 }
 
 function exposureMarkup(index) {
   return `<div id="camera-exposure-${index}" class="camera-brightness" hidden>
-    <label for="camera-exposure-input-${index}"><span>Belichtung</span><output for="camera-exposure-input-${index}">—</output></label>
+    <label for="camera-exposure-input-${index}"><span>Exposure</span><output for="camera-exposure-input-${index}">—</output></label>
     <input id="camera-exposure-input-${index}" type="range" min="0" max="1" step="1" value="0" disabled />
     <div class="insta360-controls__actions">
-      <button type="button" data-exposure-apply disabled>Belichtung übernehmen</button>
-      <button type="button" data-exposure-reset disabled>Standardbelichtung</button>
+      <button type="button" data-exposure-apply disabled>Apply exposure</button>
+      <button type="button" data-exposure-reset disabled>Default exposure</button>
     </div>
-    <p data-exposure-message role="status">Belichtung der Kamera manuell einstellen.</p>
+    <p data-exposure-message role="status">Adjust camera exposure manually.</p>
   </div>`;
 }
 
 app.innerHTML = `
   <main class="shell">
     <header class="app-header">
-      <div class="app-brand"><strong>SO-101</strong><span>Dein Roboter. Ganz nah.</span></div>
+      <div class="app-brand"><strong>SO-101</strong><span>Your robot. Right here.</span></div>
       <div class="system-status" aria-live="polite">
-        <span class="system-status__item" id="asr-status"><span class="status-dot"></span><span>ASR wird geprüft</span></span>
-        <span class="system-status__item" id="robot-status"><span class="status-dot"></span><span>Roboterstatus wird geprüft</span></span>
-        <span class="system-status__item system-status__item--muted" id="voice-status"><span class="status-dot"></span><span>Stimme wird geprüft</span></span>
+        <span class="system-status__item" id="asr-status"><span class="status-dot"></span><span>Checking ASR</span></span>
+        <span class="system-status__item" id="robot-status"><span class="status-dot"></span><span>Checking robot status</span></span>
+        <span class="system-status__item system-status__item--muted" id="voice-status"><span class="status-dot"></span><span>Checking voice</span></span>
       </div>
       <button type="button" id="conversation-settings-toggle" class="conversation-settings-toggle"
-          aria-label="Gesprächseinstellungen" title="Gesprächseinstellungen"
+          aria-label="Conversation settings" title="Conversation settings"
           aria-controls="conversation-settings" aria-expanded="false">${cameraGear}</button>
     </header>
 
-    <section id="conversation-view" class="conversation-view" aria-label="Gespräch">
+    <section id="conversation-view" class="conversation-view" aria-label="Conversation">
       <div class="conversation-main">
-      <section class="conversation-stage" aria-label="Sprachgespräch">
+      <section class="conversation-stage" aria-label="Voice conversation">
       <div class="conversation-identity">
-      <h1 id="conversation-title">Gespräch mit <span class="conversation-voice-picker">
-        <select id="conversation-speaker" class="conversation-speaker" aria-label="Stimme auswählen"></select>
+      <h1 id="conversation-title">Conversation with <span class="conversation-voice-picker">
+        <select id="conversation-speaker" class="conversation-speaker" aria-label="Select voice"></select>
       </span></h1>
       </div>
       <div class="conversation-session">
@@ -74,69 +74,69 @@ app.innerHTML = `
       <div class="conversation-controls">
         <button type="button" id="conversation-call" class="conversation-call" disabled>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 10.5v1a6.5 6.5 0 0 0 13 0v-1M12 18v3.5M8.5 21.5h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          <span>Gespräch starten</span>
+          <span>Start conversation</span>
         </button>
 
       </div>
-      <p id="conversation-feedback" class="conversation-feedback" role="status" aria-live="polite">Modelle werden geprüft …</p>
+      <p id="conversation-feedback" class="conversation-feedback" role="status" aria-live="polite">Checking models …</p>
       </div>
-      <div class="conversation-task-status"><span>Auftragsstatus</span>
+      <div class="conversation-task-status"><span>Task status</span>
       <p id="conversation-task-feedback" class="conversation-feedback" role="status" aria-live="polite" hidden></p>
       <span class="conversation-task-empty">—</span></div>
       </section>
       <section id="conversation-cameras" class="conversation-cameras" aria-labelledby="conversation-cameras-heading" hidden>
-        <h2 id="conversation-cameras-heading">Aktuelle Kamerabilder</h2>
-        <p id="conversation-camera-status" class="conversation-camera-status" role="status">Kameras werden geladen …</p>
+        <h2 id="conversation-cameras-heading">Camera views</h2>
+        <p id="conversation-camera-status" class="conversation-camera-status" role="status">Loading cameras …</p>
         <div class="conversation-media">
           <div id="conversation-camera-status-host">      <div class="camera-status-row">
-        <p id="camera-status" class="model-choice__camera" role="status">Kameras werden vorbereitet …</p>
-        <button id="camera-reload" type="button" aria-label="Kameras neu laden" title="Kameras neu laden" disabled>
+        <p id="camera-status" class="model-choice__camera" role="status">Preparing cameras …</p>
+        <button id="camera-reload" type="button" aria-label="Reload cameras" title="Reload cameras" disabled>
           <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6.7M20 4v7h-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
 </div>
           <div id="conversation-camera-host">      <div id="live-camera-panel">
-      <div class="camera-views" aria-label="Aktuelle Kamerabilder">
-        <figure><figcaption id="camera-label-1" class="conversation-camera-label">Overhead-Kamera</figcaption><span class="camera-frame"><img id="camera-view-1" alt="Overhead-Kamera" /><button id="camera-settings-toggle-1" class="camera-settings-toggle" type="button" aria-label="Einstellungen für Kamera 1" title="Kameraeinstellungen" aria-controls="camera-settings-1" aria-expanded="false" hidden>${cameraGear}</button></span></figure>
-        <figure><figcaption id="camera-label-2" class="conversation-camera-label">Zweite Kamera</figcaption><span class="camera-frame"><img id="camera-view-2" alt="Zweite Kamera" /><button id="camera-settings-toggle-2" class="camera-settings-toggle" type="button" aria-label="Einstellungen für Kamera 2" title="Kameraeinstellungen" aria-controls="camera-settings-2" aria-expanded="false" hidden>${cameraGear}</button></span></figure>
-        <figure id="camera-observer-view" hidden><figcaption class="conversation-camera-label">Wrist-Kamera</figcaption><span class="camera-frame"><img id="camera-view-3" alt="Wrist-Kamera" /><span id="face-tracking" class="face-tracking" hidden><img data-face-image alt="Aufrechtes Wrist-Livebild mit Tracking-Markierung" hidden /></span><button id="camera-settings-toggle-3" class="camera-settings-toggle" type="button" aria-label="Einstellungen für Wrist-Kamera" title="Kameraeinstellungen" aria-controls="camera-settings-3" aria-expanded="false" hidden>${cameraGear}</button></span></figure>
+      <div class="camera-views" aria-label="Camera views">
+        <figure><figcaption id="camera-label-1" class="conversation-camera-label">Overhead camera</figcaption><span class="camera-frame"><img id="camera-view-1" alt="Overhead camera" /><button id="camera-settings-toggle-1" class="camera-settings-toggle" type="button" aria-label="Settings for camera 1" title="Camera settings" aria-controls="camera-settings-1" aria-expanded="false" hidden>${cameraGear}</button></span></figure>
+        <figure><figcaption id="camera-label-2" class="conversation-camera-label">Second camera</figcaption><span class="camera-frame"><img id="camera-view-2" alt="Second camera" /><button id="camera-settings-toggle-2" class="camera-settings-toggle" type="button" aria-label="Settings for camera 2" title="Camera settings" aria-controls="camera-settings-2" aria-expanded="false" hidden>${cameraGear}</button></span></figure>
+        <figure id="camera-observer-view" hidden><figcaption class="conversation-camera-label">Wrist camera</figcaption><span class="camera-frame"><img id="camera-view-3" alt="Wrist camera" /><span id="face-tracking" class="face-tracking" hidden><img data-face-image alt="Upright wrist preview with tracking overlay" hidden /></span><button id="camera-settings-toggle-3" class="camera-settings-toggle" type="button" aria-label="Settings for wrist camera" title="Camera settings" aria-controls="camera-settings-3" aria-expanded="false" hidden>${cameraGear}</button></span></figure>
       </div>
       <div class="camera-adjustments">
       <section id="camera-settings-1" class="insta360-controls camera-settings" aria-labelledby="camera-settings-heading-1" hidden>
-        <h2 id="camera-settings-heading-1">Kamera 1 · Einstellungen</h2>
+        <h2 id="camera-settings-heading-1">Camera 1 · Settings</h2>
         ${exposureMarkup(1)}
         ${brightnessMarkup(1)}
       </section>
       <section id="camera-settings-2" class="insta360-controls camera-settings" aria-labelledby="camera-settings-heading-2" hidden>
-        <h2 id="camera-settings-heading-2">Kamera 2 · Einstellungen</h2>
+        <h2 id="camera-settings-heading-2">Camera 2 · Settings</h2>
         ${exposureMarkup(2)}
         ${brightnessMarkup(2)}
       <section id="insta360-controls" class="insta360-controls" aria-labelledby="insta360-heading" hidden>
-        <h2 id="insta360-heading">Insta360 · Ausschnitt ausrichten</h2>
+        <h2 id="insta360-heading">Insta360 · Adjust view</h2>
         <div class="insta360-controls__sliders">
           <label for="insta360-yaw"><span>Horizontal</span><output for="insta360-yaw" data-value="yaw">65°</output>
             <input id="insta360-yaw" data-axis="yaw" type="range" min="-180" max="180" step="0.5" value="65" />
           </label>
-          <label for="insta360-pitch"><span>Vertikal / Neigung</span><output for="insta360-pitch" data-value="pitch">15°</output>
+          <label for="insta360-pitch"><span>Vertical / Tilt</span><output for="insta360-pitch" data-value="pitch">15°</output>
             <input id="insta360-pitch" data-axis="pitch" type="range" min="-90" max="90" step="0.5" value="15" />
           </label>
-          <label for="insta360-roll"><span>Drehung</span><output for="insta360-roll" data-value="roll">55°</output>
+          <label for="insta360-roll"><span>Rotation</span><output for="insta360-roll" data-value="roll">55°</output>
             <input id="insta360-roll" data-axis="roll" type="range" min="-180" max="180" step="0.5" value="55" />
           </label>
-          <label for="insta360-zoom"><span>Nähe / Zoom</span><output for="insta360-zoom" data-value="zoom">1×</output>
+          <label for="insta360-zoom"><span>Zoom</span><output for="insta360-zoom" data-value="zoom">1×</output>
             <input id="insta360-zoom" data-axis="zoom" type="range" min="1" max="2" step="0.05" value="1" />
           </label>
         </div>
-        <p>Der Zoom verengt den sichtbaren Ausschnitt. Die Ausgabe bleibt 960 × 720 (4:3).</p>
+        <p>Zoom narrows the visible area. Output remains 960 × 720 (4:3).</p>
         <div class="insta360-controls__actions">
-          <button type="button" data-apply disabled>Ausschnitt übernehmen</button>
-          <button type="button" data-reset>Standardwerte</button>
+          <button type="button" data-apply disabled>Apply view</button>
+          <button type="button" data-reset>Defaults</button>
         </div>
-        <p data-message role="status">Ausrichtung und Zoom einstellen; anschließend übernehmen.</p>
+        <p data-message role="status">Adjust orientation and zoom, then apply.</p>
       </section>
       </section>
       <section id="camera-settings-3" class="insta360-controls camera-settings" aria-labelledby="camera-settings-heading-3" hidden>
-        <h2 id="camera-settings-heading-3">Wrist-Kamera · Einstellungen</h2>
+        <h2 id="camera-settings-heading-3">Wrist camera · Einstellungen</h2>
         ${exposureMarkup(3)}
         ${brightnessMarkup(3)}
       </section>
@@ -146,56 +146,56 @@ app.innerHTML = `
       </section>
       </div>
       <section id="conversation-settings" class="conversation-settings" aria-labelledby="conversation-settings-heading" hidden>
-        <header class="conversation-settings-header"><h2 id="conversation-settings-heading">Gesprächseinstellungen</h2><button id="conversation-settings-close" type="button" aria-label="Gesprächseinstellungen schließen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="m6 15 6-6 6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button></header>
+        <header class="conversation-settings-header"><h2 id="conversation-settings-heading">Conversation settings</h2><button id="conversation-settings-close" type="button" aria-label="Close conversation settings"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="m6 15 6-6 6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button></header>
       <fieldset class="conversation-mode" id="conversation-mode">
-        <legend>Sprachmodus</legend>
+        <legend>Voice mode</legend>
         <label><input type="radio" name="conversation-mode" value="realtime" checked><span>ChatGPT Realtime</span></label>
-        <label><input type="radio" name="conversation-mode" value="local"><span>Lokal · Qwen</span></label>
-        <label><input type="radio" name="conversation-mode" value="piper"><span>Lokal · Piper</span></label>
+        <label><input type="radio" name="conversation-mode" value="local"><span>Local · Qwen</span></label>
+        <label><input type="radio" name="conversation-mode" value="piper"><span>Local · Piper</span></label>
       </fieldset>
       <fieldset class="conversation-mode conversation-language" id="conversation-language">
-        <legend>Gesprächssprache</legend>
-        <label><input type="radio" name="conversation-language" value="German" checked><span>Deutsch</span></label>
+        <legend>Conversation language</legend>
+        <label><input type="radio" name="conversation-language" value="German" checked><span>German</span></label>
         <label><input type="radio" name="conversation-language" value="English"><span>English</span></label>
-        <p>Gilt ab dem nächsten Gespräch, einschließlich der Begrüßung.</p>
+        <p>Applies from the next conversation, including the greeting.</p>
       </fieldset>
         <section class="conversation-setting-group">
-        <div class="section-heading"><h3>Suchstart</h3><span class="help-tip">
-          <button class="help-tip__trigger" type="button" aria-label="Hinweis zum Suchstart" aria-describedby="conversation-search-help" aria-expanded="false">i</button>
-          <span id="conversation-search-help" class="help-tip__popover" role="tooltip">Bestimmt die erste Suchrichtung der Basis beim nächsten Gesichtstracking-Start. Klicken auf „Suchstart“ wechselt zwischen rechts und links.</span>
+        <div class="section-heading"><h3>Search start</h3><span class="help-tip">
+          <button class="help-tip__trigger" type="button" aria-label="About search direction" aria-describedby="conversation-search-help" aria-expanded="false">i</button>
+          <span id="conversation-search-help" class="help-tip__popover" role="tooltip">Sets the base search direction the next time face tracking starts. Click to switch between right and left.</span>
         </span></div>
         <button type="button" id="face-search-direction" class="reset-button"
-          aria-description="Bestimmt die erste Suchrichtung der Basis beim nächsten Gesichtstracking-Start. Klicken wechselt zwischen rechts und links.">Suchstart: rechts →</button>
-        <p>Startrichtung der Basis beim nächsten Tracking-Start. Tracking startet nach dem Intro automatisch, sobald Realtime verbunden ist.</p>
+          aria-description="Sets the base search direction the next time face tracking starts. Click to switch between right and left.">Search start: right →</button>
+        <p>Initial base search direction for the next tracking start. Tracking starts automatically after the intro once Realtime is connected.</p>
         </section>
         <section class="conversation-setting-group">
-        <div class="section-heading"><h3>Roboter</h3><span class="help-tip">
-          <button class="help-tip__trigger" type="button" aria-label="Hinweis zur Robotersteuerung" aria-describedby="conversation-robot-help" aria-expanded="false">i</button>
-          <span id="conversation-robot-help" class="help-tip__popover" role="tooltip"><strong>Roboter zurücksetzen:</strong> Stoppt den Auftrag und fährt zur Endposition des Intros, ohne Intro oder Begrüßung zu wiederholen. Das Gespräch bleibt verbunden.<br><br><strong>Model Run stoppen:</strong> Stoppt den laufenden Roboterauftrag und hält die gemessene Position. Modell und Gespräch bleiben aktiv.<br><br><strong>Modell entladen:</strong> Gibt den Speicher des Robotikmodells frei. Gespräch und Kameras bleiben aktiv. Laufende Aufträge zuerst stoppen.<br><br><strong>Torque an:</strong> Aktiviert das Drehmoment und hält die aktuelle Position.<br><br><strong>Torque Aus:</strong> Deaktiviert das Drehmoment. Der Arm wird nicht mehr aktiv gehalten.</span>
+        <div class="section-heading"><h3>Robot</h3><span class="help-tip">
+          <button class="help-tip__trigger" type="button" aria-label="About robot controls" aria-describedby="conversation-robot-help" aria-expanded="false">i</button>
+          <span id="conversation-robot-help" class="help-tip__popover" role="tooltip"><strong>Reset robot:</strong> Stops the task and moves to the intro end pose without replaying the intro or greeting. The conversation stays connected.<br><br><strong>Stop model run:</strong> Stops the robot task and holds the measured position. The model and conversation stay active.<br><br><strong>Unload model:</strong> Frees the robot model memory. Conversation and cameras stay active. Stop active tasks first.<br><br><strong>Torque on:</strong> Enables motor torque and holds the current position.<br><br><strong>Torque off:</strong> Disables motor torque. The arm will no longer be actively held.</span>
         </span></div>
-        <button type="button" id="conversation-start-without-intro" class="reset-button" aria-describedby="conversation-reset-description" disabled>Roboter zurücksetzen</button>
-        <p id="conversation-reset-description" class="conversation-sr-only">Stoppt den aktuellen Auftrag und fährt direkt zur Endposition des Intros, ohne Intro oder Begrüßung. Das Gespräch bleibt verbunden.</p>
+        <button type="button" id="conversation-start-without-intro" class="reset-button" aria-describedby="conversation-reset-description" disabled>Reset robot</button>
+        <p id="conversation-reset-description" class="conversation-sr-only">Stops the current task and moves directly to the intro end pose without replaying the intro or greeting. The conversation stays connected.</p>
         <div class="conversation-run-actions">
           <button type="button" id="conversation-task-stop" class="task-stop" disabled
-            aria-description="Fordert den Stopp des laufenden Roboterauftrags an. Modell bleibt geladen und Gespräch bleibt verbunden; der Controller hält anschließend die gemessene Position.">Model Run stoppen</button>
+            aria-description="Requests a stop of the robot task. The model stays loaded and the conversation stays connected; the controller then holds the measured position.">Stop model run</button>
           <div id="conversation-model-unload-host">          <button id="model-unload" type="button" hidden
-            aria-description="Entlädt das Robotikmodell und gibt dessen Speicher frei. Gespräch und Kameras bleiben aktiv; laufende Aufträge zuerst stoppen.">Modell entladen</button></div>
+            aria-description="Unloads the robot model and frees its memory. Conversation and cameras stay active; stop active tasks first.">Unload model</button></div>
         </div>
         <div id="conversation-torque-host"><div id="torque-actions" class="torque__actions">
         <button id="torque-on-button" class="reset-button torque-button" type="button" disabled
-          aria-description="Schaltet das Motordrehmoment ein, damit der Arm seine aktuelle Position hält.">Torque an</button>
+          aria-description="Enables motor torque so the arm holds its current position.">Torque on</button>
         <button id="torque-off-button" class="reset-button torque-button" type="button" disabled
-          aria-description="Schaltet das Motordrehmoment aus. Der Arm wird danach nicht mehr aktiv gehalten.">Torque Aus</button>
+          aria-description="Disables motor torque. The arm will no longer be actively held.">Torque off</button>
       </div></div>
         <p id="conversation-torque-feedback" class="conversation-torque-feedback" role="status" aria-live="polite" hidden></p>
         <div class="conversation-teleop">
           <h4>Teleoperation</h4>
           <div id="conversation-teleop-host"><div id="teleop-controls">
       <div class="teleop__actions">
-        <button id="teleop-start-button" class="reset-button" type="button" aria-label="Teleoperation starten" disabled>Starten</button>
-        <button id="teleop-stop-button" class="reset-button" type="button" aria-label="Teleoperation stoppen" disabled>Stoppen</button>
+        <button id="teleop-start-button" class="reset-button" type="button" aria-label="Start teleoperation" disabled>Start</button>
+        <button id="teleop-stop-button" class="reset-button" type="button" aria-label="Stop teleoperation" disabled>Stop</button>
       </div>
-      <p id="teleop-status" class="teleop__status" role="status" aria-live="polite">Teleoperation wird geprüft …</p>
+      <p id="teleop-status" class="teleop__status" role="status" aria-live="polite">Checking teleoperation …</p>
       </div></div>
         </div>
         </section>
@@ -247,7 +247,7 @@ const cameraViews = document.querySelector('.camera-views');
 const wristObserverFigure = document.querySelector('#camera-observer-view');
 const modelUnload = document.querySelector('#model-unload');
 
-let status = { asrReady: false, asrLoading: false, robotConnected: false, modelSession: null, cameraModel: null, resetAvailable: false, resetRunning: false, resetHolding: false, returnAvailable: false, returnRunning: false, returnMessage: '', physicalReady: false, torqueAction: 'off', torqueAvailable: false, torqueRunning: false, torqueHolding: false, torqueMessage: '', teleoperation: { state: 'idle', occupied: false, available: false, blocker: '', message: 'Teleoperation im Backend noch nicht verfügbar.' }, taskRun: null, message: '' };
+let status = { asrReady: false, asrLoading: false, robotConnected: false, modelSession: null, cameraModel: null, resetAvailable: false, resetRunning: false, resetHolding: false, returnAvailable: false, returnRunning: false, returnMessage: '', physicalReady: false, torqueAction: 'off', torqueAvailable: false, torqueRunning: false, torqueHolding: false, torqueMessage: '', teleoperation: { state: 'idle', occupied: false, available: false, blocker: '', message: 'Teleoperation is not available in the backend yet.' }, taskRun: null, message: '' };
 let backendReady = false;
 let phase = 'idle';
 let teleopActionGeneration = 0;
@@ -289,9 +289,9 @@ function renderConversationSettings() {
   conversationCamerasSection.hidden = !inConversation || !conversationSettings.open;
   renderWristObserver();
   if (inConversation && !status.cameraModel && cameraOpening) {
-    conversationCameraStatus.textContent = 'Kameras werden geladen …';
+    conversationCameraStatus.textContent = 'Loading cameras …';
   } else if (inConversation && cameraPreviewModelId !== status.cameraModel) {
-    conversationCameraStatus.textContent = 'Aktuelle Kamerabilder werden geladen …';
+    conversationCameraStatus.textContent = 'Loading camera views …';
   }
 }
 
@@ -368,14 +368,14 @@ const localConversation = new LocalRobotConversation({
   engine: () => conversationMode === 'piper' ? 'piper' : 'qwen',
   language: () => conversationLanguage,
   speak: async (text, signal, voice) => {
-    setConversationPhase('speaking', `${conversationSpeakerName()} spricht …`);
+    setConversationPhase('speaking', `${conversationSpeakerName()} is speaking …`);
     await speakConversation(text, signal, voice);
   },
   onTool: (call, result) => {
     if (!result) {
-      setConversationPhase('thinking', call.name === 'look_at_scene' ? 'Ich schaue mich um …'
-        : call.name === 'get_project_info' ? 'Technische Informationen werden geladen …'
-        : call.name === 'get_creator_info' ? 'Informationen zur Projektperson werden geladen …' : 'Roboterauftrag wird übermittelt …');
+      setConversationPhase('thinking', call.name === 'look_at_scene' ? 'Looking around …'
+        : call.name === 'get_project_info' ? 'Loading project information …'
+        : call.name === 'get_creator_info' ? 'Loading creator information …' : 'Sending robot task …');
       if (call.name === 'reset_robot') {
         localTaskNotice = false;
         conversationRestartPending = true;
@@ -386,7 +386,7 @@ const localConversation = new LocalRobotConversation({
       if (call.name === 'reset_robot') conversationRestartPending = false;
       if (result.error) {
         conversationTaskFeedback.hidden = false;
-        conversationTaskFeedback.textContent = `Werkzeug fehlgeschlagen: ${result.error}`;
+        conversationTaskFeedback.textContent = `Tool failed: ${result.error}`;
       } else if (call.name === 'execute_molmo_task') {
         status.taskRun = result.taskRun;
         realtimeTaskActive = true;
@@ -394,10 +394,10 @@ const localConversation = new LocalRobotConversation({
         realtimeTaskLastState = result.taskRun?.state;
         conversationTaskFeedback.hidden = false;
         conversationTaskFeedback.textContent = result.status === 'updated'
-          ? 'MolmoAct2 übernimmt die neue Anweisung.' : 'MolmoAct2 bereitet den Auftrag vor.';
+          ? 'MolmoAct2 is taking over the new instruction.' : 'MolmoAct2 is preparing the task.';
       } else if (call.name === 'reset_robot') {
         if (result.status !== 'reset' || result.followerTorqueHolding !== true || result.controllerRestarted !== true) {
-          throw new Error('Neustart des Motorcontrollers wurde nicht bestätigt.');
+          throw new Error('Motor controller restart was not confirmed.');
         }
         realtimeTaskActive = false;
         realtimeTaskEverStarted = true;
@@ -405,7 +405,7 @@ const localConversation = new LocalRobotConversation({
         status.taskRun = null;
         realtimeSpeechGripperAvailable = result.speechGripperAvailable !== false;
         conversationIntroCompletedId = conversationMotionId;
-        conversationTaskFeedback.textContent = 'Roboter zurückgesetzt · bereit für einen neuen Auftrag.';
+        conversationTaskFeedback.textContent = 'Robot reset · ready for a new task.';
         faceTracking.rearmAfterReset(conversationMotionId);
       }
     }
@@ -460,7 +460,7 @@ function conversationSpeakerValue() {
 }
 function renderConversationSpeaker() {
   const name = conversationSpeakerName();
-  conversationTitle.setAttribute('aria-label', `Gespräch mit ${name}`);
+  conversationTitle.setAttribute('aria-label', `Conversation with ${name}`);
   voicePicker.render(activeConversationSpeakers(), conversationSpeakerIndex,
     conversationMode === 'realtime' && (conversationActive || conversationReturning || conversationEntryPending));
 }
@@ -469,13 +469,13 @@ function renderConversationMode() {
     conversationReturning || conversationEntryPending ||
     (conversationActive && ['intro', 'connecting'].includes(conversationPhase));
   conversationStartWithoutIntro.textContent = conversationRestartPending
-    ? 'Roboter wird zurückgesetzt …' : 'Roboter zurücksetzen';
+    ? 'Resetting robot …' : 'Reset robot';
   renderConversationTaskStop();
   const selectable = conversationMode !== 'realtime' ||
     !(conversationActive || conversationReturning || conversationEntryPending);
   conversationSpeaker.setAttribute('aria-description', selectable
-    ? 'Stimme wählen oder über dem Namen scrollen zum Wechseln'
-    : 'Die Realtime-Stimme bleibt während des Gesprächs fest');
+    ? 'Select a voice or scroll over its name to change it'
+    : 'The Realtime voice stays fixed during the conversation');
   conversationSpeaker.classList.toggle('conversation-speaker--fixed', !selectable);
   voicePicker.render(activeConversationSpeakers(), conversationSpeakerIndex, !selectable);
   conversationModeInputs.forEach((input) => {
@@ -508,8 +508,8 @@ function setConversationPhase(next, message) {
   conversationOrb.dataset.state = next;
   conversationFeedback.textContent = message;
   conversationCall.classList.toggle('is-active', conversationActive || conversationReturning || Boolean(conversationRecoveredId));
-  const buttonLabel = conversationReturning ? 'Rückfahrt stoppen'
-    : conversationActive || conversationRecoveredId ? 'Gespräch beenden' : 'Gespräch starten';
+  const buttonLabel = conversationReturning ? 'Stop return'
+    : conversationActive || conversationRecoveredId ? 'End conversation' : 'Start conversation';
   conversationCall.querySelector('span').textContent = buttonLabel;
   conversationCall.setAttribute('aria-label', buttonLabel);
   renderConversationMode();
@@ -536,9 +536,9 @@ conversationModeInputs.forEach((input) => input.addEventListener('change', async
   if (!conversationEntryReady) return;
   conversationCall.disabled = true;
   if (conversationMode !== 'realtime') {
-    setConversationPhase('idle', 'Lokale Sprachmodelle werden vorbereitet …');
+    setConversationPhase('idle', 'Preparing local speech models …');
     try { await prepareConversation(); }
-    catch (error) { setConversationPhase('error', `Lokaler Sprachmodus: ${error.message}`); return; }
+    catch (error) { setConversationPhase('error', `Local voice mode: ${error.message}`); return; }
   }
   await refreshConversationStatus();
 }));
@@ -586,9 +586,9 @@ async function refreshConversationStatus() {
     const introReady = result.introReady || voiceOnlyAvailable;
     const voiceReady = realtime ? result.realtimeReady : piper ? result.piperReady : result.ttsReady;
     setStatusItem(voiceStatus, realtime
-      ? voiceReady ? 'ChatGPT Realtime bereit' : 'ChatGPT API-Schlüssel fehlt'
-      : piper ? voiceReady ? 'Piper bereit' : 'Piper nicht bereit'
-        : voiceReady ? 'CustomVoice bereit' : 'CustomVoice nicht bereit', voiceReady ? 'ready' : 'muted');
+      ? voiceReady ? 'ChatGPT Realtime ready' : 'ChatGPT API key missing'
+      : piper ? voiceReady ? 'Piper ready' : 'Piper not ready'
+        : voiceReady ? 'CustomVoice ready' : 'CustomVoice not ready', voiceReady ? 'ready' : 'muted');
     if (!conversationActive && !conversationReturning) {
       const ownedSession = sessionStorage.getItem('so101-conversation-motion-id') === motion.sessionId;
       const completedSession = motion.occupied && !motion.active && motion.state === 'stopped' &&
@@ -611,26 +611,26 @@ async function refreshConversationStatus() {
       setConversationPhase('idle', voiceOnlyAvailable
         ? voiceReady && (realtime || result.dialogueReady)
           ? motion.error
-            ? 'Ohne SO-101 bereit · früherer Follower-Halt unbestätigt.'
-            : 'Ohne SO-101 bereit · nur Sprache.'
-          : realtime ? 'OPENAI_API_KEY fehlt auf dem UI-Server.'
-            : result.dialogueReason || 'Sprachmodelle werden vorbereitet …'
+            ? 'Ready without SO-101 · previous follower hold is unconfirmed.'
+            : 'Ready without SO-101 · voice only.'
+          : realtime ? 'OPENAI_API_KEY is missing on the UI server.'
+            : result.dialogueReason || 'Preparing speech models …'
         : motion.occupied
         ? motion.error || (completedSession
-          ? conversationRecoverySupported ? 'Bereit für die Rückfahrt.' : 'Rückfahrt nach Seitenwechsel erfordert ein Dienst-Update.'
-          : motion.active ? 'Ein Gespräch ist noch aktiv.' : 'Rückfahrt für diese Sitzung nicht verfügbar.')
+          ? conversationRecoverySupported ? 'Ready to return.' : 'Returning after a page change requires a service update.'
+          : motion.active ? 'A conversation is still active.' : 'Return is not available for this session.')
         : voiceReady && (realtime || result.dialogueReady) && introReady
-        ? 'Bereit für ein Gespräch'
-        : !result.introReady ? 'Intro-Aufnahme oder Bewegungscontroller fehlt.'
-          : realtime ? 'OPENAI_API_KEY fehlt auf dem UI-Server.'
-            : result.dialogueReason || 'Sprachmodelle werden vorbereitet …');
+        ? 'Ready for a conversation'
+        : !result.introReady ? 'Intro recording or motion controller is missing.'
+          : realtime ? 'OPENAI_API_KEY is missing on the UI server.'
+            : result.dialogueReason || 'Preparing speech models …');
     }
   } catch {
     conversationRecoveredId = null;
-    setStatusItem(voiceStatus, 'Sprachdienst nicht erreichbar', 'muted');
+    setStatusItem(voiceStatus, 'Speech service unavailable', 'muted');
     if (!conversationActive && !conversationReturning) {
       conversationCall.disabled = true;
-      setConversationPhase('idle', 'Gesprächsdienst nicht erreichbar.');
+      setConversationPhase('idle', 'Conversation service unavailable.');
     }
   }
 }
@@ -642,7 +642,7 @@ async function endRecoveredConversation() {
   try {
     const motion = await readJson(await fetch('/api/conversation/motion/status', { cache: 'no-store' }));
     if (motion.sessionId !== sessionId) {
-      throw new Error('Gesprächssitzung hat sich geändert.');
+      throw new Error('The conversation session has changed.');
     }
     conversationMotionId = sessionId;
     if (motion.active) {
@@ -657,20 +657,20 @@ async function endRecoveredConversation() {
       return;
     }
     if (motion.state !== 'stopped' || motion.followerTorqueHolding !== true) {
-      throw new Error(motion.error || 'Follower-Halt konnte nicht bestätigt werden.');
+      throw new Error(motion.error || 'Follower hold could not be confirmed.');
     }
     await postConversationMotion('return-stopped', { sessionId });
     conversationMotionId = sessionId;
     conversationRecoveredId = null;
     conversationReturning = true;
-    setConversationPhase('intro', 'Roboter fährt zur Anfangspose · hier stoppen');
+    setConversationPhase('intro', 'Robot is returning to the start pose · click to stop');
     conversationCall.disabled = false;
     const completed = await waitForConversationReturn(sessionId);
     const result = completed ? await stopConversationMotion(true) : await conversationReturnCancel;
     conversationReturning = false;
     setConversationPhase('idle', result?.returnedToStart
-      ? 'Anfangspose erreicht · Follower hält die Position.'
-      : 'Rückfahrt gestoppt · Follower hält die Position.');
+      ? 'Start pose reached · follower is holding position.'
+      : 'Return stopped · follower is holding position.');
     await refreshConversationStatus();
   } catch (error) {
     let stopped;
@@ -681,12 +681,12 @@ async function endRecoveredConversation() {
     conversationReturning = false;
     if (stopped?.followerTorqueHolding === true) {
       conversationRecoveredId = null;
-      setConversationPhase('idle', 'Gespräch beendet · Rückfahrt unterbrochen · Follower hält die Position.');
+      setConversationPhase('idle', 'Conversation ended · return interrupted · follower is holding position.');
       conversationCall.disabled = false;
       return;
     }
     conversationRecoveredId = conversationMotionId ? null : sessionId;
-    setConversationPhase('error', `Rückfahrt fehlgeschlagen: ${error.message}`);
+    setConversationPhase('error', `Return failed: ${error.message}`);
     conversationCall.disabled = Boolean(conversationMotionId);
   }
 }
@@ -697,11 +697,11 @@ async function releaseModelSession(signal) {
     const response = await fetch('/api/session', { method: 'DELETE', signal });
     if (response.status !== 409) return readJson(response);
     const detail = (await response.json().catch(() => ({}))).detail;
-    if (detail !== 'Ein Modelllauf läuft noch.' ||
+    if (detail !== 'A model run is still active.' ||
         ['running', 'stopping'].includes(status.taskRun?.state) || Date.now() >= deadline) {
-      throw new Error(detail || 'Modellsitzung ist noch belegt.');
+      throw new Error(detail || 'The model session is still busy.');
     }
-    if (activeView === 'conversation') setConversationPhase('idle', 'Modellvorgang wird abgeschlossen …');
+    if (activeView === 'conversation') setConversationPhase('idle', 'Completing model operation …');
     await new Promise((resolve) => setTimeout(resolve, 1500));
   }
 }
@@ -719,7 +719,7 @@ async function prepareConversation() {
     const result = await readJson(await fetch('/api/conversation/status', { cache: 'no-store' }));
     if (!result.dialogueReady || !(conversationMode === 'piper' ? result.piperReady : result.ttsReady) ||
         (result.followerPortAvailable !== false && !result.introReady)) {
-      throw new Error(result.dialogueReason || 'Gesprächsmodelle sind nicht bereit.');
+      throw new Error(result.dialogueReason || 'Conversation models are not ready.');
     }
     return;
   }
@@ -730,9 +730,9 @@ async function prepareConversation() {
 async function initializeConversation() {
   if (conversationActive || conversationReturning || conversationEntryReady || conversationEntryPending) return;
   conversationCall.disabled = true;
-  setConversationPhase('idle', 'Gespräch wird vorbereitet …');
+  setConversationPhase('idle', 'Preparing conversation …');
   if (phase !== 'idle') {
-    setConversationPhase('idle', 'Modellvorgang läuft noch. Bitte kurz warten.');
+    setConversationPhase('idle', 'A model operation is still active. Please wait.');
     return;
   }
   conversationEntryPending = true;
@@ -755,7 +755,7 @@ async function initializeConversation() {
     const motion = await readJson(await fetch('/api/conversation/motion/status', { cache: 'no-store' }));
     const connection = await readJson(await fetch('/api/conversation/status?mode=realtime', { cache: 'no-store' }));
     if (!motion.occupied || (connection.followerPortAvailable === false && !motion.active)) {
-      if (activeView === 'conversation') setConversationPhase('idle', 'Gesprächsmodelle werden geladen …');
+      if (activeView === 'conversation') setConversationPhase('idle', 'Loading conversation models …');
       await prepareConversation();
     }
     if (activeView === 'conversation') {
@@ -764,8 +764,8 @@ async function initializeConversation() {
     }
   } catch (error) {
     if (activeView === 'conversation') setConversationPhase('idle', controller.signal.aborted
-      ? 'Freigabe dauert zu lange. Bitte Verbindung prüfen; Start bleibt gesperrt.'
-      : `Gespräch noch gesperrt: ${error.message}`);
+      ? 'Preparation timed out. Check the connection; start remains disabled.'
+      : `Conversation is still blocked: ${error.message}`);
   } finally {
     clearTimeout(timeout);
     conversationEntryPending = false;
@@ -817,7 +817,7 @@ async function stopConversationMotion(returnToStart = false) {
 async function waitForConversationIntro(generation, { quiet = false } = {}) {
   while (conversationActive && generation === conversationGeneration) {
     const state = await readJson(await fetch('/api/conversation/motion/status', { cache: 'no-store' }));
-    if (state.sessionId !== conversationMotionId) throw new Error('Intro-Sitzung wurde ersetzt.');
+    if (state.sessionId !== conversationMotionId) throw new Error('The intro session was replaced.');
     if (state.state === 'holding') {
       conversationIntroCompletedId = state.sessionId;
       // This is the final auto-start gate for Realtime face tracking. Refresh
@@ -826,11 +826,11 @@ async function waitForConversationIntro(generation, { quiet = false } = {}) {
       return;
     }
     if (state.state === 'failed' || state.state === 'stopped') {
-      throw new Error(state.error || 'Intro-Bewegung wurde abgebrochen.');
+      throw new Error(state.error || 'Intro motion was aborted.');
     }
     if (!quiet) setConversationPhase('intro', state.state === 'positioning'
-      ? 'Roboter fährt zur Anfangspose …' : state.state === 'intro'
-        ? 'Intro läuft …' : 'Intro wird vorbereitet …');
+      ? 'Robot is moving to the start pose …' : state.state === 'intro'
+        ? 'Intro in progress …' : 'Preparing intro …');
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
 }
@@ -838,11 +838,11 @@ async function waitForConversationIntro(generation, { quiet = false } = {}) {
 async function waitForConversationReturn(sessionId) {
   const deadline = performance.now() + 90_000;
   while (conversationReturning && conversationMotionId === sessionId) {
-    if (performance.now() > deadline) throw new Error('Rückfahrt hat das Zeitlimit überschritten.');
+    if (performance.now() > deadline) throw new Error('Return timed out.');
     const state = await readJson(await fetch('/api/conversation/motion/status', { cache: 'no-store' }));
     if (!conversationReturning) return false;
-    if (state.sessionId !== sessionId) throw new Error('Rückfahrt-Sitzung wurde ersetzt.');
-    if (state.state === 'failed') throw new Error(state.error || 'Rückfahrt wurde abgebrochen.');
+    if (state.sessionId !== sessionId) throw new Error('The return session was replaced.');
+    if (state.state === 'failed') throw new Error(state.error || 'Return was aborted.');
     if (state.state === 'stopped' && !state.active) return true;
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
@@ -878,7 +878,7 @@ async function speakConversation(text, signal, voice = conversationSpeakerValue(
   let levelRequest = Promise.resolve();
   const finished = new Promise((resolve, reject) => {
     player.addEventListener('ended', resolve, { once: true });
-    player.addEventListener('error', () => reject(new Error('Audiowiedergabe fehlgeschlagen.')), { once: true });
+    player.addEventListener('error', () => reject(new Error('Audio playback failed.')), { once: true });
     signal.addEventListener('abort', () => { player.pause(); reject(signal.reason); }, { once: true });
   });
   try {
@@ -893,14 +893,14 @@ async function speakConversation(text, signal, voice = conversationSpeakerValue(
       levelRequest = postConversationMotion('level', { sessionId: conversationMotionId, level })
         .catch((error) => {
           if (!conversationActive) return;
-          setConversationPhase('error', `Greifer: ${error.message}`);
+          setConversationPhase('error', `Gripper: ${error.message}`);
           void endConversation(true);
         })
         .finally(() => { levelPending = false; });
     }, 60);
     await finished;
   } catch (error) {
-    if (error.name === 'NotAllowedError') throw new Error('Audiowiedergabe wurde vom Browser blockiert.');
+    if (error.name === 'NotAllowedError') throw new Error('Audio playback was blocked by the browser.');
     throw error;
   } finally {
     stopWaveform();
@@ -910,7 +910,7 @@ async function speakConversation(text, signal, voice = conversationSpeakerValue(
       try { await postConversationMotion('speech-end', { sessionId: conversationMotionId }); }
       catch (error) {
         if (conversationActive) {
-          setConversationPhase('error', `Greifer: ${error.message}`);
+          setConversationPhase('error', `Gripper: ${error.message}`);
           void endConversation(true);
         }
       }
@@ -926,7 +926,7 @@ function stopRealtimeSession() {
   conversationWaveform.stop();
   void localConversation.close().catch(error => {
     conversationTaskFeedback.hidden = false;
-    conversationTaskFeedback.textContent = `Lokales Gespräch konnte nicht geschlossen werden: ${error.message}`;
+    conversationTaskFeedback.textContent = `Could not close the local conversation: ${error.message}`;
   });
   realtimeWebSearch.stop();
   realtimeTaskFeedback.reset();
@@ -949,7 +949,7 @@ function stopRealtimeSession() {
 }
 
 function sendRealtimeEvent(payload) {
-  if (realtimeChannel?.readyState !== 'open') throw new Error('Realtime-Datenkanal ist geschlossen.');
+  if (realtimeChannel?.readyState !== 'open') throw new Error('The Realtime data channel is closed.');
   if (payload.type === 'response.create') console.info('[Realtime]', JSON.stringify({
     stage: 'response_requested', purpose: payload.response?.metadata?.purpose || 'dialogue',
   }));
@@ -984,7 +984,7 @@ async function handleRealtimeTaskCall(call, generation) {
     if (['get_project_info', 'get_creator_info'].includes(call.name)) {
       const creatorInfo = call.name === 'get_creator_info';
       if (!args || Array.isArray(args) || typeof args !== 'object' || Object.keys(args).length) {
-        throw new Error('Hintergrundinformationen benötigen keine Argumente.');
+        throw new Error('Background information does not need arguments.');
       }
       result = await readJson(await fetch(`/api/conversation/realtime/${creatorInfo ? 'creator-info' : 'project-info'}`, {
         method: 'POST', headers: { 'X-SO101-Conversation': 'realtime-tool' },
@@ -995,7 +995,7 @@ async function handleRealtimeTaskCall(call, generation) {
         type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result),
       } };
       if (new TextEncoder().encode(JSON.stringify(message)).length > (realtimePeer?.sctp?.maxMessageSize || 65_536)) {
-        throw new Error('Hintergrundinformationen überschreiten das Nachrichtenlimit der Verbindung.');
+        throw new Error('Background information exceeds the connection message limit.');
       }
       sendRealtimeEvent(message);
       if (creatorInfo) realtimeTaskFeedback.creatorInfoReady();
@@ -1009,7 +1009,7 @@ async function handleRealtimeTaskCall(call, generation) {
         type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result),
       } };
       if (new TextEncoder().encode(JSON.stringify(message)).length > (realtimePeer?.sctp?.maxMessageSize || 65_536)) {
-        throw new Error('Suchergebnis überschreitet das Nachrichtenlimit der Verbindung.');
+        throw new Error('Search result exceeds the connection message limit.');
       }
       sendRealtimeEvent(message);
       realtimeTaskFeedback.searchReady();
@@ -1024,19 +1024,19 @@ async function handleRealtimeTaskCall(call, generation) {
       const messages = sceneMessages(snapshot, call.call_id);
       const maxBytes = realtimePeer?.sctp?.maxMessageSize || 65_536;
       if (messages.some(message => new TextEncoder().encode(JSON.stringify(message)).length > maxBytes)) {
-        throw new Error('Kamerabild überschreitet das Nachrichtenlimit der Verbindung.');
+        throw new Error('Camera image exceeds the connection message limit.');
       }
       for (const message of messages) sendRealtimeEvent(message);
       realtimeTaskFeedback.sceneReady();
       return;
     }
     if (!conversationMotionId || conversationVoiceOnly) {
-      throw new Error('Der Gesprächsarm ist nicht für eine Aufgabe bereit.');
+      throw new Error('The conversation arm is not ready for a task.');
     }
     if (call.name === 'reset_robot') {
       result = await resetConversationRobot(call.call_id);
     } else {
-      if (conversationRestartPending) throw new Error('Roboter wird zurückgesetzt; danach neuen Auftrag geben.');
+      if (conversationRestartPending) throw new Error('The robot is resetting; give a new task afterwards.');
       result = await readJson(await fetch('/api/conversation/task/start', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SO101-Conversation': 'realtime-tool' },
         body: JSON.stringify({ sessionId: conversationMotionId, callId: call.call_id, instruction: args.instruction }),
@@ -1047,7 +1047,7 @@ async function handleRealtimeTaskCall(call, generation) {
       realtimeTaskLastState = result.taskRun?.state || 'loading';
       realtimeTaskEverStarted = true;
       const message = result.status === 'updated'
-        ? 'MolmoAct2 übernimmt die neue Anweisung.' : 'MolmoAct2 bereitet den Auftrag vor.';
+        ? 'MolmoAct2 is taking over the new instruction.' : 'MolmoAct2 is preparing the task.';
       setConversationPhase('thinking', message);
       realtimeTaskFeedback.update(result.status, message);
     }
@@ -1055,7 +1055,7 @@ async function handleRealtimeTaskCall(call, generation) {
     result = { error: error.message };
     if (!['look_at_scene', 'search_web', 'get_project_info', 'get_creator_info'].includes(call.name) && conversationActive && generation === conversationGeneration) {
       setConversationPhase('error', `MolmoAct2: ${error.message}`);
-      realtimeTaskFeedback.update('failed', `Auftrag nicht gestartet: ${error.message}`);
+      realtimeTaskFeedback.update('failed', `Task did not start: ${error.message}`);
     }
   }
   if (!conversationActive || generation !== conversationGeneration) return;
@@ -1076,10 +1076,10 @@ async function handleRealtimeTaskCall(call, generation) {
     return;
   }
   if (call.name === 'reset_robot' && !result.error) {
-    realtimeTaskFeedback.update('reset', 'Intro-Endhaltung eingenommen. Follower hält die gemessene Position; Gespräch und Modell bleiben aktiv.', { speak: true });
+    realtimeTaskFeedback.update('reset', 'Intro end pose reached. The follower holds the measured position; conversation and model stay active.', { speak: true });
   }
   // Ordinary movement was already announced; speak again only on failure.
-  if (result.error) realtimeTaskFeedback.update('failed', `Auftrag nicht gestartet: ${result.error}`, { speak: true });
+  if (result.error) realtimeTaskFeedback.update('failed', `Task did not start: ${result.error}`, { speak: true });
 }
 
 async function pollRealtimeTask(generation) {
@@ -1107,18 +1107,18 @@ async function pollRealtimeTask(generation) {
     realtimeTaskActive = false;
     realtimeSpeechGripperAvailable = motion.speechGripperAvailable !== false;
     if (motion.state !== 'holding' || task.taskRun?.state === 'failed') {
-      setConversationPhase('error', `MolmoAct2: ${task.taskRun?.message || motion.error || 'Follower-Halt prüfen.'}`);
+      setConversationPhase('error', `MolmoAct2: ${task.taskRun?.message || motion.error || 'Check follower hold.'}`);
       realtimeTaskFeedback.update('failed',
-        `MolmoAct2-Auftrag fehlgeschlagen: ${task.taskRun?.message || motion.error || 'Follower-Halt prüfen.'}`,
+        `MolmoAct2 task failed: ${task.taskRun?.message || motion.error || 'Check follower hold.'}`,
         { speak: true });
       return;
     }
-    realtimeTaskFeedback.update('stopped', 'MolmoAct2-Run gestoppt · Modell bleibt geladen · Gespräch läuft weiter. Ein Aufgabenerfolg wurde nicht geprüft.');
+    realtimeTaskFeedback.update('stopped', 'MolmoAct2 run stopped · model stays loaded · conversation continues. Task success was not verified.');
     setConversationPhase('listening', realtimeSpeechGripperAvailable
-      ? 'MolmoAct2 angehalten · ich höre zu …'
-      : 'MolmoAct2 angehalten · Greifer bleibt in seiner Position.');
+      ? 'MolmoAct2 stopped · listening …'
+      : 'MolmoAct2 stopped · gripper stays in position.');
   } catch (error) {
-    setConversationPhase('error', `Aufgabenstatus: ${error.message}`);
+    setConversationPhase('error', `Task status: ${error.message}`);
   }
 }
 
@@ -1143,8 +1143,8 @@ async function pollLocalTask(generation) {
     conversationTaskFeedback.hidden = false;
     conversationTaskFeedback.textContent = realtimeTaskActive ? `MolmoAct2: ${task.taskRun.message}`
       : task.taskRun?.state === 'failed' || motion.state !== 'holding'
-        ? `MolmoAct2: ${task.taskRun?.message || motion.error || 'Follower-Halt prüfen.'}`
-        : 'MolmoAct2 angehalten · Gespräch läuft weiter. Ein Aufgabenerfolg wurde nicht geprüft.';
+        ? `MolmoAct2: ${task.taskRun?.message || motion.error || 'Check follower hold.'}`
+        : 'MolmoAct2 stopped · conversation continues. Task success was not verified.';
     if (finished) {
       localTaskNotice = true;
       if (conversationPhase === 'listening' && !conversationSpeechDetected && !conversationRequest) {
@@ -1154,7 +1154,7 @@ async function pollLocalTask(generation) {
     }
     render();
   } catch (error) {
-    conversationTaskFeedback.textContent = `Aufgabenstatus: ${error.message}`;
+    conversationTaskFeedback.textContent = `Task status: ${error.message}`;
   } finally { localTaskPollPending = false; }
 }
 
@@ -1183,7 +1183,7 @@ function handleRealtimeEvent(event, generation) {
   switch (data.type) {
     case 'input_audio_buffer.speech_started':
       realtimeTaskFeedback.userSpeechStarted();
-      setConversationPhase('listening', 'Ich höre dich …');
+      setConversationPhase('listening', 'Listening to you …');
       break;
     case 'input_audio_buffer.committed':
       realtimeTaskFeedback.userTurnCommitted(data.item_id);
@@ -1196,23 +1196,23 @@ function handleRealtimeEvent(event, generation) {
       void logRealtimeAudioStats(data.type);
       realtimeTaskFeedback.playbackStarted(data.response_id);
       realtimeSpeaking = true;
-      setConversationPhase('speaking', `${conversationSpeakerName()} spricht …`);
+      setConversationPhase('speaking', `${conversationSpeakerName()} is speaking …`);
       break;
     case 'output_audio_buffer.stopped':
     case 'output_audio_buffer.cleared':
       void logRealtimeAudioStats(data.type);
       realtimeTaskFeedback.playbackFinished(data.response_id);
       realtimeSpeaking = realtimeTaskFeedback.playing.size > 0;
-      if (!realtimeSpeaking) setConversationPhase('listening', 'Ich höre zu …');
+      if (!realtimeSpeaking) setConversationPhase('listening', 'Listening …');
       break;
     case 'response.output_audio.delta':
     case 'response.output_audio_transcript.delta':
       realtimeSpeaking = true;
-      setConversationPhase('speaking', `${conversationSpeakerName()} spricht …`);
+      setConversationPhase('speaking', `${conversationSpeakerName()} is speaking …`);
       break;
     case 'response.done':
       if (data.response?.status === 'failed') {
-        setConversationPhase('error', `ChatGPT Realtime: ${data.response.status_details?.error?.message || 'Antwort fehlgeschlagen.'}`);
+        setConversationPhase('error', `ChatGPT Realtime: ${data.response.status_details?.error?.message || 'Response failed.'}`);
         void endConversation(true);
         break;
       }
@@ -1229,7 +1229,7 @@ function handleRealtimeEvent(event, generation) {
           realtimeTaskCalls.add(extra.call_id);
           sendRealtimeEvent({ type: 'conversation.item.create', item: {
             type: 'function_call_output', call_id: extra.call_id,
-            output: JSON.stringify({ error: 'Nur eine Roboteraktion pro Gesprächsschritt. Nach dem Reset auf einen neuen Auftrag warten.' }),
+            output: JSON.stringify({ error: 'Only one robot action per conversation turn. After reset, wait for a new task.' }),
           } });
         }
         // Read-only observations can accompany the selected motor operation.
@@ -1247,10 +1247,10 @@ function handleRealtimeEvent(event, generation) {
       // Generation completion can precede audible playback completion. The
       // remote audio envelope owns mouth movement, independently of these events.
       realtimeSpeaking = realtimeTaskFeedback.playing.size > 0;
-      if (!realtimeSpeaking) setConversationPhase('listening', 'Ich höre zu …');
+      if (!realtimeSpeaking) setConversationPhase('listening', 'Listening …');
       break;
     case 'error':
-      setConversationPhase('error', `ChatGPT Realtime: ${data.error?.message || 'Sitzungsfehler'}`);
+      setConversationPhase('error', `ChatGPT Realtime: ${data.error?.message || 'Session error'}`);
       void endConversation(true);
       break;
     default:
@@ -1278,7 +1278,7 @@ async function startRealtimeSession(media, generation) {
     if (realtimeAudioElement?.srcObject?.getAudioTracks().includes(event.track)) return;
     event.track.addEventListener('ended', () => {
       if (!conversationActive || generation !== conversationGeneration) return;
-      setConversationPhase('error', 'ChatGPT Audioverbindung wurde beendet.');
+      setConversationPhase('error', 'The ChatGPT audio connection ended.');
       void endConversation(true);
     });
     const audio = document.createElement('audio');
@@ -1298,8 +1298,8 @@ async function startRealtimeSession(media, generation) {
     void audio.play().catch((error) => {
       if (!conversationActive || generation !== conversationGeneration) return;
       const message = error.name === 'NotAllowedError'
-        ? 'Der Browser blockiert die Audioausgabe. Bitte Audiowiedergabe für diese Seite erlauben.'
-        : `Audioausgabe fehlgeschlagen: ${error.message}`;
+        ? 'The browser blocked audio output. Allow audio playback for this page.'
+        : `Audio output failed: ${error.message}`;
       setConversationPhase('error', message);
       void endConversation(true);
     });
@@ -1326,7 +1326,7 @@ async function startRealtimeSession(media, generation) {
       },
       onError: (error) => {
         if (!conversationActive || generation !== conversationGeneration) return;
-        setConversationPhase('error', `Greifer: ${error.message}`);
+        setConversationPhase('error', `Gripper: ${error.message}`);
         void endConversation(true);
       },
     });
@@ -1343,7 +1343,7 @@ async function startRealtimeSession(media, generation) {
   channel.onopen = () => {
     if (!opened && conversationActive && generation === conversationGeneration) {
       opened = true;
-      setConversationPhase('listening', realtimeMolmoPreloadWarning || 'Ich höre zu …');
+      setConversationPhase('listening', realtimeMolmoPreloadWarning || 'Listening …');
       realtimeTaskPoll = setInterval(() => { void pollRealtimeTask(generation); }, 750);
       sendRealtimeEvent({ type: 'conversation.item.create', item: {
         type: 'message', role: 'system', content: [{ type: 'input_text', text: `${SPOKEN_BREVITY} ${languageInstruction(conversationLanguage)}` }],
@@ -1353,7 +1353,7 @@ async function startRealtimeSession(media, generation) {
   };
   channel.onclose = () => {
     if (!conversationActive || generation !== conversationGeneration) return;
-    setConversationPhase('error', 'ChatGPT Realtime-Verbindung wurde beendet.');
+    setConversationPhase('error', 'The ChatGPT Realtime connection ended.');
     void endConversation(true);
   };
   channel.onmessage = (event) => handleRealtimeEvent(event, generation);
@@ -1365,7 +1365,7 @@ async function startRealtimeSession(media, generation) {
       'Content-Type': 'application/sdp',
     }, body: offer.sdp, signal: AbortSignal.timeout(30_000),
   });
-  if (!sdpResponse.ok) throw new Error(`ChatGPT Realtime-Verbindung fehlgeschlagen (HTTP ${sdpResponse.status}).`);
+  if (!sdpResponse.ok) throw new Error(`ChatGPT Realtime connection failed (HTTP ${sdpResponse.status}).`);
   const sdp = await sdpResponse.text();
   if (!conversationActive || generation !== conversationGeneration) return;
   await peer.setRemoteDescription({ type: 'answer', sdp });
@@ -1383,7 +1383,7 @@ async function answerConversation(text, generation) {
     if (conversationActive && generation === conversationGeneration) listenForConversation(generation);
   } catch (error) {
     if (request.signal.aborted || !conversationActive || generation !== conversationGeneration) return;
-    setConversationPhase('error', `Lokales Gespräch: ${error.message}`);
+    setConversationPhase('error', `Local conversation: ${error.message}`);
     void endConversation(true);
   } finally {
     if (conversationRequest === request) conversationRequest = null;
@@ -1394,7 +1394,7 @@ async function transcribeConversation(blob, generation) {
   if (!conversationActive || generation !== conversationGeneration) return;
   const request = new AbortController();
   conversationRequest = request;
-  setConversationPhase('processing', 'Ich habe dich gehört …');
+  setConversationPhase('processing', 'Processing your speech …');
   try {
     const form = new FormData();
     const extension = blob.type.includes('mp4') ? 'mp4' : blob.type.includes('ogg') ? 'ogg' : 'webm';
@@ -1407,7 +1407,7 @@ async function transcribeConversation(blob, generation) {
     else listenForConversation(generation);
   } catch (error) {
     if (request.signal.aborted || !conversationActive || generation !== conversationGeneration) return;
-    setConversationPhase('error', `Transkription fehlgeschlagen: ${error.message}`);
+    setConversationPhase('error', `Transcription failed: ${error.message}`);
     endConversation(true);
   } finally {
     if (conversationRequest === request) conversationRequest = null;
@@ -1441,10 +1441,10 @@ function listenForConversation(generation, quietWarning = false) {
     localTaskNotice = false;
     const request = new AbortController();
     conversationRequest = request;
-    setConversationPhase('thinking', 'Roboterstatus wird zusammengefasst …');
+    setConversationPhase('thinking', 'Summarizing robot status …');
     void localConversation.feedback(request.signal).catch(error => {
       if (!request.signal.aborted && conversationActive && generation === conversationGeneration) {
-        conversationTaskFeedback.textContent += ` Sprachausgabe des Status fehlgeschlagen: ${error.message}`;
+        conversationTaskFeedback.textContent += ` Status speech failed: ${error.message}`;
       }
     }).finally(() => {
       if (conversationRequest === request) conversationRequest = null;
@@ -1460,8 +1460,8 @@ function listenForConversation(generation, quietWarning = false) {
   recorder.addEventListener('dataavailable', (event) => { if (event.data.size) conversationChunks.push(event.data); });
   recorder.start();
   setConversationPhase('listening', quietWarning
-    ? 'Noch keine Sprache erkannt. Falls du gesprochen hast, prüfe das Mikrofon.'
-    : 'Ich höre zu …');
+    ? 'No speech detected yet. If you spoke, check the microphone.'
+    : 'Listening …');
   const levels = new Float32Array(conversationAnalyser.fftSize);
   let noiseFloor = 0.002;
   let speechFrames = 0;
@@ -1483,7 +1483,7 @@ function listenForConversation(generation, quietWarning = false) {
     if (speechFrames >= 3 && !speechStarted) {
       speechStarted = now;
       conversationSpeechDetected = true;
-      setConversationPhase('listening', 'Ich höre dich …');
+      setConversationPhase('listening', 'Listening to you …');
     }
     if (speech && speechStarted) lastSpeech = now;
     if (speechStarted && now - speechStarted > 300 && now - lastSpeech > 1050) stopConversationRecording(true);
@@ -1501,7 +1501,7 @@ function cancelConversationReturn() {
   if (!conversationReturning || !conversationMotionId) return conversationStopping;
   conversationReturning = false;
   conversationCall.disabled = true;
-  setConversationPhase('intro', 'Rückfahrt wird gestoppt …');
+  setConversationPhase('intro', 'Stopping return …');
   conversationReturnCancel = stopConversationMotion(false)
     .then((result) => ({ ...result, cancelled: true }));
   return conversationReturnCancel;
@@ -1529,13 +1529,13 @@ function endConversation(keepMessage = false) {
   conversationReturnCancel = null;
   setConversationPhase(keepMessage ? 'error' : 'intro', keepMessage
     ? conversationFeedback.textContent : returnToStart
-      ? 'Gespräch beendet · Roboter fährt zur Anfangspose …' : 'Gespräch wird beendet …');
+      ? 'Conversation ended · robot is returning to the start pose …' : 'Ending conversation …');
   conversationCall.disabled = true;
   conversationStopping = (async () => {
     await faceTracking.command('stop');
     const currentMotion = hadMotion
       ? await readJson(await fetch('/api/conversation/motion/status', { cache: 'no-store' })) : null;
-    if (currentMotion && currentMotion.sessionId !== conversationMotionId) throw new Error('Gesprächsbewegung wurde ersetzt.');
+    if (currentMotion && currentMotion.sessionId !== conversationMotionId) throw new Error('Conversation motion was replaced.');
     if (realtimeTaskActive || currentMotion?.state === 'task') {
       const stopResponse = await fetch('/api/task/stop', {
         method: 'POST', headers: { 'X-SO101-Stop': 'operator-click' },
@@ -1546,20 +1546,20 @@ function endConversation(keepMessage = false) {
         const task = await readJson(await fetch('/api/task/status', { cache: 'no-store' }));
         if (!task.taskRun || !['loading', 'running', 'stopping'].includes(task.taskRun.state)) break;
         await new Promise((resolve) => setTimeout(resolve, 250));
-        if (attempt === 119) throw new Error('MolmoAct2-Stopp wurde nicht bestätigt.');
+        if (attempt === 119) throw new Error('MolmoAct2 stop was not confirmed.');
       }
       realtimeTaskActive = false;
     }
     if (!returnToStart) return stopConversationMotion(false);
     const sessionId = conversationMotionId;
     const state = await readJson(await fetch('/api/conversation/motion/status', { cache: 'no-store' }));
-    if (state.sessionId !== sessionId) throw new Error('Gesprächsbewegung wurde ersetzt.');
+    if (state.sessionId !== sessionId) throw new Error('Conversation motion was replaced.');
     // An explicit end also interrupts positioning/the intro and returns home.
     // Never silently downgrade the operator's return request to a stationary stop.
     await postConversationMotion(state.state === 'stopped' && state.returnAvailable
       ? 'return-stopped' : 'return', { sessionId });
     conversationCall.disabled = false;
-    setConversationPhase('intro', 'Roboter fährt zur Anfangspose · hier stoppen');
+    setConversationPhase('intro', 'Robot is returning to the start pose · click to stop');
     const completed = await waitForConversationReturn(sessionId);
     if (!completed) return conversationReturnCancel;
     conversationReturning = false;
@@ -1567,11 +1567,11 @@ function endConversation(keepMessage = false) {
     return stopConversationMotion(true);
   })().then((result) => {
     if (keepMessage) return;
-    setConversationPhase('idle', voiceOnly ? 'Gespräch beendet · ohne Roboter.'
-      : !hadMotion ? 'Gespräch beendet.' : result?.returnedToStart
-      ? 'Anfangspose erreicht · Follower hält die Position.'
-      : result?.cancelled ? 'Rückfahrt gestoppt · Follower hält die Position.'
-        : 'Gespräch beendet · Follower hält die Position.');
+    setConversationPhase('idle', voiceOnly ? 'Conversation ended · no robot connected.'
+      : !hadMotion ? 'Conversation ended.' : result?.returnedToStart
+      ? 'Start pose reached · follower is holding position.'
+      : result?.cancelled ? 'Return stopped · follower is holding position.'
+        : 'Conversation ended · follower is holding position.');
   }).catch(async (error) => {
     conversationReturning = false;
     let stopped;
@@ -1581,10 +1581,10 @@ function endConversation(keepMessage = false) {
     }
     if (!keepMessage && stopped?.followerTorqueHolding === true) {
       conversationRecoveredId = null;
-      setConversationPhase('idle', 'Gespräch beendet · Rückfahrt unterbrochen · Follower hält die Position.');
+      setConversationPhase('idle', 'Conversation ended · return interrupted · follower is holding position.');
       return;
     }
-    setConversationPhase('error', `Follower-Halt prüfen: ${error.message}`);
+    setConversationPhase('error', `Check follower hold: ${error.message}`);
   }).finally(() => {
     // Keep the controller alive while stopping a policy and preparing the return.
     clearInterval(conversationHeartbeat);
@@ -1624,7 +1624,7 @@ conversationStartWithoutIntro.addEventListener('click', () => {
     if (conversationMode !== 'realtime' && conversationActive) listenForConversation(conversationGeneration);
   })().catch(error => {
     if (conversationMode !== 'realtime' && conversationActive) {
-      setConversationPhase('error', `Roboter-Reset: ${error.message}`);
+      setConversationPhase('error', `Robot reset: ${error.message}`);
       void endConversation(true);
     }
   });
@@ -1632,9 +1632,9 @@ conversationStartWithoutIntro.addEventListener('click', () => {
 
 async function resetConversationRobot(callId, origin = 'realtime-tool') {
   if (!conversationActive || !conversationMotionId || conversationVoiceOnly || conversationReturning) {
-    throw new Error('Reset erfordert ein aktives Robotergespräch.');
+    throw new Error('Reset requires an active robot conversation.');
   }
-  if (conversationRestartPending) throw new Error('Roboter wird bereits zurückgesetzt.');
+  if (conversationRestartPending) throw new Error('The robot is already resetting.');
   const sessionId = conversationMotionId;
   const generation = conversationGeneration;
   conversationRestartPending = true;
@@ -1644,31 +1644,31 @@ async function resetConversationRobot(callId, origin = 'realtime-tool') {
   conversationIntroCompletedId = null;
   renderConversationMode();
   try {
-    setConversationPhase('thinking', 'Roboter fährt zur Intro-Endposition · Gespräch bleibt verbunden …');
+    setConversationPhase('thinking', 'Robot is moving to the intro end pose · conversation stays connected …');
     const result = await readJson(await fetch('/api/conversation/robot/reset', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SO101-Conversation': origin },
       body: JSON.stringify({ sessionId, callId }),
     }));
     if (!conversationActive || generation !== conversationGeneration || sessionId !== conversationMotionId) return result;
-    if (result.status !== 'reset' || result.followerTorqueHolding !== true || result.controllerRestarted !== true) throw new Error('Neustart des Motorcontrollers wurde nicht bestätigt.');
+    if (result.status !== 'reset' || result.followerTorqueHolding !== true || result.controllerRestarted !== true) throw new Error('Motor controller restart was not confirmed.');
     realtimeTaskActive = false;
     realtimeTaskEverStarted = true;
     realtimeTaskLastState = 'stopped';
     status.taskRun = null;
     realtimeSpeechGripperAvailable = result.speechGripperAvailable !== false;
     conversationIntroCompletedId = sessionId;
-    setConversationPhase('listening', 'Intro-Endhaltung · Follower hält die gemessene Position · bereit für einen neuen Auftrag.');
+    setConversationPhase('listening', 'Intro end pose · follower holds the measured position · ready for a new task.');
     if (['realtime', 'piper', 'local'].includes(conversationMode) && activeView === 'conversation') {
       faceTracking.rearmAfterReset(sessionId);
       render();
     }
     if (origin === 'operator-reset' && conversationMode === 'realtime') {
-      realtimeTaskFeedback.update('reset', 'Roboter zurückgesetzt. Follower hält die Intro-Endhaltung; bereit für einen neuen Auftrag.');
+      realtimeTaskFeedback.update('reset', 'Robot reset. The follower holds the intro end pose; ready for a new task.');
     }
     return result;
   } catch (error) {
     if (conversationActive && generation === conversationGeneration) {
-      setConversationPhase('error', `Roboter-Reset: ${error.message}`);
+      setConversationPhase('error', `Robot reset: ${error.message}`);
     }
     throw error;
   } finally {
@@ -1681,7 +1681,7 @@ async function greetLocalConversation(generation) {
   const greeting = new AbortController();
   conversationRequest = greeting;
   try {
-    setConversationPhase('thinking', `${conversationSpeakerName()} begrüßt dich …`);
+    setConversationPhase('thinking', `${conversationSpeakerName()} is greeting you …`);
     await localConversation.greet(greeting.signal);
   } finally {
     if (conversationRequest === greeting) conversationRequest = null;
@@ -1700,42 +1700,42 @@ async function startConversation({ skipIntro = false } = {}) {
   realtimeTaskFeedback.reset();
   realtimeTaskLastState = null;
   conversationTaskFeedback.hidden = false;
-  conversationTaskFeedback.textContent = 'Noch kein Roboterauftrag gestartet.';
+  conversationTaskFeedback.textContent = 'No robot task has started yet.';
   realtimeTaskActive = false;
   realtimeTaskEverStarted = false;
   realtimeMolmoPreloadWarning = '';
   realtimeSpeechGripperAvailable = true;
   conversationVoiceOnly = false;
   const generation = ++conversationGeneration;
-  setConversationPhase('connecting', 'Mikrofon wird verbunden …');
+  setConversationPhase('connecting', 'Connecting microphone …');
   try {
     conversationAudioContext = new AudioContext();
     await conversationAudioContext.resume();
-    if (conversationAudioContext.state !== 'running') throw new Error('Audioeingang ist im Browser angehalten.');
+    if (conversationAudioContext.state !== 'running') throw new Error('Audio input is suspended in the browser.');
     if (!conversationActive || generation !== conversationGeneration) return;
     if (conversationMode === 'realtime') {
       const readiness = await readJson(await fetch('/api/conversation/status?mode=realtime', { cache: 'no-store' }));
       if (conversationLanguage === 'English' && !readiness.conversationLanguages?.includes('English')) {
-        throw new Error('Englische Gespräche erfordern einen Backend-Neustart.');
+        throw new Error('English conversations require a backend restart.');
       }
       if (readiness.followerPortAvailable !== false && readiness.realtimeTaskProtocol !== 4) {
-        throw new Error('Der laufende Server unterstützt die aktuelle Robotersteuerung noch nicht. Bitte Backend neu starten.');
+        throw new Error('The running server does not support the current robot controls. Restart the backend.');
       }
       if (!conversationActive || generation !== conversationGeneration) return;
     }
     if (conversationMode !== 'realtime') {
       const readiness = await readJson(await fetch(`/api/conversation/status?mode=${conversationMode}`, { cache: 'no-store' }));
       if (conversationLanguage === 'English' && !readiness.conversationLanguages?.includes('English')) {
-        throw new Error('Englische Gespräche erfordern einen Backend-Neustart.');
+        throw new Error('English conversations require a backend restart.');
       }
-      if (readiness.localTaskProtocol !== 1 || (conversationMode === 'local' && !readiness.localTtsEngines?.includes('qwen'))) throw new Error('Lokale Roboterwerkzeuge erfordern ein Backend-Update.');
+      if (readiness.localTaskProtocol !== 1 || (conversationMode === 'local' && !readiness.localTtsEngines?.includes('qwen'))) throw new Error('Local robot tools require a backend update.');
     }
     // All conversation voices use live audio. Never play the recorded intro
     // welcome; local TTS generates its own opening once the intro is held.
     const started = await postConversationMotion('start', { skipIntro, realtimeIntro: true });
     conversationVoiceOnly = started.status === 'voice-only';
     conversationMotionId = conversationVoiceOnly ? null : started.sessionId;
-    if (!conversationVoiceOnly && !conversationMotionId) throw new Error('Gesprächsbewegung hat keine Sitzungs-ID geliefert.');
+    if (!conversationVoiceOnly && !conversationMotionId) throw new Error('Conversation motion did not return a session ID.');
     if (conversationMotionId) sessionStorage.setItem('so101-conversation-motion-id', conversationMotionId);
     if (!conversationActive || generation !== conversationGeneration) {
       await stopConversationMotion();
@@ -1746,13 +1746,13 @@ async function startConversation({ skipIntro = false } = {}) {
         void postConversationMotion('heartbeat', { sessionId: conversationMotionId })
         .catch((error) => {
           if (!conversationActive) return;
-          setConversationPhase('error', `Follower-Verbindung: ${error.message}`);
+          setConversationPhase('error', `Follower connection: ${error.message}`);
           endConversation(true);
         });
       }, 5000);
       if (conversationMode !== 'realtime') await waitForConversationIntro(generation);
     } else {
-      setConversationPhase('connecting', 'Ohne SO-101 · Mikrofon wird geöffnet …');
+      setConversationPhase('connecting', 'No SO-101 · opening microphone …');
     }
     if (!conversationActive || generation !== conversationGeneration) return;
     const media = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
@@ -1763,11 +1763,11 @@ async function startConversation({ skipIntro = false } = {}) {
     conversationStream = media;
     media.getAudioTracks().forEach((track) => track.addEventListener('ended', () => {
       if (!conversationActive || generation !== conversationGeneration) return;
-      setConversationPhase('error', 'Mikrofonverbindung wurde getrennt.');
+      setConversationPhase('error', 'The microphone connection was lost.');
       endConversation(true);
     }));
     if (conversationMode === 'realtime') {
-      setConversationPhase('connecting', 'ChatGPT Realtime wird verbunden …');
+      setConversationPhase('connecting', 'Connecting ChatGPT Realtime …');
       await startRealtimeSession(media, generation);
       if (!conversationActive || generation !== conversationGeneration) return;
       if (conversationMotionId) {
@@ -1776,7 +1776,7 @@ async function startConversation({ skipIntro = false } = {}) {
         // Voice is already connected. Optional policy warmup must not delay it.
         if (!realtimeTaskActive) void preloadRealtimeMolmo(conversationMotionId).then(preload => {
           if (!conversationActive || generation !== conversationGeneration) return;
-          if (!preload.ready) realtimeMolmoPreloadWarning = `MolmoAct2 wurde nicht vorgeladen: ${preload.reason}`;
+          if (!preload.ready) realtimeMolmoPreloadWarning = `MolmoAct2 was not preloaded: ${preload.reason}`;
         });
       }
     } else {
@@ -1793,7 +1793,7 @@ async function startConversation({ skipIntro = false } = {}) {
       realtimeTaskPoll = setInterval(() => { void pollLocalTask(generation); }, 750);
       if (conversationMotionId) void preloadRealtimeMolmo(conversationMotionId).then(preload => {
         if (!conversationActive || generation !== conversationGeneration || preload.ready) return;
-        conversationTaskFeedback.textContent = `MolmoAct2 wurde nicht vorgeladen: ${preload.reason}`;
+        conversationTaskFeedback.textContent = `MolmoAct2 was not preloaded: ${preload.reason}`;
       });
       render();
       await greetLocalConversation(generation);
@@ -1802,7 +1802,7 @@ async function startConversation({ skipIntro = false } = {}) {
     }
   } catch (error) {
     if (!conversationActive || generation !== conversationGeneration) return;
-    setConversationPhase('error', `Gespräch nicht verfügbar: ${error.message}`);
+    setConversationPhase('error', `Conversation unavailable: ${error.message}`);
     void endConversation(true);
   }
 }
@@ -1817,11 +1817,11 @@ async function stopConversationTask() {
     }));
     status.taskRun = result.taskRun;
     conversationTaskFeedback.hidden = false;
-    conversationTaskFeedback.textContent = 'Run wird gestoppt · Modell bleibt geladen, Gespräch bleibt verbunden.';
+    conversationTaskFeedback.textContent = 'Stopping run · model stays loaded, conversation stays connected.';
     await refreshStatus();
   } catch (error) {
     conversationTaskFeedback.hidden = false;
-    conversationTaskFeedback.textContent = `Model Run Stopp: ${error.message}`;
+    conversationTaskFeedback.textContent = `Model run stop: ${error.message}`;
   } finally {
     conversationTaskStopPending = false;
     renderConversationTaskStop();
@@ -1837,7 +1837,7 @@ async function stopLocalConversationTask() {
   // Revoke pending dialogue without delaying the physical stop behind it.
   const cancelled = localConversation.cancelTurn().catch(error => {
     conversationTaskFeedback.hidden = false;
-    conversationTaskFeedback.textContent = `Lokaler Gesprächsschritt: ${error.message}`;
+    conversationTaskFeedback.textContent = `Local conversation turn: ${error.message}`;
   });
   await stopConversationTask();
   await cancelled;
@@ -1857,14 +1857,14 @@ function showCameraFrames(payload, modelId) {
     ['cam0', 'cam1'].includes(sources.cam0) && sources.cam0 === sources.cam1;
   const conversationOnly = modelId === 'conversation';
   const roles = ['cam0', 'cam1'];
-  let labels = ['Overhead-Kamera', 'Wrist-Kamera'];
-  if (conversationOnly) labels = ['Overhead-Kamera', 'Insta360 X5'];
+  let labels = ['Overhead camera', 'Wrist camera'];
+  if (conversationOnly) labels = ['Overhead camera', 'Insta360 X5'];
   if (modelId === 'molmoact2') {
     labels = sources.cam0 === 'cam0' && singleMolmoCamera
-      ? ['Overhead-Kamera', 'Overhead-Ersatzbild für Insta360 X5']
+      ? ['Overhead camera', 'Overhead fallback for Insta360 X5']
       : singleMolmoCamera
-        ? ['Insta360-X5-Ersatzbild für Overhead', 'Insta360 X5']
-        : ['Overhead-Kamera', 'Insta360 X5'];
+        ? ['Insta360 X5 fallback for Overhead', 'Insta360 X5']
+        : ['Overhead camera', 'Insta360 X5'];
   }
   roles.forEach((role, index) => {
     const frame = (conversationOnly ? payload.observerPreviews : payload.previews)?.[role];
@@ -1882,18 +1882,18 @@ function showCameraFrames(payload, modelId) {
     document.querySelector(`#camera-label-${index + 1}`).textContent = labels[index];
     brightnessControls[index].receive(payload.cameraBrightness?.[source], source);
     exposureControls[index].receive(payload.cameraExposure?.[source], source);
-    const cameraLabel = source === 'cam1' ? 'Insta360' : source === 'wrist' ? 'Wrist-Kamera' : 'Overhead-Kamera';
-    cameraSettings[index].button.setAttribute('aria-label', `Einstellungen für ${cameraLabel} · Kamera ${index + 1}`);
-    document.querySelector(`#camera-settings-heading-${index + 1}`).textContent = `${cameraLabel} · Einstellungen`;
+    const cameraLabel = source === 'cam1' ? 'Insta360' : source === 'wrist' ? 'Wrist camera' : 'Overhead camera';
+    cameraSettings[index].button.setAttribute('aria-label', `Settings for ${cameraLabel} · Camera ${index + 1}`);
+    document.querySelector(`#camera-settings-heading-${index + 1}`).textContent = `${cameraLabel} · Settings`;
   });
   showWristObserver(payload, modelId);
   cameraStatus.textContent = conversationOnly
-    ? (Object.keys(payload.observerPreviews || {}).length ? 'Live-Kameras' : 'Keine Kamera verfügbar. Kameraverbindungen prüfen.')
+    ? (Object.keys(payload.observerPreviews || {}).length ? 'Live cameras' : 'No cameras available. Check camera connections.')
     : singleMolmoCamera
-    ? `MolmoAct2: Ein-Kamera-Modus · ${sources.cam0 === 'cam0' ? 'Overhead' : 'Insta360 X5'} liefert cam0 und cam1 (gleiches frisches Bild)`
+    ? `MolmoAct2: single-camera mode · ${sources.cam0 === 'cam0' ? 'Overhead' : 'Insta360 X5'} supplies cam0 and cam1 (the same fresh image)`
     : `${modelId.toUpperCase()}: frische Livebilder · ${payload.geometry}`;
   if (activeView === 'conversation' && ['molmoact2', 'conversation'].includes(modelId) && payload.observerStatus?.wrist && !wristObserverReady) {
-    cameraStatus.textContent += ` · ${payload.observerStatus.wrist.message || 'Wrist-Bild derzeit nicht bereit.'}`;
+    cameraStatus.textContent += ` · ${payload.observerStatus.wrist.message || 'Wrist image is not ready.'}`;
   }
   conversationCameraStatus.textContent = cameraStatus.textContent;
   insta360Controls.receive(['molmoact2', 'conversation'].includes(modelId) &&
@@ -1934,23 +1934,23 @@ async function applyCameraBrightness(role, value, controls) {
   const generation = ++cameraGeneration;
   cameraOpening = true;
   render();
-  controls.message.textContent = 'Helligkeit wird aktualisiert …';
+  controls.message.textContent = 'Updating brightness …';
   try {
     const response = await fetch(`/api/cameras/${modelId}/${role}/brightness`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value }),
     });
-    if (response.status === 404) throw new Error('Diese Funktion benötigt einen Neustart des aktualisierten Backends.');
+    if (response.status === 404) throw new Error('This feature requires a restart of the updated backend.');
     const payload = await readJson(response);
     if (generation !== cameraGeneration || modelId !== currentCameraModel()) return;
     showCameraFrames(payload, modelId);
     brightnessControls.forEach((control) => {
       if (control.role === role) control.receive(payload.cameraBrightness?.[role], role, true);
     });
-    setFeedback('Kamerahelligkeit gespeichert.');
+    setFeedback('Camera brightness saved.');
   } catch (error) {
     if (generation === cameraGeneration) {
-      controls.message.textContent = `Helligkeit nicht gespeichert: ${error.message}`;
-      setFeedback(`Kamerahelligkeit: ${error.message}`, 'error');
+      controls.message.textContent = `Brightness was not saved: ${error.message}`;
+      setFeedback(`Camera brightness: ${error.message}`, 'error');
     }
   } finally {
     if (generation === cameraGeneration) cameraOpening = false;
@@ -1964,23 +1964,23 @@ async function applyCameraExposure(role, value, controls) {
   const generation = ++cameraGeneration;
   cameraOpening = true;
   render();
-  controls.message.textContent = 'Belichtung wird aktualisiert …';
+  controls.message.textContent = 'Updating exposure …';
   try {
     const response = await fetch(`/api/cameras/${modelId}/${role}/exposure`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value }),
     });
-    if (response.status === 404) throw new Error('Diese Funktion benötigt einen Neustart des aktualisierten Backends.');
+    if (response.status === 404) throw new Error('This feature requires a restart of the updated backend.');
     const payload = await readJson(response);
     if (generation !== cameraGeneration || modelId !== currentCameraModel()) return;
     showCameraFrames(payload, modelId);
     exposureControls.forEach((control) => {
       if (control.role === role) control.receive(payload.cameraExposure?.[role], role, true);
     });
-    setFeedback('Kamerabelichtung gespeichert.');
+    setFeedback('Camera exposure saved.');
   } catch (error) {
     if (generation === cameraGeneration) {
-      controls.message.textContent = `Belichtung nicht gespeichert: ${error.message}`;
-      setFeedback(`Kamerabelichtung: ${error.message}`, 'error');
+      controls.message.textContent = `Exposure was not saved: ${error.message}`;
+      setFeedback(`Camera exposure: ${error.message}`, 'error');
     }
   } finally {
     if (generation === cameraGeneration) cameraOpening = false;
@@ -1994,20 +1994,20 @@ async function applyInsta360View(view) {
   const generation = ++cameraGeneration;
   cameraOpening = true;
   render();
-  insta360Controls.message.textContent = 'Insta360-Ausschnitt wird aktualisiert …';
+  insta360Controls.message.textContent = 'Updating Insta360 view …';
   try {
     const response = await fetch(`/api/cameras/${modelId}/insta360-view`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(view),
     });
-    if (response.status === 404) throw new Error('Diese Funktion benötigt einen Neustart des aktualisierten Backends.');
+    if (response.status === 404) throw new Error('This feature requires a restart of the updated backend.');
     const payload = await readJson(response);
     if (generation !== cameraGeneration || modelId !== currentCameraModel()) return;
     showCameraFrames(payload, modelId);
     insta360Controls.receive(payload.insta360View, true);
-    setFeedback('Insta360-Ausschnitt gespeichert.');
+    setFeedback('Insta360 view saved.');
   } catch (error) {
     if (generation === cameraGeneration) {
-      insta360Controls.message.textContent = `Ausschnitt nicht gespeichert: ${error.message}`;
+      insta360Controls.message.textContent = `View was not saved: ${error.message}`;
       setFeedback(`Insta360: ${error.message}`, 'error');
     }
   } finally {
@@ -2025,7 +2025,7 @@ async function ensureConversationCameras() {
   const modelId = status.modelSession === 'molmoact2' ? 'molmoact2' : 'conversation';
   const generation = cameraGeneration;
   cameraOpening = true;
-  conversationCameraStatus.textContent = 'Kameras werden geladen …';
+  conversationCameraStatus.textContent = 'Loading cameras …';
   render();
   try {
     const payload = await readJson(await fetch(`/api/cameras/${modelId}/select`, { method: 'POST' }));
@@ -2035,7 +2035,7 @@ async function ensureConversationCameras() {
     cameraReady = true;
   } catch (error) {
     if (generation === cameraGeneration && activeView === 'conversation') {
-      conversationCameraStatus.textContent = `Kameras nicht bereit: ${error.message}`;
+      conversationCameraStatus.textContent = `Cameras not ready: ${error.message}`;
     }
   } finally {
     cameraOpening = false;
@@ -2063,7 +2063,7 @@ async function refreshVisibleCameraPreview() {
   } catch (error) {
     if (generation === cameraGeneration && modelId === currentCameraModel()) {
       cameraReady = false;
-      cameraStatus.textContent = `Kamera nicht bereit: ${error.message}`;
+      cameraStatus.textContent = `Camera not ready: ${error.message}`;
       conversationCameraStatus.textContent = cameraStatus.textContent;
       render();
     }
@@ -2114,11 +2114,11 @@ function render() {
   exposureControls.forEach((controls) => controls.render(cameraSettingsBusy));
   insta360Controls.render(camerasAvailable && ['molmoact2', 'conversation'].includes(currentCameraModel()), cameraSettingsBusy);
   setStatusItem(asrStatus,
-    status.asrReady ? 'ASR bereit' : status.asrLoading ? 'Qwen wird geladen' : 'ASR nicht bereit',
+    status.asrReady ? 'ASR ready' : status.asrLoading ? 'Loading Qwen' : 'ASR not ready',
     status.asrReady ? 'ready' : 'muted');
   const resetInProgress = phase === 'resetting' || status.resetRunning;
   setStatusItem(robotStatus,
-    resetInProgress ? 'Reset läuft' : teleop.occupied ? 'Teleoperation läuft' : taskRunning ? 'Aufgabe läuft' : status.resetHolding ? 'Position gehalten' : status.torqueHolding ? 'Torque an' : status.robotConnected ? 'Roboter verbunden' : 'Roboter getrennt',
+    resetInProgress ? 'Reset in progress' : teleop.occupied ? 'Teleoperation in progress' : taskRunning ? 'Task in progress' : status.resetHolding ? 'Holding position' : status.torqueHolding ? 'Torque on' : status.robotConnected ? 'Robot connected' : 'Robot disconnected',
     resetInProgress || status.robotConnected ? 'ready' : 'muted');
   cameraReload.disabled = !backendReady || cameraOpening || conversationEntryPending || phase !== 'idle' ||
     taskRunning || taskStopping || status.resetRunning ||
@@ -2127,16 +2127,16 @@ function render() {
   modelUnload.disabled = !status.modelSession || phase !== 'idle' ||
     ['loading', 'running', 'stopping'].includes(status.taskRun?.state) || status.resetRunning ||
     conversationEntryPending || conversationReturning || conversationRestartPending;
-  modelUnload.textContent = phase === 'unloading' ? 'Modell wird entladen …' : 'Modell entladen';
+  modelUnload.textContent = phase === 'unloading' ? 'Unloading model …' : 'Unload model';
   const canStopPhysicalRun = status.resetHolding && status.torqueAction === 'off' && (phase === 'inferring' || taskRunning);
   torqueOnButton.disabled = !status.torqueAvailable || teleop.occupied || status.torqueAction !== 'on' || status.resetRunning || status.torqueRunning || phase !== 'idle';
   torqueOffButton.disabled = !backendReady || status.resetRunning || status.torqueRunning ||
     (phase !== 'idle' && !canStopPhysicalRun && !teleop.occupied);
   teleopStartButton.disabled = !backendReady || !teleop.available || phase !== 'idle';
   teleopStopButton.disabled = !backendReady || !teleop.occupied || phase === 'teleop-stopping';
-  teleopStatus.textContent = teleop.occupied ? teleop.message || 'Teleoperation läuft.'
-    : teleop.state === 'failed' ? `Letzter Lauf: ${teleop.message || 'Fehler; Hardware prüfen.'}`
-    : teleop.blocker || teleop.message || 'Teleoperation bereit.';
+  teleopStatus.textContent = teleop.occupied ? teleop.message || 'Teleoperation in progress.'
+    : teleop.state === 'failed' ? `Last run: ${teleop.message || 'Error; check the hardware.'}`
+    : teleop.blocker || teleop.message || 'Teleoperation ready.';
   torqueOnButton.classList.toggle('torque-button--holding', status.resetHolding || status.torqueHolding);
 }
 
@@ -2169,14 +2169,14 @@ async function refreshStatus() {
       torqueHolding: Boolean(next.torqueHolding),
       torqueMessage: String(next.torqueMessage || ''),
       teleoperation: next.teleoperation && typeof next.teleoperation === 'object'
-        ? next.teleoperation : { state: 'idle', occupied: false, available: false, blocker: '', message: 'Teleoperation im Backend noch nicht verfügbar.' },
+        ? next.teleoperation : { state: 'idle', occupied: false, available: false, blocker: '', message: 'Teleoperation is not available in the backend yet.' },
       taskRun: next.taskRun && typeof next.taskRun === 'object' ? next.taskRun : null,
       message: String(next.message || ''),
     };
   } catch {
     backendReady = false;
-    status = { asrReady: false, asrLoading: false, robotConnected: false, modelSession: null, cameraModel: null, resetAvailable: false, resetRunning: false, returnAvailable: false, returnRunning: false, returnMessage: '', physicalReady: false, torqueAction: 'off', torqueAvailable: false, torqueRunning: false, torqueHolding: false, torqueMessage: '', teleoperation: { state: 'idle', occupied: false, available: false, blocker: '', message: 'Lokaler Dienst nicht erreichbar.' }, taskRun: null, message: '' };
-    setFeedback('Lokaler Dienst nicht erreichbar. Bitte Backend starten.', 'error');
+    status = { asrReady: false, asrLoading: false, robotConnected: false, modelSession: null, cameraModel: null, resetAvailable: false, resetRunning: false, returnAvailable: false, returnRunning: false, returnMessage: '', physicalReady: false, torqueAction: 'off', torqueAvailable: false, torqueRunning: false, torqueHolding: false, torqueMessage: '', teleoperation: { state: 'idle', occupied: false, available: false, blocker: '', message: 'Local service unavailable.' }, taskRun: null, message: '' };
+    setFeedback('Local service unavailable. Start the backend.', 'error');
   }
   render();
 }
@@ -2200,15 +2200,15 @@ async function unloadModel() {
       conversationReturning || conversationRestartPending) return;
   phase = 'unloading';
   render();
-  setModelUnloadFeedback('Geladenes Modell wird entladen; Live-Kameras bleiben aktiv …');
+  setModelUnloadFeedback('Unloading the model; live cameras stay active …');
   try {
     await readJson(await fetch('/api/models/current', { method: 'DELETE' }));
     status.modelSession = null;
     modelManuallyUnloaded = true;
     sessionStorage.setItem('so101-model-manually-unloaded', '1');
-    setModelUnloadFeedback('Modell entladen. Live-Kameras bleiben aktiv.');
+    setModelUnloadFeedback('Model unloaded. Live cameras stay active.');
   } catch (error) {
-    setModelUnloadFeedback(`Modell konnte nicht entladen werden: ${error.message}`, 'error');
+    setModelUnloadFeedback(`Could not unload the model: ${error.message}`, 'error');
   } finally {
     phase = 'idle';
     await refreshStatus();
@@ -2222,7 +2222,7 @@ cameraReload.addEventListener('click', async () => {
   const generation = ++cameraGeneration;
   cameraReady = false;
   cameraOpening = true;
-  cameraStatus.textContent = 'Live-Kameras werden neu geladen …';
+  cameraStatus.textContent = 'Reloading live cameras …';
   cameraImages.forEach((image) => image.removeAttribute('src'));
   render();
   try {
@@ -2235,11 +2235,11 @@ cameraReload.addEventListener('click', async () => {
     if (generation !== cameraGeneration || modelId !== currentCameraModel()) return;
     showCameraFrames(payload, modelId);
     cameraReady = true;
-    setFeedback(previewOnly ? 'Live-Kamerabilder aktualisiert.' : 'Live-Kameras neu geladen.');
+    setFeedback(previewOnly ? 'Live camera images updated.' : 'Live cameras reloaded.');
   } catch (error) {
     if (generation === cameraGeneration) {
-      cameraStatus.textContent = `Kamera nicht bereit: ${error.message}`;
-      setFeedback(`Kameras konnten nicht neu geladen werden: ${error.message}`, 'error');
+      cameraStatus.textContent = `Camera not ready: ${error.message}`;
+      setFeedback(`Could not reload cameras: ${error.message}`, 'error');
     }
   } finally {
     if (generation === cameraGeneration) cameraOpening = false;
@@ -2263,16 +2263,16 @@ async function setTorque(turningOn) {
   if (!turningOn && status.teleoperation?.occupied) teleopActionGeneration += 1;
   phase = turningOn ? 'torque-on' : 'releasing';
   render();
-  setTorqueFeedback(turningOn ? 'Aktuelle Position wird eingelesen; Drehmoment wird eingeschaltet …' : 'Drehmoment wird ausgeschaltet und geprüft …');
+  setTorqueFeedback(turningOn ? 'Reading current position; enabling motor torque …' : 'Disabling and verifying motor torque …');
   try {
     const resetRelease = !turningOn && status.resetHolding;
     const result = await readJson(await fetch(resetRelease ? '/api/reset/release' : `/api/torque/${turningOn ? 'on' : 'off'}`, {
       method: 'POST',
       headers: resetRelease ? { 'X-SO101-Reset': 'operator-click' } : { 'X-SO101-Torque': 'operator-click' },
     }));
-    setTorqueFeedback(result.message || (turningOn ? 'Torque an.' : 'Torque Aus.'));
+    setTorqueFeedback(result.message || (turningOn ? 'Torque on.' : 'Torque off.'));
   } catch (error) {
-    setTorqueFeedback(`Drehmoment konnte nicht ${turningOn ? 'eingeschaltet' : 'ausgeschaltet'} werden: ${error.message}`, 'error');
+    setTorqueFeedback(`Could not ${turningOn ? 'enable' : 'disable'} motor torque: ${error.message}`, 'error');
   } finally {
     phase = 'idle';
     await refreshStatus();
@@ -2287,13 +2287,13 @@ async function setTeleoperation(starting) {
   const generation = ++teleopActionGeneration;
   phase = starting ? 'teleop-starting' : 'teleop-stopping';
   render();
-  setFeedback(starting ? 'Leader und Follower werden geprüft; Teleoperation startet …'
-    : 'Teleoperation stoppt; gemessener Follower-Halt wird geprüft …');
+  setFeedback(starting ? 'Checking leader and follower; starting teleoperation …'
+    : 'Stopping teleoperation; verifying the measured follower hold …');
   try {
     const result = await readJson(await fetch(`/api/teleoperation/${starting ? 'start' : 'stop'}`, {
       method: 'POST', headers: { 'X-SO101-Teleop': 'operator-click' },
     }));
-    if (generation === teleopActionGeneration) setFeedback(result.message || 'Teleoperation aktualisiert.');
+    if (generation === teleopActionGeneration) setFeedback(result.message || 'Teleoperation updated.');
   } catch (error) {
     if (generation === teleopActionGeneration) setFeedback(`Teleoperation: ${error.message}`, 'error');
   } finally {

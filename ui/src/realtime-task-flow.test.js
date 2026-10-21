@@ -73,7 +73,7 @@ test('a second task works during a run and duplicate tool calls are ignored', as
   assert.equal(h.requests.length, 1);
   await command(h, 'call-2');
   assert.equal(h.requests.length, 2);
-  assert.match(h.feedback.textContent, /neue Anweisung/);
+  assert.match(h.feedback.textContent, /new instruction/);
   await h.context.pollRealtimeTask(1);
   assert.equal(h.context.realtimeTaskActive, false);
   await command(h, 'call-3');
@@ -378,7 +378,7 @@ test('technical info respects playback scheduling, connection limits and convers
   limited.context.fetch = async () => ({ ok: true, body: { content: 'x'.repeat(2000) } });
   projectInfoCall(limited);
   await setImmediate();
-  assert.match(limited.events[0].item.output, /Nachrichtenlimit/);
+  assert.match(limited.events[0].item.output, /message limit/);
   assert.ok(limited.events[0].item.output.length < 500);
 
   const stale = harness();
@@ -408,7 +408,7 @@ test('partial views and transport limits are explicit; no oversized messages are
   limited.context.fetch = async () => ({ ok: true, body: snapshot });
   sceneCall(limited);
   await setImmediate();
-  assert.match(limited.events[0].item.output, /Nachrichtenlimit/);
+  assert.match(limited.events[0].item.output, /message limit/);
   assert.equal(limited.events.filter(e => e.item?.content).length, 0);
 });
 

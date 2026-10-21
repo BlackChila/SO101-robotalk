@@ -131,7 +131,7 @@ for (const mode of ['realtime', 'piper', 'local']) {
       await (recovered ? h.context.endRecoveredConversation() : h.context.endConversation());
       assert.equal(h.context.conversationCall.disabled, false);
       assert.equal(h.context.conversationRecoveredId, null);
-      assert.ok(h.calls.some(c => c[0] === 'phase' && c[1] === 'idle' && c[2].includes('Rückfahrt unterbrochen')));
+      assert.ok(h.calls.some(c => c[0] === 'phase' && c[1] === 'idle' && c[2].includes('return interrupted')));
       assert.ok(!h.calls.some(c => c[0] === 'phase' && c[1] === 'error'));
     });
   }

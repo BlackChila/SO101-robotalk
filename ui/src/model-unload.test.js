@@ -37,7 +37,7 @@ test('conversation settings unload only the policy while preserving cameras and 
     assert.equal(context.phase, 'idle');
     if (view === 'conversation') {
       assert.equal(context.conversationTaskFeedback.hidden, false);
-      assert.match(context.conversationTaskFeedback.textContent, /Modell entladen/);
+      assert.match(context.conversationTaskFeedback.textContent, /Model unloaded/);
     }
   }
 });
