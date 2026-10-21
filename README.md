@@ -45,9 +45,6 @@ See [screenshot notes](assets/screenshots/README.md).
 ## Demo video
 
 Full SO-101 demonstration, including pick-and-place: **2:14**.
-The high-resolution preview links to the browser player below.
-
-[![SO-101 robot placing a ball in a bowl — jump to the video player](assets/demo/SO101-robotalk-preview.jpg)](#play-demo)
 
 ### Play demo
 
