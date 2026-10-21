@@ -1,0 +1,32 @@
+{
+  "purpose": "flux3_so101_trial_start",
+  "captured_at_utc": "2026-09-24T07:38:44.385476+00:00",
+  "robot_id": "follower_main",
+  "port": "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5B41532786-if00",
+  "calibration_path": "/home/dfin/projects/SO101/calibration/robots/so_follower/follower_main.json",
+  "calibration_sha256": "1bb3b0d8caca82abec88c2ed261c706f36e6a20c545c59248e56d7e755d52d11",
+  "units": {
+    "arm": "degrees",
+    "gripper": "percent"
+  },
+  "measured_position": {
+    "shoulder_pan": -2.065934065934066,
+    "shoulder_lift": -97.23076923076923,
+    "elbow_flex": 78.46153846153847,
+    "wrist_flex": 52.043956043956044,
+    "wrist_roll": -2.32967032967033,
+    "gripper": 0.27529249827942187
+  },
+  "automatic_travel_validated": true,
+  "ui_reset_scope": "any_calibrated_start",
+  "ui_reset_commissioning_report": "outputs/flux3-ui-reset-commission-2026-09-24.json",
+  "capture_torque_enabled": false,
+  "capture_status": {
+    "shoulder_pan": 0,
+    "shoulder_lift": 0,
+    "elbow_flex": 0,
+    "wrist_flex": 0,
+    "wrist_roll": 0,
+    "gripper": 0
+  }
+}

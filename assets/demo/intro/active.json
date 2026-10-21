@@ -1,0 +1,21 @@
+{
+  "status": "recorded",
+  "audio_sha256": "6faf68653905b42f005d62c4020028283a459150353924e4acef188b06b5c15c",
+  "audio_duration_s": 2.586063,
+  "lead_in_s": 4.0,
+  "planned_duration_s": 11.0,
+  "target_fps": 50.0,
+  "calibration_sha256": "1bb3b0d8caca82abec88c2ed261c706f36e6a20c545c59248e56d7e755d52d11",
+  "start_pose": {
+    "shoulder_pan": -2.857142857142857,
+    "shoulder_lift": -108.48351648351648,
+    "elbow_flex": 95.95604395604396,
+    "wrist_flex": 67.78021978021978,
+    "wrist_roll": -0.6593406593406593,
+    "gripper": 0.9635237439779766
+  },
+  "sample_count": 550,
+  "bundle_version": 1,
+  "audio": "audio-6faf68653905b42f.mp3",
+  "trajectory": "gesture-4af8a8c74f14c44d.jsonl"
+}

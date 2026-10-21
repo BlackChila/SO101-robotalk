@@ -1,0 +1,95 @@
+/* Shared camera, motor, status and help controls for the conversation page. */
+:root { color: var(--ink); }
+.shell { width: min(1512px, calc(100% - 72px)); padding: 0; }
+.app-header { align-self: stretch; min-height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.app-brand { display: flex; align-items: baseline; gap: 24px; white-space: nowrap; }
+.app-brand strong { font-size: 24px; letter-spacing: -.04em; font-weight: 740; }
+.app-brand span { color: var(--muted); font-size: 14px; }
+.system-status { align-self: auto; align-items: center; justify-content: flex-end; gap: 14px 26px; color: var(--muted); font-size: 13px; }
+.system-status__item { gap: 9px; }
+.status-dot { width: 9px; height: 9px; }
+.camera-status-row { display: flex; align-items: center; gap: 8px; margin-top: 17px; }
+.camera-status-row > p { flex: 1; min-width: 0; }
+.camera-status-row #camera-reload { display: grid; flex: none; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: var(--accent); color: var(--on-accent); cursor: pointer; }
+.camera-status-row #camera-reload:hover:not(:disabled) { border-color: var(--accent-hover); background: var(--accent-hover); }
+.camera-status-row #camera-reload:disabled { opacity: .43; cursor: default; }
+.camera-status-row #camera-reload:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.camera-views { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+.camera-views.camera-views--one { grid-template-columns: 1fr; }
+.camera-views.camera-views--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.camera-views figure { display: block; overflow: visible; border: 0; border-radius: 0; background: transparent; }
+.camera-frame { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--camera); }
+.camera-settings-toggle { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: var(--accent); color: var(--on-accent); box-shadow: 0 2px 8px var(--shadow-overlay); cursor: pointer; }
+.camera-settings-toggle:hover, .camera-settings-toggle[aria-expanded="true"] { background: var(--accent); border-color: var(--accent); }
+.camera-settings #insta360-controls { margin-top: 20px; padding: 18px 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; }
+.camera-brightness + .camera-brightness { margin-top: 20px; }
+.camera-brightness label { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--ink-soft); }
+.camera-brightness input { width: 100%; margin: 12px 0 0; accent-color: var(--accent); cursor: pointer; }
+.camera-brightness input:disabled { opacity: .45; cursor: default; }
+.camera-views img { width: 100%; height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; background: transparent; }
+.camera-views img:not([src]) { visibility: hidden; }
+.insta360-controls { margin-top: 20px; padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); }
+.insta360-controls[hidden] { display: none; }
+.insta360-controls h2 { margin: 0 0 16px; color: var(--ink); font-size: 15px; font-weight: 650; }
+.insta360-controls__sliders { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; }
+.insta360-controls__sliders label { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 12px; }
+.insta360-controls output { color: var(--ink); font-variant-numeric: tabular-nums; }
+.insta360-controls input { grid-column: 1 / -1; width: 100%; margin: 4px 0; accent-color: var(--accent); cursor: pointer; }
+.insta360-controls input:disabled { opacity: .45; cursor: default; }
+.insta360-controls__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.insta360-controls__actions button { min-height: 36px; padding: 7px 16px; border: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 12px; cursor: pointer; }
+.insta360-controls__actions [data-apply] { background: var(--accent); border-color: var(--accent); }
+.insta360-controls__actions button:hover:not(:disabled) { border-color: var(--accent-hover); background: var(--accent-hover); }
+.insta360-controls__actions button:disabled { opacity: .45; cursor: default; }
+.insta360-controls p { margin: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.section-heading { display: flex; align-items: center; gap: 8px; }
+.section-heading h2, .section-heading h3 { margin: 0; }
+.help-tip { position: relative; display: inline-flex; align-items: center; flex: none; vertical-align: middle; }
+.help-tip__trigger { display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; line-height: 1; cursor: help; }
+.help-tip__trigger:hover, .help-tip__trigger:focus-visible, .help-tip.is-open .help-tip__trigger { border-color: var(--accent); background: var(--accent-hover); color: var(--on-accent); }
+.help-tip__popover { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; display: block; width: 228px; max-width: calc(100vw - 36px); margin: 0; padding: 11px 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-solid); box-shadow: 0 8px 24px var(--shadow-soft); color: var(--ink-soft); font-size: 12px; font-weight: 400; line-height: 1.45; letter-spacing: 0; text-align: left; white-space: normal; overflow-wrap: anywhere; visibility: hidden; opacity: 0; pointer-events: none; transform: translateY(-4px); transition: opacity .15s, transform .15s, visibility .15s; }
+.camera-status-row .help-tip__popover { right: 0; left: auto; }
+.help-tip:hover .help-tip__popover, .help-tip:focus-within .help-tip__popover, .help-tip.is-open .help-tip__popover { visibility: visible; opacity: 1; transform: translateY(0); }
+.task-stop { display: block; width: min(100%, 230px); min-height: 40px; margin: 16px auto 0; padding: 8px 18px; border-color: var(--accent); border-radius: 999px; color: var(--on-accent); font-size: 13px; font-weight: 650; }
+.task-stop:hover:not(:disabled) { border-color: var(--accent-hover); background: var(--accent-hover); }
+.reset-button { min-width: 0; min-height: 43px; height: auto; padding: 8px 17px; gap: 10px; border-color: var(--accent); border-radius: 10px; color: var(--on-accent); font-size: 13px; font-weight: 650; }
+.reset-button:hover:not(:disabled) { border-color: var(--accent-hover); background: var(--accent-hover); color: var(--on-accent); }
+.reset-button:disabled { opacity: .45; }
+.torque { width: 100%; margin-top: 18px; text-align: left; }
+.torque h3 { margin: 0 0 10px; color: var(--muted); font-size: 12px; font-weight: 650; }
+.torque .section-heading h3 { margin: 0; }
+.torque__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.torque-button { width: 100%; min-width: 0; }
+#torque-off-button:not(:disabled) { color: var(--on-accent); border-color: var(--accent); }
+#torque-off-button:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.torque-button--holding { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.teleop { width: 100%; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); text-align: left; }
+.teleop h3 { margin: 0; color: var(--muted); font-size: 12px; font-weight: 650; }
+.teleop__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.teleop__actions .reset-button { width: 100%; padding-inline: 8px; }
+#teleop-stop-button:not(:disabled) { color: var(--on-accent); border-color: var(--accent); }
+#teleop-stop-button:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.teleop__status { margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+@media (max-width: 800px) {
+  .shell { width: min(100% - 40px, 700px); }
+  .app-header { align-items: flex-start; flex-direction: column; justify-content: center; gap: 8px; padding: 17px 0; }
+  .system-status { justify-content: flex-start; }
+}
+@media (max-width: 520px) {
+  .shell { width: calc(100% - 32px); }
+  .app-brand { gap: 14px; }
+  .app-brand strong { font-size: 21px; }
+  .app-brand span { font-size: 11px; }
+  .system-status { gap: 7px 13px; font-size: 11px; }
+  .camera-status-row { flex-wrap: wrap; }
+  .camera-status-row > p { flex-basis: 100%; }
+  .camera-views { grid-template-columns: 1fr; gap: 18px; }
+  .camera-views--three { gap: 8px; }
+  .camera-views--three .camera-settings-toggle { top: 5px; right: 5px; width: 28px; height: 28px; }
+  .torque__actions { gap: 7px; }
+  .torque-button { font-size: 12px; padding-inline: 8px; }
+}
+
+.face-tracking { margin: 24px auto; max-width: 680px; }
+.face-tracking[hidden], .face-tracking img[hidden] { display: none; }
+.face-tracking img { display: block; width: 100%; max-height: 400px; object-fit: contain; background: #141a1a; border-radius: 10px; }

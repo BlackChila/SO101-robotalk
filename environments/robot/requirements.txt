@@ -1,0 +1,4 @@
+# Shared SO-101 motor and camera runtime; no FLUX or Galaxea model extras.
+lerobot[feetech] @ https://github.com/huggingface/lerobot/archive/73ab890324b303424a8a5f07272f22c36be5d269.tar.gz
+numpy==2.2.6
+opencv-python-headless==4.12.0.88

@@ -1,0 +1,54 @@
+/* Action palette for the conversation page; speech keeps its softer green. */
+:root {
+  --palette-button: #436a57;
+  --palette-speech: #D2E4C4;
+
+  /* Neutral and feedback colors; components use the semantic tokens below. */
+  --palette-paper: #ffffff;
+  --palette-ink: #0a2221;
+  --palette-shadow: #000000;
+  --palette-error: #b13242;
+
+  --ink: var(--palette-ink);
+  --ink-soft: color-mix(in srgb, var(--ink) 85%, var(--palette-paper));
+  --muted: color-mix(in srgb, var(--ink) 70%, var(--palette-paper));
+  --muted-light: color-mix(in srgb, var(--ink) 58%, var(--palette-paper));
+  --canvas: color-mix(in srgb, var(--palette-button) 2%, var(--palette-paper));
+  --surface: color-mix(in srgb, var(--palette-button) 9%, var(--palette-paper));
+  --surface-soft: color-mix(in srgb, var(--palette-button) 4%, var(--palette-paper));
+  --surface-solid: var(--palette-paper);
+  --line: color-mix(in srgb, var(--palette-button) 18%, var(--palette-paper));
+  --line-strong: color-mix(in srgb, var(--palette-button) 36%, var(--palette-paper));
+
+  --accent: var(--palette-button);
+  --accent-hover: #345442;
+  --accent-soft: var(--surface);
+  --on-accent: #ffffff;
+  --accent-text: #2d713c;
+  --focus: var(--accent-text);
+  --camera: var(--ink);
+  --ready: var(--accent-text);
+
+  --mic-green: var(--palette-speech);
+  --mic-hover: color-mix(in srgb, var(--palette-speech) 92%, var(--palette-button));
+  --mic-wait: var(--palette-speech);
+  --mic-soft: color-mix(in srgb, var(--palette-speech) 40%, var(--palette-paper));
+  --mic-disabled: var(--palette-speech);
+  --mic-ring: color-mix(in srgb, var(--palette-speech) 85%, var(--palette-button));
+  --on-mic: var(--ink);
+  --speech-highlight: color-mix(in srgb, var(--palette-speech) 60%, var(--palette-paper));
+  --speech-shade: color-mix(in srgb, var(--palette-speech) 88%, var(--palette-button));
+  --speech-shadow: color-mix(in srgb, var(--palette-speech) 35%, transparent);
+  --speech-glow: color-mix(in srgb, var(--palette-speech) 20%, transparent);
+  --speech-ring: color-mix(in srgb, var(--palette-speech) 13%, transparent);
+
+  --error: var(--palette-error);
+  --error-soft: color-mix(in srgb, var(--palette-error) 5%, var(--palette-paper));
+  --shadow-subtle: color-mix(in srgb, var(--ink) 3%, transparent);
+  --shadow-soft: color-mix(in srgb, var(--ink) 12%, transparent);
+  --shadow-medium: color-mix(in srgb, var(--ink) 14%, transparent);
+  --shadow-overlay: color-mix(in srgb, var(--palette-shadow) 16%, transparent);
+  --highlight: color-mix(in srgb, var(--palette-paper) 28%, transparent);
+  --button-shadow: color-mix(in srgb, var(--palette-button) 14%, transparent);
+  --button-shadow-hover: color-mix(in srgb, var(--palette-button) 20%, transparent);
+}

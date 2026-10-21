@@ -1,0 +1,12 @@
+[project]
+name = "so101-piper-tts"
+version = "0.1.0"
+description = "Isolated CPU Piper speech runtime for the conversation UI"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "piper-tts==1.8.0",
+  "onnxruntime==1.30.0",
+]
+
+[tool.uv]
+environments = ["sys_platform == 'linux' and platform_machine == 'aarch64'"]

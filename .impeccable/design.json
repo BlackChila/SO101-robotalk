@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-16T00:00:00+02:00",
+  "title": "Design System: RoboTalk Gespräch",
+  "extensions": {
+    "motion": [{"name":"playback-amplitude","value":"45ms attack, 130ms release; core scale 1 to 1.2","purpose":"Settings closed: original speech orb. Settings open: horizontal bars, never wider than the call button. Shared real playback amplitude; reduced motion keeps both still."}],
+    "breakpoints": [{"name":"compact-desktop","value":"1180px"},{"name":"stacked-inspector","value":"860px"},{"name":"mobile","value":"560px"}]
+  },
+  "components": [{
+    "name":"Conversation primary action",
+    "kind":"button",
+    "refersTo":"button-primary",
+    "description":"Start/end/return-stop action using the existing conversation lifecycle.",
+    "html":"<button class=\"conversation-call\">Gespräch starten</button>",
+    "css":".conversation-call { background: var(--accent, #436a57); color: white; border: 0; border-radius: 6px; padding: 12px 22px; min-height: 50px; font: 600 16px Inter, sans-serif; } .conversation-call:hover { background: var(--accent-hover, #345442); } .conversation-call:focus-visible { outline: 2px solid var(--focus, #2d713c); outline-offset: 3px; }"
+  }],
+  "narrative": {
+    "northStar":"Graphit × Cybergrün",
+    "overview":"Quiet conversation workspace with rich green accents and an opened settings inspector. Applies only to Gespräch.",
+    "keyCharacteristics":["Flat readable controls","Portrait tracking","Shared functional controls","Responsive settings inspector","Centered single-column conversation with settings closed"],
+    "dos":["Preserve all existing functions and gates","Use black text in the voice selection field"],
+    "donts":["Do not stretch tracking images","Do not move hardware during UI checks","Do not restore the removed control workspace"]
+  }
+}

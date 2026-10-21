@@ -1,0 +1,50 @@
+[project]
+name = "so101-qwen3-tts"
+version = "0.1.0"
+description = "Isolated Qwen3 CustomVoice runtime on DGX Spark"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "qwen-tts==0.1.1",
+  "torch==2.11.0+cu130",
+  "nvidia-cublas==13.1.0.3",
+  "nvidia-cuda-cupti==13.0.85",
+  "nvidia-cuda-nvrtc==13.0.88",
+  "nvidia-cuda-runtime==13.0.96",
+  "nvidia-cudnn-cu13==9.19.0.56",
+  "nvidia-cufft==12.0.0.61",
+  "nvidia-cufile==1.15.1.6",
+  "nvidia-curand==10.4.0.35",
+  "nvidia-cusolver==12.0.4.66",
+  "nvidia-cusparse==12.6.3.3",
+  "nvidia-cusparselt-cu13==0.8.0",
+  "nvidia-nccl-cu13==2.28.9",
+  "nvidia-nvjitlink==13.0.88",
+  "nvidia-nvshmem-cu13==3.4.5",
+  "nvidia-nvtx==13.0.85",
+]
+
+[tool.uv]
+environments = ["sys_platform == 'linux' and platform_machine == 'aarch64'"]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu130" }
+nvidia-cublas = { index = "pytorch-cu130" }
+nvidia-cuda-cupti = { index = "pytorch-cu130" }
+nvidia-cuda-nvrtc = { index = "pytorch-cu130" }
+nvidia-cuda-runtime = { index = "pytorch-cu130" }
+nvidia-cudnn-cu13 = { index = "pytorch-cu130" }
+nvidia-cufft = { index = "pytorch-cu130" }
+nvidia-cufile = { index = "pytorch-cu130" }
+nvidia-curand = { index = "pytorch-cu130" }
+nvidia-cusolver = { index = "pytorch-cu130" }
+nvidia-cusparse = { index = "pytorch-cu130" }
+nvidia-cusparselt-cu13 = { index = "pytorch-cu130" }
+nvidia-nccl-cu13 = { index = "pytorch-cu130" }
+nvidia-nvjitlink = { index = "pytorch-cu130" }
+nvidia-nvshmem-cu13 = { index = "pytorch-cu130" }
+nvidia-nvtx = { index = "pytorch-cu130" }

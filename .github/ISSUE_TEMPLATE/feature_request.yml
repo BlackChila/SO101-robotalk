@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest an improvement and explain the use case.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggestions and documentation improvements are welcome. This personal research project does not promise implementation dates.
+        Discuss changes to dependencies, hardware support and motor behavior before implementing them.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Who would use this, and what is difficult today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain the desired result and how it fits the current workflows.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and relevant constraints
+      description: Include hardware, model, dependency or licensing constraints when relevant. Do not include secrets or private data.
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Could you help with this?
+      options:
+        - I am suggesting an idea
+        - I can help with documentation
+        - I can help with software implementation or tests
+        - I can help with supervised Linux/hardware validation

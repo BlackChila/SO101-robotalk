@@ -1,0 +1,13 @@
+# Preserve Linux-compatible line endings for text in every checkout.
+* text=auto eol=lf
+
+# Binary assets must not undergo text conversion or textual merge handling.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.mp3 binary
+*.wav binary
+*.mp4 binary
+*.pdf binary

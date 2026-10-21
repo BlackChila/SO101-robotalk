@@ -1,0 +1,63 @@
+# Local downloads, model weights, caches, and generated trial data
+/.cache/
+/models/
+/outputs/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.gguf
+
+# Other machine-specific configuration
+/config/*.local.json
+/config/*.private.json
+# Local calibration is robot-specific; do not publish it by accident.
+/calibration/
+
+# Local credentials and private keys
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.p12
+*.pfx
+*.key
+
+# Installed Python environments and third-party source checkouts
+**/.venv
+/environments/flux3/lerobot/
+/environments/g05/source/
+/environments/g05/python/
+/environments/conversation/source/
+
+# Python and test/tool output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.egg-info/
+build/
+
+# Frontend dependencies and build output
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# Local editor and operating-system files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+*.log

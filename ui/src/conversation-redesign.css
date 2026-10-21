@@ -1,0 +1,265 @@
+/* Approved Graphit × Cybergrün layout. Action colors come from the shared theme. */
+.shell {
+  --ink: #162d29;
+  --ink-soft: #445c54;
+  --muted: #586d65;
+  --muted-light: #71867d;
+  --line: #d9e4dd;
+  --line-strong: #b9cdc0;
+  --surface: #eef4ef;
+  --surface-soft: #f5f8f5;
+  --surface-solid: #fcfdfb;
+  color: var(--ink);
+  background: var(--surface-solid);
+  accent-color: var(--accent);
+  caret-color: var(--accent);
+  scrollbar-color: var(--line-strong) var(--surface-soft);
+}
+/* User-selected pale green conversation settings surface. */
+.shell .conversation-settings {
+  --ink: #23362a;
+  --ink-soft: #435944;
+  --muted: #4f6250;
+  --muted-light: #576b58;
+  --surface-soft: #f5f8f3;
+  --surface: #fcfdfb;
+  --surface-hover: #eaf0e6;
+  --line: #dce5d7;
+  --line-strong: #7e8e79;
+  --disabled-surface: #edf1ea;
+  --disabled-ink: #5b6857;
+  color: var(--ink);
+}
+/* Conversation is the sole app page. */
+.shell { position: relative; width: min(1512px, calc(100% - 48px)); padding: 0; }
+.shell .app-brand strong { font-size: 24px; }
+.shell ::selection { background: #d9e9dc; color: var(--ink); }
+.shell .app-brand span { display: none; }
+.shell .app-header { min-height: 70px; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 60px 0 0; }
+.shell .conversation-settings-toggle { position: fixed; right: max(24px, calc((100vw - 1512px) / 2)); top: 14px; z-index: 2; width: 40px; height: 40px; border-radius: 6px; background: var(--surface); color: var(--ink); }
+.shell .system-status { gap: 20px; font-size: 12px; }
+.conversation-view { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; justify-content: stretch; width: 100%; min-height: calc(100svh - 70px); padding: 0; border-top: 1px solid var(--line); text-align: left; }
+.conversation-view:has(> .conversation-settings:not([hidden])) { grid-template-columns: minmax(0, 1fr) 370px; }
+.conversation-main { min-width: 0; }
+.conversation-stage { display: grid; grid-template-columns: minmax(230px, .9fr) minmax(280px, 1.1fr); gap: 24px; min-height: 330px; padding: 38px 26px 0 0; }
+.conversation-identity { position: relative; min-width: 0; align-self: start; }
+.conversation-view h1 { margin: 0 0 32px; color: var(--ink); font-size: 32px; font-weight: 650; letter-spacing: -.03em; line-height: 1.25; text-wrap: balance; }
+.conversation-view .conversation-speaker { color: var(--accent-text); border: 0; white-space: normal; }
+.conversation-voice-picker { display: inline-block; max-width: 100%; vertical-align: baseline; }
+.conversation-view h1:has(.conversation-voice-picker) { margin-bottom: 0; }
+.conversation-voice-picker select { field-sizing: content; max-width: 100%; min-width: 0; border: 0; border-radius: 3px; padding: 0; background: transparent; color: var(--accent-text); font: inherit; font-weight: 700; line-height: inherit; letter-spacing: inherit; cursor: pointer; }
+.conversation-voice-picker select:hover:not(:disabled) { color: var(--accent-hover); }
+.conversation-voice-picker select:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+.conversation-voice-picker :disabled { cursor: not-allowed; opacity: .55; }
+.conversation-voice-picker option { background: var(--surface-solid); color: #111; }
+.conversation-voice-picker option:checked { background: var(--accent); color: #fff; }
+/* Keep the native select's keyboard, wheel and accessibility behavior while
+   styling its top-layer picker instead of the operating system's blue popup. */
+@supports (appearance: base-select) {
+  .conversation-voice-picker select,
+  .conversation-voice-picker select::picker(select) { appearance: base-select; }
+  .conversation-voice-picker select { display: flex; align-items: center; justify-content: space-between; }
+  .conversation-voice-picker select::picker-icon { margin-left: 8px; color: var(--accent-text); font-size: .6em; }
+  .conversation-voice-picker select::picker(select) {
+    max-height: min(360px, 60svh);
+    padding: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--surface-solid);
+    color: #111;
+    font: inherit;
+    scrollbar-color: var(--accent) var(--surface-soft);
+  }
+  .conversation-voice-picker option { min-height: 36px; padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .conversation-voice-picker option:is(:hover, :focus-visible) { outline: 0; background: #e2ece4; color: var(--ink); }
+  .conversation-voice-picker option:checked,
+  .conversation-voice-picker option:checked:is(:hover, :focus-visible) { background: var(--accent); color: #fff; }
+}
+.conversation-session { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; padding-block: 16px; }
+.conversation-view .conversation-orb { display: grid; place-items: center; width: 190px; height: 190px; max-width: 100%; margin: 0 0 20px; }
+.conversation-view .conversation-orb::before, .conversation-view .conversation-orb::after { content: ''; }
+.conversation-view .conversation-orb::after { inset: 6%; }
+.conversation-view .conversation-orb__halo { width: 68%; height: 68%; scale: calc(1 + var(--speech-level, 0) * .1); }
+.conversation-view .conversation-orb__core { width: 58%; height: 58%; scale: calc(1 + var(--speech-level, 0) * .2); transition: filter .3s ease; }
+/* The original listening/thinking breath returns; audible output uses its real
+   envelope instead of a simulated speaking loop. CSS scale composes with the
+   state animation's transform, so late-buffered audio still drives the orb. */
+.conversation-view .conversation-orb[data-state="speaking"] .conversation-orb__core { animation: none; }
+.conversation-bars { display: none; }
+/* Both visual forms read the same playback envelope. The workspace waveform
+   shares the call button's 370px cap, including at narrow viewport widths. */
+.conversation-view:has(> .conversation-settings:not([hidden])) .conversation-orb { display: flex; width: min(100%, 370px); height: 85px; margin: 0 0 14px; }
+.conversation-view:has(> .conversation-settings:not([hidden])) .conversation-orb::before,
+.conversation-view:has(> .conversation-settings:not([hidden])) .conversation-orb::after { content: none; }
+.conversation-view:has(> .conversation-settings:not([hidden])) .conversation-orb__halo,
+.conversation-view:has(> .conversation-settings:not([hidden])) .conversation-orb__core { display: none; }
+.conversation-view:has(> .conversation-settings:not([hidden])) .conversation-bars { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 100%; }
+.conversation-bars > span { flex: 1 1 4px; max-width: 5px; min-width: 0; min-height: 4px; height: calc(4px + var(--bar-height) * var(--speech-level, 0)); border-radius: 3px; background: #9ab5a4; }
+.conversation-orb:is([data-state="thinking"], [data-state="processing"], [data-state="connecting"]) .conversation-bars > span { background: var(--accent); }
+.conversation-orb[data-state="error"] .conversation-bars > span { background: var(--error); }
+.conversation-controls { width: 100%; }
+.conversation-view .conversation-call { width: min(100%, 370px); min-width: 0; min-height: 50px; padding: 12px 22px; border-radius: 6px; background: var(--accent); color: white; box-shadow: none; font-size: 16px; font-weight: 600; }
+.conversation-view .conversation-call:hover:not(:disabled) { background: var(--accent-hover); transform: none; box-shadow: none; }
+.conversation-view .conversation-feedback { margin: 16px 0 0; max-width: 100%; min-height: 0; color: var(--muted); font-size: 13px; line-height: 1.5; text-align: center; }
+.conversation-task-status { display: flex; align-items: baseline; gap: 20px; grid-column: 1 / -1; min-width: 0; padding: 14px 0 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.conversation-task-status > span:first-child { flex: none; }
+.conversation-task-status .conversation-feedback { margin: 0; text-align: left; }
+.conversation-task-status:has(#conversation-task-feedback:not([hidden])) .conversation-task-empty { display: none; }
+.conversation-view .conversation-cameras { width: 100%; margin: 0; padding: 20px 24px 28px 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; }
+.conversation-cameras > h2 { margin: 0 0 6px; font-size: 15px; }
+.conversation-view .conversation-camera-status { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+.conversation-media { container-type: inline-size; --camera-preview-height: calc((100cqw - 24px) * 12 / 41); display: grid; grid-template-columns: minmax(0, 16fr) minmax(0, 16fr) minmax(0, 9fr); align-items: start; gap: 16px 12px; }
+#conversation-camera-host, #conversation-camera-host #live-camera-panel, #conversation-camera-status-host { display: contents; }
+.conversation-media .camera-status-row { grid-column: 1 / -1; grid-row: 1; margin: 0; font-size: 12px; }
+.conversation-media .camera-status-row #camera-status { flex: 1; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.conversation-cameras:has(#live-camera-panel:not([hidden])) > .conversation-camera-status { display: none; }
+.conversation-media .camera-views { display: contents; }
+.conversation-media .camera-views > figure { grid-row: 2; }
+.conversation-media .camera-views > figure:first-child { grid-column: 1; }
+.conversation-media .camera-views > figure:nth-child(2) { grid-column: 2; }
+.conversation-media #camera-observer-view { grid-column: 3; }
+.conversation-media .camera-frame { height: var(--camera-preview-height); aspect-ratio: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+.conversation-media .camera-settings-toggle { width: 30px; height: 30px; top: 8px; right: 8px; border-radius: 5px; background: var(--surface-solid); color: var(--ink); box-shadow: none; }
+.conversation-media .camera-settings-toggle[aria-expanded="true"] { background: var(--accent); color: white; }
+.conversation-media .camera-views img { object-fit: contain; }
+.conversation-camera-label { display: none; }
+.conversation-media .conversation-camera-label { display: block; min-height: 2.8em; margin-bottom: 8px; color: var(--ink); font-size: 13px; font-weight: 600; line-height: 1.4; }
+.camera-adjustments { min-width: 0; }
+.conversation-media .camera-adjustments { grid-column: 1 / -1; grid-row: 3; }
+.conversation-media .camera-adjustments:not(:has(> section:not([hidden]))) { display: none; }
+.conversation-media .camera-settings { width: 100%; margin: 0 0 14px; padding: 16px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-soft); }
+.conversation-media .camera-settings > h2 { margin: 0 0 18px; color: var(--ink); font-size: 14px; font-weight: 600; }
+.conversation-media .camera-settings:has(#insta360-controls:not([hidden])) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.conversation-media .camera-settings > h2 { grid-column: 1 / -1; }
+.conversation-media #insta360-controls { grid-column: 2; grid-row: 2 / span 2; margin: 0; padding: 0 0 0 16px; border: 0; border-left: 1px solid var(--line); }
+.conversation-media #insta360-controls h2 { margin: 0 0 14px; font-size: 13px; }
+.conversation-media .insta360-controls__sliders { grid-template-columns: 1fr; gap: 12px; }
+.conversation-media .insta360-controls__sliders label { grid-template-columns: minmax(74px, 1fr) minmax(60px, 1fr) auto; gap: 8px; }
+.conversation-media .insta360-controls__sliders output { grid-column: 3; grid-row: 1; }
+.conversation-media .insta360-controls__sliders input { grid-column: 2; grid-row: 1; margin: 0; min-width: 0; }
+.conversation-media .camera-brightness + .camera-brightness { margin-top: 0; }
+.conversation-media .camera-brightness label, .conversation-media .insta360-controls__sliders label { color: var(--ink-soft); font-size: 12px; }
+.conversation-media output { font-variant-numeric: tabular-nums; }
+.conversation-media .insta360-controls__actions { gap: 6px; margin-top: 10px; }
+.conversation-media .insta360-controls__actions button { min-height: 34px; padding: 6px 10px; border-radius: 5px; font-size: 11px; }
+.conversation-media .insta360-controls__actions button:nth-child(2) { border: 1px solid var(--line-strong); background: transparent; color: var(--ink); }
+.conversation-media [role="status"], .conversation-media #insta360-controls > p { color: var(--muted); font-size: 11px; line-height: 1.5; }
+/* Raw Wrist frames use the same clockwise orientation as the tracking preview. */
+.conversation-media #camera-view-3 { position: absolute; top: 50%; left: 50%; width: calc(var(--camera-preview-height) - 2px); height: calc((var(--camera-preview-height) - 2px) * .75); transform: translate(-50%, -50%) rotate(90deg); }
+.conversation-media #face-tracking { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; }
+.conversation-media #face-tracking img { width: 100%; height: 100%; max-height: none; object-fit: contain; border-radius: 0; }
+.conversation-media .camera-frame:has(#face-tracking:not([hidden])) > #camera-view-3 { visibility: hidden; }
+.conversation-media #camera-settings-toggle-3 { z-index: 1; }
+.conversation-view .conversation-settings { width: 100%; min-width: 0; margin: 0; padding: 26px 20px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: var(--surface-soft); text-align: left; }
+.conversation-settings-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 28px; }
+.conversation-settings-header h2 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: -.02em; }
+.conversation-settings-header button { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border: 0; border-radius: 5px; background: transparent; color: var(--ink); cursor: pointer; }
+.conversation-settings-header button:hover { background: var(--surface); }
+.conversation-settings .conversation-mode { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0 0 26px; padding: 0; border: 0; background: transparent; }
+.conversation-settings .conversation-mode legend { margin-bottom: 14px; padding: 0; color: var(--ink); font-size: 13px; font-weight: 600; }
+.conversation-settings .conversation-mode span { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font-size: 11px; text-align: center; }
+.conversation-settings .conversation-mode input:checked + span { border-color: var(--accent); background: var(--accent); color: white; box-shadow: none; }
+.conversation-settings .conversation-language { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.conversation-language > p { grid-column: 1 / -1; margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.conversation-setting-group { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
+.conversation-setting-group h3 { margin: 0 0 14px; font-size: 14px; font-weight: 600; }
+.conversation-setting-group > .section-heading { position: relative; margin-bottom: 14px; }
+.conversation-setting-group > .section-heading h3 { margin: 0; }
+.conversation-settings .section-heading .help-tip { position: static; }
+.conversation-settings .help-tip__popover { left: 0; right: auto; width: min(280px, 100%); max-width: 100%; }
+#conversation-robot-help { top: auto; bottom: calc(100% + 8px); }
+.conversation-setting-group > p { color: var(--muted); font-size: 12px; line-height: 1.55; }
+.conversation-setting-group > .reset-button, .conversation-setting-group .conversation-run-actions > button, .conversation-setting-group #model-unload { display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; min-height: 46px; height: auto; margin: 0 0 12px; padding: 11px 12px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 500; line-height: 1.5; }
+.conversation-setting-group > button:hover:not(:disabled), .conversation-setting-group .conversation-run-actions > button:hover:not(:disabled), .conversation-setting-group #model-unload:hover:not(:disabled) { background: var(--surface-hover); }
+.conversation-setting-group > button:disabled, .conversation-setting-group .conversation-run-actions > button:disabled, .conversation-setting-group #model-unload:disabled { border-color: var(--line); background: var(--disabled-surface); color: var(--disabled-ink); opacity: 1; cursor: not-allowed; }
+.conversation-run-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.conversation-run-actions #conversation-model-unload-host { display: contents; }
+.conversation-setting-group .conversation-run-actions > button, .conversation-setting-group .conversation-run-actions #model-unload { margin: 0; padding-inline: 8px; }
+.conversation-setting-group #face-search-direction { justify-content: flex-start; }
+.conversation-setting-group #conversation-torque-host { margin: 12px 0 0; }
+.conversation-teleop { margin-top: 24px; }
+.conversation-teleop h4 { margin: 0 0 12px; color: var(--ink); font-size: 13px; font-weight: 600; }
+.conversation-teleop .teleop__actions { margin-top: 0; }
+.conversation-teleop .reset-button { min-height: 44px; border-radius: 5px; font-size: 13px; }
+.conversation-teleop #teleop-stop-button { border-color: var(--line-strong); background: var(--surface); color: var(--ink); }
+.conversation-teleop #teleop-stop-button:hover:not(:disabled) { border-color: var(--line-strong); background: var(--surface-hover); }
+.conversation-teleop .teleop__status { font-size: 12px; line-height: 1.5; }
+.conversation-settings .torque__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.conversation-settings .torque-button { width: 100%; min-width: 0; height: auto; min-height: 44px; padding: 9px 8px; border: 1px solid var(--accent); border-radius: 5px; background: var(--accent); color: white; font-size: 13px; }
+.conversation-settings #torque-off-button { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.conversation-settings .torque-button:disabled { background: var(--disabled-surface); border-color: var(--line); color: var(--disabled-ink); opacity: 1; cursor: not-allowed; }
+.conversation-settings .conversation-torque-feedback { margin: 12px 0 0; }
+.conversation-view :is(button, select, summary, input):focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.conversation-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+/* Closed settings use one focused conversation composition, rather than the
+   workspace's two-column stage stretched into an otherwise empty page. */
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) { --conversation-header-height: 70px; min-height: calc(100svh - var(--conversation-header-height)); }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-main { display: grid; place-items: center; width: min(100%, 640px); margin-inline: auto; padding: 48px 24px 112px; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-stage { display: flex; flex-direction: column; align-items: center; gap: 32px; width: 100%; min-height: 0; padding: 0; text-align: center; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-identity { align-self: center; width: 100%; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) h1 { font-size: 36px; line-height: 1.25; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-voice-picker select { min-height: 44px; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-voice-hint { left: 50%; transform: translateX(-50%); text-align: center; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-session { width: 100%; padding: 0; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-orb { width: 280px; height: 280px; margin: 0 0 24px; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-call { width: min(100%, 304px); min-height: 54px; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-feedback { max-width: 440px; margin-top: 18px; font-size: 14px; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-task-status { flex-direction: column; align-items: center; gap: 8px; width: min(100%, 440px); margin: 0; padding: 20px 0 0; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-task-status .conversation-feedback { margin: 0; text-align: center; }
+.conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-task-status:not(:has(#conversation-task-feedback:not([hidden]))) { display: none; }
+@media (max-width: 1180px) {
+  .shell .system-status { gap: 12px; font-size: 11px; }
+  .conversation-view:has(> .conversation-settings:not([hidden])) { grid-template-columns: minmax(0, 1fr) 325px; }
+  .conversation-stage { grid-template-columns: 1fr; gap: 18px; padding: 28px 20px 0 0; }
+  .conversation-view h1 { margin-bottom: 20px; font-size: 28px; }
+  .conversation-session { padding: 0; }
+  .conversation-view .conversation-orb { width: 176px; height: 176px; }
+  .conversation-media .camera-settings:has(#insta360-controls:not([hidden])) { display: block; }
+  .conversation-media #insta360-controls { margin-top: 18px; padding: 18px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (max-width: 860px) {
+  .shell { width: calc(100% - 32px); }
+  .shell .app-header { min-height: 112px; align-items: flex-start; justify-content: flex-start; padding-top: 18px; }
+  .shell .system-status { position: absolute; top: 70px; left: 0; right: 0; justify-content: flex-start; gap: 10px 18px; }
+  .shell .conversation-settings-toggle { right: 16px; }
+  .conversation-view:has(> .conversation-settings:not([hidden])) { grid-template-columns: 1fr; }
+  .conversation-stage { grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr); padding: 26px 0 0; }
+  .conversation-view .conversation-cameras { padding-inline: 0; }
+  .conversation-view .conversation-settings { border-left: 0; border-top: 1px solid var(--line); padding: 24px 20px; }
+  .conversation-settings .conversation-mode span { font-size: 13px; }
+  .conversation-settings-header { margin-bottom: 24px; }
+  .conversation-view:not(:has(> .conversation-settings:not([hidden]))) { --conversation-header-height: 112px; }
+  .conversation-view:not(:has(> .conversation-settings:not([hidden]))) h1 { font-size: 32px; }
+}
+@media (max-width: 560px) {
+  .shell .app-brand strong { font-size: 20px; }
+  .shell .system-status { font-size: 10px; column-gap: 12px; }
+  .conversation-stage { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .conversation-view h1 { font-size: 28px; }
+  .conversation-view .conversation-orb { width: 176px; height: 176px; }
+  .conversation-controls { flex-direction: row; }
+  .conversation-task-status { gap: 12px; }
+  .conversation-media { --camera-preview-height: calc(100cqw * .75); grid-template-columns: minmax(0, 1fr); }
+  .conversation-media .camera-views > figure:first-child { grid-column: 1; grid-row: 2; }
+  .conversation-media .camera-views > figure:nth-child(2) { grid-column: 1; grid-row: 3; }
+  .conversation-media #camera-observer-view { grid-column: 1; grid-row: 4; }
+  .conversation-media #camera-observer-view .camera-frame { width: 56.25%; margin-inline: auto; }
+  .conversation-media .camera-adjustments { grid-row: 5; }
+  .conversation-view .conversation-settings { padding: 24px 14px; }
+  .conversation-settings .conversation-mode span { font-size: 11px; }
+  .conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-main { padding: 40px 8px 88px; }
+  .conversation-view:not(:has(> .conversation-settings:not([hidden]))) h1 { font-size: 28px; }
+  .conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-orb { width: 240px; height: 240px; }
+}
+@media (max-height: 680px) {
+  .conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-main { padding-block: 32px; }
+  .conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-stage { gap: 24px; }
+  .conversation-view:not(:has(> .conversation-settings:not([hidden]))) .conversation-orb { width: 200px; height: 200px; margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .conversation-view .conversation-orb::after,
+  .conversation-view .conversation-orb__core { animation: none !important; transform: none; }
+  .conversation-view .conversation-orb__core,
+  .conversation-view .conversation-orb__halo { scale: 1; }
+  .conversation-bars > span { height: 4px; }
+}

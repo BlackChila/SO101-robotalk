@@ -1,0 +1,61 @@
+name: Bug report
+description: Report an installation, UI or runtime problem with reproducible details.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the README and known setup gaps first. RoboTalk is an experimental Linux ARM64/NVIDIA GB10 project.
+        For security vulnerabilities, use the security policy instead of this public form.
+        Do not include credentials, populated .env files, unreviewed logs or private camera/audio recordings.
+  - type: input
+    id: revision
+    attributes:
+      label: Commit or revision
+      description: Include the commit hash; use "documentation only" if appropriate.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and selected workflow
+      description: Linux distribution/architecture, GPU/driver, Python/Node versions, conversation mode and optional MolmoAct2 runtime, checkpoint revision and relevant hardware. Use N/A for unrelated details.
+    validations:
+      required: true
+  - type: dropdown
+    id: evidence_type
+    attributes:
+      label: What was actually tested?
+      options:
+        - Documentation or installation only
+        - Software tests or mocks
+        - Synthetic or recorded model inputs
+        - Live cameras, without physical movement
+        - Physical robot operation
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Give the smallest reproduction. Do not run new physical tests just to file a report.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted errors or controller status
+      description: If hardware was involved, include whether the measured-position torque-on hold was verified. Remove secrets and personal information.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the documented limitations and removed credentials and private data from this report.
+          required: true
