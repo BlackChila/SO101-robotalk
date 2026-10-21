@@ -63,15 +63,14 @@ before physical use; mock protocol tests do not establish model reliability.
 Both local modes set `reasoning_effort` to `none`, including turns with
 tools and camera images.
 
-The selected Piper voice sets speech recognition and spoken response language:
-Thorsten/Kerstin use German; Amy/Ryan/Alan/Jenny use English. The local LLM prompt
-applies this setting to dialogue, tool announcements, scene descriptions and
-task feedback, overriding earlier conversation language. Switching voices during
-a call applies to the next reply; an in-flight reply finishes with its original
-voice and language. Qwen keeps its existing German recognition, dialogue and
-synthesis setting for all nine CustomVoice speakers; selecting Ryan in Qwen
-therefore does not select Piper Ryan's English setting. A Qwen speaker change
-also applies on the next reply. Speech remains turn-based: full transcription,
+Set `Gesprächssprache` to `Deutsch` or `English` before starting the call. This
+choice controls recognition, dialogue, the opening greeting, tool announcements,
+scene descriptions, task feedback and synthesis for both local modes. Piper
+offers Thorsten/Kerstin for German and Amy/Ryan/Alan/Jenny for English; the UI
+filters the voice list to the selected language. All nine Qwen CustomVoice
+speakers remain selectable for either language. Selecting Qwen's Ryan does not
+change the conversation language. Switching voices during a call applies to the
+next reply; an in-flight reply finishes with its original voice. Speech remains turn-based: full transcription,
 model response, then WAV playback. Continuous interruption and streaming TTS are
 not implemented in this version.
 

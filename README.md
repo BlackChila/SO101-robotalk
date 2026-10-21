@@ -113,6 +113,89 @@ The app binds to loopback by default. Do not expose the robot backend as a publi
 web service. Cloud conversation needs a separately configured OpenAI API key and
 incurs API costs; local modes do not require that key.
 
+## Optional local TTS setup
+
+Both local conversation modes use **Qwen3-ASR → LM Studio → TTS**. Complete
+[ASR installation](docs/getting-started.md#install-the-asr-backend) first, then choose
+**one** speech engine below. Piper synthesizes on the CPU; Qwen3-TTS uses CUDA.
+Neither local mode needs an OpenAI API key. Commands below run from the repository
+root on the reference Linux ARM64 system.
+
+### 1. Configure local dialogue
+
+Install LM Studio, download/load a dialogue model and enable its API server.
+Export the actual server URL and model key in the terminal that will start
+RoboTalk; for example, when LM Studio listens on localhost:
+
+```bash
+export SO101_LM_STUDIO_URL=http://127.0.0.1:1234
+export SO101_CONVERSATION_MODEL=qwen/qwen3.8-27b
+```
+
+These settings are process environment variables; putting them in `.env` does
+not configure them. Export `SO101_LM_STUDIO_TOKEN` too if your server requires
+authentication. The selected model must support tool calls and, for scene
+descriptions, image input. See [LM Studio setup](environments/conversation/README.md).
+The legacy Python environment in `environments/conversation/` is not required.
+
+### 2a. Piper: CPU speech
+
+```bash
+UV_CACHE_DIR="$PWD/.cache/uv" uv sync --project environments/piper --frozen --python /usr/bin/python3.12
+environments/piper/.venv/bin/python -m piper.download_voices \
+  --download-dir models/tts/piper \
+  de_DE-thorsten-medium de_DE-kerstin-low \
+  en_US-amy-medium en_US-ryan-medium \
+  en_GB-alan-medium en_GB-jenny_dioco-medium
+environments/piper/.venv/bin/python scripts/piper_tts_worker.py \
+  --sample /tmp/robotalk-piper-sample.wav
+```
+
+Each voice needs both its `.onnx` and `.onnx.json` files. The sample uses German
+Thorsten and writes a WAV without playing audio or controlling the robot.
+See [Piper installation and voice sources](environments/piper/README.md).
+You do not need the Qwen3-TTS environment or weights for Piper.
+
+### 2b. Qwen3-TTS: CUDA speech
+
+```bash
+UV_CACHE_DIR="$PWD/.cache/uv" uv sync --project environments/tts --frozen --python /usr/bin/python3.12
+HF_HUB_OFFLINE=0 TRANSFORMERS_OFFLINE=0 HF_HUB_DISABLE_TELEMETRY=1 \
+  HF_XET_CACHE="$PWD/.cache/hf-xet" \
+  environments/tts/.venv/bin/python scripts/download_tts.py
+environments/tts/.venv/bin/python scripts/tts_worker.py \
+  --sample /tmp/robotalk-qwen-sample.wav
+```
+
+This downloads approximately 4.52 GB of CustomVoice weights into
+`models/tts/qwen3-tts-1.7b-customvoice/`. The sample writes a German WAV using
+Ryan; the UI supports German and English with nine speaker choices.
+See [Qwen3-TTS installation](environments/tts/README.md). You do not need Piper
+for this mode. Live Qwen speech and concurrent model performance still need
+validation on the target host.
+
+### 3. Start RoboTalk and select the mode
+
+Build the UI if needed, then start the backend **in the terminal with the LM
+Studio variables exported**:
+
+```bash
+source scripts/asr-env.sh
+python -u scripts/asr_web.py
+```
+
+Open the app, use the settings gear and choose **Lokal · Piper** or
+**Lokal · Qwen**. Set **Gesprächssprache** to **Deutsch** or **English** before
+starting a call; Piper lists only voices for that language. Pick the voice from
+the name in the conversation heading. The backend starts the selected TTS worker
+automatically; a separate speech-worker terminal is not required.
+
+For speech-only use with the configured arm absent, MolmoAct2 and the robot
+runtime are not required. Camera and physical robot features need their separate
+[optional setup](docs/getting-started.md#optional-shared-robot-and-camera-runtime).
+See [local conversation behavior](docs/local-piper-conversation.md) and
+[setup troubleshooting](docs/getting-started.md#troubleshooting).
+
 ## Before any robot movement
 
 Read [scene setup](docs/scene-setup.md) and
@@ -153,7 +236,7 @@ avoidance, or successful manipulation.
 
 ```text
 assets/demo/     Recorded intro audio and gesture bundles
-config/          Reference robot start pose and runtime limits
+config/          Reference robot start pose; ignored local camera settings
 docs/            Conversation setup, behavior, and configuration guides
 environments/    Independent Python projects, locks, and model manifests
 scripts/         API server, speech/model workers, cameras, and robot controllers

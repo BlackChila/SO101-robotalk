@@ -2,8 +2,9 @@
 
 This isolated CPU environment powers the `Lokal · Piper` conversation mode.
 It keeps Qwen3-ASR and LM Studio for transcription and reply generation. The
-Qwen3-TTS path is still shown as `Lokal · Qwen`, but its complete voice-chat and
-MolmoAct2 integration is unfinished. The maintainer reports Piper conversation
+Qwen3-TTS path is shown as `Lokal · Qwen` and shares the same tool/vision
+conversation controller; its live speech and physical acceptance still need
+target-host validation. The maintainer reports Piper conversation
 as working. With a locally hosted LM Studio model, speech, dialogue, and
 MolmoAct2 manipulation run locally without an OpenAI API key.
 
@@ -26,8 +27,9 @@ voice manifest is currently supplied. Review each voice's upstream model card
 and license before redistributing voice files or generated demo media.
 The UI selects Thorsten (medium quality), Kerstin (low quality), or one of four
 medium quality English voices: Amy and Ryan (US), Alan and Jenny (UK).
-Thorsten is the default. Thorsten/Kerstin select German recognition and replies;
-Amy/Ryan/Alan/Jenny select English. Voice changes apply on the next reply, including
+Select `Gesprächssprache` (`Deutsch` or `English`) before the call. The UI filters
+the voice list to that language: Thorsten/Kerstin for German and
+Amy/Ryan/Alan/Jenny for English. Voice changes apply on the next reply, including
 announcements and task feedback. The worker caches each selected model and serves
 successive requests through the same JSON-line interface as Qwen TTS. It does
 not import robot control code. Its sample command generates audio only.

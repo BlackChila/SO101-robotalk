@@ -32,7 +32,8 @@ environments/tts/.venv/bin/python scripts/tts_worker.py --sample /tmp/robotalk-q
 
 The sample uses speaker Ryan and German text; it writes audio and does not play
 it or command motors. The UI offers nine CustomVoice speakers and defaults to
-Dylan. Qwen speech generation is German in the current worker. It is not a voice
+Dylan. The UI's `Gesprächssprache` selection controls German or English synthesis
+for the call, independently of the speaker choice. It is not a voice
 cloning or VoiceDesign workflow.
 
 The API starts this worker in its own process and reuses it across replies. Use
