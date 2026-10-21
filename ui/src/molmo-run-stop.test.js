@@ -8,7 +8,7 @@ test('run stop is enabled only for an active task and uses the requested label',
   for (const state of ['loading', 'running']) {
     const control = molmoRunStopState({ model: 'molmoact2', state });
     assert.equal(control.disabled, false);
-    assert.equal(control.label, 'Model Run stoppen');
+    assert.equal(control.label, 'Stop model run');
   }
   for (const task of [null, { model: 'molmoact2', state: 'stopped' },
     { model: 'molmoact2', state: 'stopping' }, { model: 'g05', state: 'running' }]) {

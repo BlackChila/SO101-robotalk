@@ -18,7 +18,7 @@ test('waits until the data channel opens', async () => {
 
 test('a connection that never opens reports a timeout', async () => {
   const [channel, peer] = connecting();
-  await assert.rejects(waitForRealtimeChannel(channel, peer, 5), /Zeitlimit/);
+  await assert.rejects(waitForRealtimeChannel(channel, peer, 5), /timed out/);
 });
 
 test('a failed peer reports failure without waiting for the timeout', async () => {
@@ -26,5 +26,5 @@ test('a failed peer reports failure without waiting for the timeout', async () =
   const ready = waitForRealtimeChannel(channel, peer);
   peer.connectionState = 'failed';
   peer.dispatchEvent(new Event('connectionstatechange'));
-  await assert.rejects(ready, /nicht geöffnet/);
+  await assert.rejects(ready, /did not open/);
 });

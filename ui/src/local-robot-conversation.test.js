@@ -83,7 +83,7 @@ for (const engine of ['piper', 'qwen']) {
         if (url.endsWith('/turn')) await h.client.close();
         return response;
       };
-      await assert.rejects(h.client.turn('Pick it up', h.controller.signal), /Gespräch beendet/);
+      await assert.rejects(h.client.turn('Pick it up', h.controller.signal), /Conversation ended/);
       assert.ok(!h.calls.some(c => c.spoken || c.url?.endsWith('/tool')));
     });
 
@@ -91,7 +91,7 @@ for (const engine of ['piper', 'qwen']) {
       const h = harness();
       await h.client.start('motion');
       h.client.speak = async () => h.client.cancelTurn();
-      await assert.rejects(h.client.turn('Pick it up', h.controller.signal), /Gespräch beendet/);
+      await assert.rejects(h.client.turn('Pick it up', h.controller.signal), /Conversation ended/);
       assert.equal(h.client.sessionId, 'session');
       assert.ok(h.calls.some(c => c.url?.endsWith('/cancel')));
       assert.ok(!h.calls.some(c => c.url?.endsWith('/tool')));
@@ -177,7 +177,7 @@ for (const engine of ['piper', 'qwen']) {
         if (url.endsWith('/greet')) await h.client.close();
         return response;
       };
-      await assert.rejects(h.client.greet(h.controller.signal), /Gespräch beendet/);
+      await assert.rejects(h.client.greet(h.controller.signal), /Conversation ended/);
       assert.ok(!h.calls.some(c => c.spoken));
     });
   });

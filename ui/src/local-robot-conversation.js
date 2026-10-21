@@ -65,14 +65,14 @@ export class LocalRobotConversation {
   async greet(signal) {
     const id = this.sessionId;
     const epoch = this.epoch;
-    if (!id) throw new DOMException('Gespräch beendet.', 'AbortError');
+    if (!id) throw new DOMException('Conversation ended.', 'AbortError');
     const voice = this.voice();
     const result = await this.api(`${id}/greet`, { voice }, signal);
     signal.throwIfAborted();
-    if (id !== this.sessionId || epoch !== this.epoch) throw new DOMException('Gespräch beendet.', 'AbortError');
+    if (id !== this.sessionId || epoch !== this.epoch) throw new DOMException('Conversation ended.', 'AbortError');
     await this.speak(result.reply, signal, voice);
     signal.throwIfAborted();
-    if (id !== this.sessionId || epoch !== this.epoch) throw new DOMException('Gespräch beendet.', 'AbortError');
+    if (id !== this.sessionId || epoch !== this.epoch) throw new DOMException('Conversation ended.', 'AbortError');
   }
 
   async turn(text, signal) {
@@ -80,7 +80,7 @@ export class LocalRobotConversation {
     const epoch = this.epoch;
     const current = () => {
       signal.throwIfAborted();
-      if (!id || id !== this.sessionId || epoch !== this.epoch) throw new DOMException('Gespräch beendet.', 'AbortError');
+      if (!id || id !== this.sessionId || epoch !== this.epoch) throw new DOMException('Conversation ended.', 'AbortError');
     };
     current();
     const voice = this.voice();
@@ -90,7 +90,7 @@ export class LocalRobotConversation {
     current();
     for (const call of plan.toolCalls || []) {
       const motor = ['execute_molmo_task', 'reset_robot'].includes(call.name);
-      if (motor && !plan.reply?.trim()) throw new Error('Die gesprochene Ankündigung fehlt.');
+      if (motor && !plan.reply?.trim()) throw new Error('The spoken announcement is missing.');
       this.onTool(call, null);
       let result;
       try {

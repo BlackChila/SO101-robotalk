@@ -10,14 +10,14 @@ export class Insta360Controls {
     this.disabled = true;
     this.inputs.forEach((input) => input.addEventListener('input', () => {
       this.dirty = true;
-      this.message.textContent = 'Ausschnitt geändert · mit „Übernehmen“ im Livebild prüfen.';
+      this.message.textContent = 'View changed · select Apply to check the preview.';
       this.update();
     }));
     this.reset.addEventListener('click', () => {
       if (this.disabled || !this.view?.defaults) return;
       this.setValues(this.view.defaults);
       this.dirty = true;
-      this.message.textContent = 'Standardwerte gewählt · mit „Übernehmen“ anwenden.';
+      this.message.textContent = 'Defaults selected · select Apply to save.';
       this.update();
     });
     this.apply.addEventListener('click', () => {
@@ -37,8 +37,8 @@ export class Insta360Controls {
     if (this.view && (applied || !this.dirty || !wasAvailable)) {
       this.setValues(this.view);
       this.dirty = false;
-      this.message.textContent = applied ? 'Ausschnitt gespeichert · bei jedem Start wieder verwendet.'
-        : 'Ausrichtung und Zoom einstellen; anschließend übernehmen.';
+      this.message.textContent = applied ? 'View saved · restored on each start.'
+        : 'Adjust orientation and zoom, then apply.';
     }
     this.update();
   }

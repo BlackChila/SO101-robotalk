@@ -10,7 +10,7 @@ export async function preloadRealtimeMolmo(sessionId, request = fetch) {
     if (!response.ok) return { ready: false, status: response.status,
       reason: payload.detail || `HTTP ${response.status}` };
     if (payload.ready !== true || payload.hardwareCommands !== false) {
-      return { ready: false, status: response.status, reason: 'Ungültige Modellbereitschaft.' };
+      return { ready: false, status: response.status, reason: 'Invalid model readiness report.' };
     }
     return { ready: true, status: response.status, reason: null };
   } catch (error) {

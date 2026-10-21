@@ -26,6 +26,7 @@ test('citation links replace annotations while HTML and unicode remain plain tex
   assert.equal(nodes[1].tag, 'a');
   assert.equal(nodes[1].href, 'https://example.com/weather');
   assert.equal(nodes[1].textContent, '[1]');
+  assert.equal(nodes[1]['aria-label'], 'Source 1: <b>Weather</b>');
   assert.equal(nodes[2].textContent, ' Ende');
   assert.equal(nodes.filter(node => node.tag === 'img').length, 0);
   for (const url of ['javascript:alert(1)', 'data:text/html,test', '//evil.test',
@@ -46,7 +47,7 @@ test('stopping the call aborts a pending fetch and late results do not render', 
     const host = documentStub().createElement('section');
     const client = new RealtimeWebSearch(host);
     const pending = client.search('Aktuelles Wetter');
-    const rejected = assert.rejects(pending, /abgebrochen/);
+    const rejected = assert.rejects(pending, /cancelled/);
     client.stop();
     assert.equal(signal.aborted, true);
     resolve({ ok: true, json: async () => ({ status: 'ok', answer: 'Late result', citations: [] }) });
@@ -72,7 +73,7 @@ test('search without a UI host still returns model results and supports cancella
       return new Promise(resolve => { finish = resolve; });
     };
     const pending = client.search('Next query');
-    const rejected = assert.rejects(pending, /abgebrochen/);
+    const rejected = assert.rejects(pending, /cancelled/);
     client.stop();
     assert.equal(signal.aborted, true);
     finish({ ok: true, json: async () => result });
