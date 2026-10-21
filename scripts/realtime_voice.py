@@ -72,7 +72,7 @@ def create_client_secret(voice: str = REALTIME_VOICE, voice_only: bool = False, 
                   "noch Reset oder andere Werkzeugaufrufe. Keine wiederholten Suchschleifen. "
                 + "Wenn ein Blick auf die aktuelle Umgebung beim Gespräch hilft oder der Mensch "
                   "fragt, was du siehst, rufe look_at_scene auf. Es liefert aktuelle Einzelbilder "
-                  "von Overhead- und Wrist camera; es ist kein dauerhafter Videostream. "
+                  "von Overhead- und Wrist-Kamera; es ist kein dauerhafter Videostream. "
                   "Fordere bei Veränderungen neue Bilder an, aber nicht in einer Schleife. "
                   "Beschreibe erst nach dem Werkzeugergebnis, was tatsächlich sichtbar ist. "
                 + SCENE_VIEW_GUIDANCE

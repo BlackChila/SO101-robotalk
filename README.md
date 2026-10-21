@@ -3,9 +3,8 @@
 RoboTalk is an experimental browser interface for spoken conversation with an
 SO-101 robot. The conversation workspace is the homepage, with no tab selector.
 It combines OpenAI Realtime or local speech, camera previews, face tracking,
-teleoperation, and optional MolmoAct2 robot tasks. This guide is in English;
-the interface currently uses German labels, quoted alongside their English
-translations where needed.
+teleoperation, and optional MolmoAct2 robot tasks. The interface is in English;
+the spoken conversation language can be set separately to German or English.
 
 This repository continues the conversation functionality of
 [2026-PG-robotalk](https://github.com/BlackChila/2026-PG-robotalk). The separate
@@ -22,14 +21,6 @@ reports successful MolmoAct2 pick-and-place trials. General task reliability
 and all current motion paths have not been established. A fresh clone
 does not include models, Python environments, robot calibration, or the external
 MolmoAct2 installation. See [known setup gaps](docs/configuration.md#known-setup-gaps).
-
-## UI preview
-
-Conversation settings with Overhead and side-camera views. This illustrative
-composite uses the actual app layout, simulated backend status and archived
-camera captures edited with AI to remove the cable; it is not a live session.
-
-![Conversation UI with settings open and Overhead and Insta360 camera views](assets/screenshots/conversation-camera-preview.png)
 
 ## Demo video
 
@@ -49,13 +40,13 @@ Click the preview to open or download the compressed MP4.
 | Robot interaction | Camera controls, Leader/Follower teleoperation, saved-pose positioning, speech gripper animation, and face tracking |
 
 **Current conversation status, reported by the maintainer:** OpenAI Realtime
-and Local Piper (`Lokal · Piper` in the UI) are working on the reference setup. Piper provides a
+and Local Piper are working on the reference setup. Piper provides a
 **fully local workflow**: Qwen3-ASR transcribes speech, a locally hosted LM Studio
 model generates replies and task calls, Piper speaks, and MolmoAct2 runs locally.
 After downloading the required components, this mode needs no OpenAI key or
 cloud conversation service. Use a local LM Studio endpoint for local processing.
 
-Local Qwen (`Lokal · Qwen` in the UI) now uses the same local conversation controller and tool/vision
+Local Qwen now uses the same local conversation controller and tool/vision
 protocol as Piper, with Qwen3-TTS CustomVoice speech. Hardware-free tests cover
 the integration; live Qwen voice quality, concurrent runtime performance and
 physical manipulation still need acceptance on the target setup. See the
@@ -234,9 +225,9 @@ source scripts/asr-env.sh
 python -u scripts/asr_web.py
 ```
 
-Open the app, use the settings gear and choose **Local Piper** (`Lokal · Piper`)
-or **Local Qwen** (`Lokal · Qwen`). Set **Conversation language**
-(`Gesprächssprache`) to **German** (`Deutsch`) or **English** before starting a
+Open the app, use the settings gear and choose **Local · Piper**
+or **Local · Qwen**. Set **Conversation language**
+to **German** or **English** before starting a
 call; Piper lists only voices for that language. Pick the voice from
 the name in the conversation heading. The backend starts the selected TTS worker
 automatically; a separate speech-worker terminal is not required.
@@ -260,7 +251,7 @@ another arm. New hardware needs its own calibrated and supervised setup.
 - Inspect fresh cameras and commission your own intro/start-pose setup before
   starting a conversation with a connected arm. Settings expose robot reset,
   model unload, torque and teleoperation.
-- **Stop model run** (`Model Run stoppen`) stops the current MolmoAct2 task while preserving the
+- **Stop model run** stops the current MolmoAct2 task while preserving the
   conversation and loaded model. There is no reliable automatic task-success
   detector; supervise and stop the run.
 - Software stops and disconnects are intended to hold the measured pose with
