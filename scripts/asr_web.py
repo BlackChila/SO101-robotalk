@@ -1856,7 +1856,7 @@ def physical_task_loop(run: dict) -> None:
                                             "epoch_path": str(run["epochPath"]),
                                             "epoch": generation})
                 if execution.get("status") not in {"executed", "stopped"}:
-                    raise RuntimeError("Aktionsblock wurde vorzeitig beendet.")
+                    raise RuntimeError("The action block ended early.")
                 with _task_guard:
                     run["actions"] += execution.get("executedActions", 0)
                     if execution.get("executedActions", 0) > 0:

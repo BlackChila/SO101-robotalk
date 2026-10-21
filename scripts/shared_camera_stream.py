@@ -56,7 +56,7 @@ def _recv_exact(connection: socket.socket, count: int) -> bytes:
     while len(parts) < count:
         data = connection.recv(min(count - len(parts), 1024 * 1024))
         if not data:
-            raise ConnectionError("Kamerastrom wurde geschlossen.")
+            raise ConnectionError("The camera stream was closed.")
         parts.extend(data)
     return bytes(parts)
 

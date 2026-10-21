@@ -124,7 +124,7 @@ class FaceTrackingSession:
                     raise RuntimeError(control.get("error") or "The motor controller rejected face tracking.")
                 vision = self.camera.face_tracking("status")
                 if not vision.get("running") or vision.get("error"):
-                    raise RuntimeError(vision.get("error") or "Gesichtsdetektor wurde beendet.")
+                    raise RuntimeError(vision.get("error") or "The face detector stopped.")
                 observation = vision.get("observation")
                 if observation and observation.get("sequence") != last_sequence:
                     with self.lock:
