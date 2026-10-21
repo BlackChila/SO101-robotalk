@@ -89,6 +89,48 @@ dependencies and caches, and are not total disk or GPU-memory requirements.
 Each model and voice has its own upstream license. MolmoAct2 is optional for
 voice conversation; its runtime is required for manipulation tasks.
 
+## Hardware for local MolmoAct2 inference
+
+These figures apply to the **SO-100/101 policy**, not training or the larger
+DROID model. Ai2 publishes measurements for this checkpoint, but no guaranteed
+minimum hardware specification. The official [SO-100/101 model card](https://huggingface.co/allenai/MolmoAct2-SO100_101#continuous-actions)
+reports the following GPU-memory use:
+
+| Inference mode | Official measurement | Meaning for this app |
+| --- | --- | --- |
+| BF16 (`bfloat16`) | Below **16 GB** in Ai2's tests | A **16 GB NVIDIA GPU with BF16 support** is a starting target for policy-only experiments, not a validated minimum for RoboTalk. It requires changing the local runtime configuration. |
+| FP32, CUDA graphs off | About **24 GB** | Corresponds to the converted checkpoint's default precision and this app's live worker, which disables CUDA graphs. Allow extra free GPU memory for other processes. |
+| FP32, CUDA graphs on | About **26 GB** | Upstream comparison; CUDA graphs are disabled in this app's live worker. |
+
+**Good hardware target:** for the policy alone, plan for an NVIDIA GPU with
+**32 GB VRAM or more** to give the FP32 path some headroom. For a workstation
+with a discrete GPU, **64 GB system RAM** and **at least 150 GB free SSD space**
+are practical planning allowances for loading models, environments and caches.
+These are project recommendations, not upstream requirements or benchmarked
+minimums. Ai2 does not specify a minimum CPU or system-RAM capacity. The two
+checkpoint trees used here already occupy about **44 GB on disk**, before
+dependencies, caches, speech models and the dialogue model.
+
+The **complete local conversation stack needs additional memory** for ASR,
+the LM Studio dialogue model, and optional Qwen TTS. A GPU that fits MolmoAct2
+alone may not fit these concurrently; there is no combined memory or latency
+benchmark for this app. A smaller dialogue model, or hosting LM Studio on
+another machine, can reduce the local memory budget.
+
+The project's reference system is **Linux ARM64 with NVIDIA GB10 / DGX Spark**.
+DGX Spark has [128 GB of shared CPU/GPU unified memory](https://docs.nvidia.com/dgx/dgx-spark/hardware.html),
+which is not 128 GB of dedicated VRAM. This adapter requires CUDA. Its MolmoAct2
+environment is external and has no checked-in dependency lock; other platforms
+remain unvalidated here.
+
+For the lower-memory BF16 route, the [converted checkpoint configuration](https://huggingface.co/lerobot/MolmoAct2-SO100_101-LeRobot/blob/a93b5fcdce4c1e3cc7688c939fc943bf4b092a8a/config.json)
+defaults to `model_dtype: "float32"`. Upstream [LeRobot's configuration](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/policies/molmoact2/configuration_molmoact2.py)
+supports `"bfloat16"`; selecting it in the local
+`models/molmoact2/runtime/config.json` changes the precision. This path has not
+been validated in RoboTalk. See the [MolmoAct2 adapter setup](environments/molmoact2/README.md)
+for the external environment and checkpoint requirements. Sources checked on
+2026-10-21.
+
 ## Conversational robot tasks
 
 Explicitly requested manipulation uses
