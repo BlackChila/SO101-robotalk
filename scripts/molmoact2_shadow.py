@@ -30,16 +30,16 @@ def predict(prompt: str) -> dict:
     from lerobot.policies.molmoact2.modeling_molmoact2 import MolmoAct2Policy
 
     if not torch.cuda.is_available():
-        raise RuntimeError("CUDA ist für MolmoAct2 nicht verfügbar.")
+        raise RuntimeError("CUDA is unavailable for MolmoAct2.")
     config = PreTrainedConfig.from_pretrained(RUNTIME)
     config.checkpoint_path = str(SOURCE)
     config.device = "cuda"
     config.push_to_hub = False
     config.enable_inference_cuda_graph = False
     if config.image_keys != ["observation.images.cam0", "observation.images.cam1"]:
-        raise RuntimeError(f"Unerwartete Kamera-Eingänge: {config.image_keys}")
+        raise RuntimeError(f"Unexpected camera inputs: {config.image_keys}")
     if config.chunk_size != 30:
-        raise RuntimeError(f"Unerwartete Aktionslänge: {config.chunk_size}")
+        raise RuntimeError(f"Unexpected action length: {config.chunk_size}")
 
     torch.manual_seed(0)
     started = time.monotonic()
@@ -77,10 +77,10 @@ def predict(prompt: str) -> dict:
         torch.cuda.synchronize()
         infer_seconds = time.monotonic() - started
         if tuple(actions.shape) != (1, 30, 6) or not torch.isfinite(actions).all():
-            raise RuntimeError("MolmoAct2 lieferte keinen gültigen 30×6-Aktionsblock.")
+            raise RuntimeError("MolmoAct2 did not return a valid 30×6 action block.")
         first = post(actions[:, 0, :]).squeeze(0).cpu()
         if tuple(first.shape) != (6,) or not torch.isfinite(first).all():
-            raise RuntimeError("MolmoAct2-Nachverarbeitung lieferte ungültige Werte.")
+            raise RuntimeError("MolmoAct2 postprocessing returned invalid values.")
 
     return {
         "model": "molmoact2",
@@ -99,7 +99,7 @@ def main() -> None:
     request = json.load(sys.stdin)
     prompt = request.get("prompt")
     if not isinstance(prompt, str) or not 1 <= len(prompt.strip()) <= 500:
-        raise ValueError("Prompt muss zwischen 1 und 500 Zeichen enthalten.")
+        raise ValueError("The prompt must contain 1 to 500 characters.")
     print("RESULT_JSON:" + json.dumps(predict(prompt.strip()), ensure_ascii=False), flush=True)
 
 

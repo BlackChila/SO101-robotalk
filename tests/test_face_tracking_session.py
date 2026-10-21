@@ -135,7 +135,7 @@ class FaceTrackingSessionTests(unittest.TestCase):
         for other_session in (None, 'old-call'):
             for action in ('disable', 'stop', 'preview', 'enable'):
                 with self.subTest(session=other_session, action=action):
-                    with self.assertRaisesRegex(RuntimeError, 'anderen Gesprächssitzung'):
+                    with self.assertRaisesRegex(RuntimeError, 'another conversation session'):
                         self.session.command(action, other_session, require_owner=True)
         self.assertEqual(self.sent, before)
         self.assertEqual(self.session.mode, 'tracking')

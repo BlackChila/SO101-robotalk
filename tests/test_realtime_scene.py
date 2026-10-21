@@ -115,7 +115,7 @@ class SceneSnapshotTests(unittest.TestCase):
     def test_session_uses_existing_worker_and_never_starts_one(self):
         session = LiveCameraSession()
         with patch.object(session, '_start_locked') as start, patch.object(session, '_call', return_value={'images': []}) as rpc:
-            with self.assertRaisesRegex(RuntimeError, 'nicht aktiv'):
+            with self.assertRaisesRegex(RuntimeError, 'not active'):
                 session.scene_snapshot()
             session._process = Mock(poll=Mock(return_value=None))
             session._model_id = 'molmoact2'

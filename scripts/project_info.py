@@ -48,7 +48,7 @@ def get_project_info(mode: str, *, dialogue_model: str | None = None,
     parameter count; the notes describe the repository's reference installation.
     """
     if mode not in {"realtime", "piper", "qwen"}:
-        raise ValueError("Unbekannter Gesprächsmodus.")
+        raise ValueError("Unknown conversation mode.")
     if mode == "realtime":
         active = {
             "mode": "ChatGPT Realtime",
@@ -78,5 +78,5 @@ def get_project_info(mode: str, *, dialogue_model: str | None = None,
               "background": REFERENCE_PATH.read_text(encoding="utf-8")}
     encoded = json.dumps(result, ensure_ascii=False)
     if len(encoded.split()) > MAX_PROJECT_INFO_WORDS or len(encoded.encode("utf-8")) > MAX_PROJECT_INFO_BYTES:
-        raise RuntimeError("Technischer Hintergrund überschreitet das kompakte Kontextlimit.")
+        raise RuntimeError("Technical background exceeds the compact context limit.")
     return result

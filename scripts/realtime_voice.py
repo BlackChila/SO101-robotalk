@@ -49,7 +49,7 @@ def create_client_secret(voice: str = REALTIME_VOICE, voice_only: bool = False, 
     language_prompt = conversation_language_instruction(language)
     key = _api_key()
     if not key:
-        raise RuntimeError("OPENAI_API_KEY ist auf dem UI-Server nicht gesetzt.")
+        raise RuntimeError("OPENAI_API_KEY is not configured on the UI server.")
     session = {
         "session": {
             "type": "realtime",
@@ -72,7 +72,7 @@ def create_client_secret(voice: str = REALTIME_VOICE, voice_only: bool = False, 
                   "noch Reset oder andere Werkzeugaufrufe. Keine wiederholten Suchschleifen. "
                 + "Wenn ein Blick auf die aktuelle Umgebung beim Gespräch hilft oder der Mensch "
                   "fragt, was du siehst, rufe look_at_scene auf. Es liefert aktuelle Einzelbilder "
-                  "von Overhead- und Wrist-Kamera; es ist kein dauerhafter Videostream. "
+                  "von Overhead- und Wrist camera; es ist kein dauerhafter Videostream. "
                   "Fordere bei Veränderungen neue Bilder an, aber nicht in einer Schleife. "
                   "Beschreibe erst nach dem Werkzeugergebnis, was tatsächlich sichtbar ist. "
                 + SCENE_VIEW_GUIDANCE
@@ -175,13 +175,13 @@ def create_client_secret(voice: str = REALTIME_VOICE, voice_only: bool = False, 
             payload = json.load(response)
     except HTTPError as exc:
         if exc.code in (401, 403):
-            raise RuntimeError("OpenAI API-Schlüssel wurde abgelehnt.") from exc
+            raise RuntimeError("The OpenAI API key was rejected.") from exc
         if exc.code == 429:
-            raise RuntimeError("OpenAI Realtime ist derzeit limitiert oder das Kontingent ist erschöpft.") from exc
-        raise RuntimeError(f"OpenAI Realtime konnte nicht gestartet werden (HTTP {exc.code}).") from exc
+            raise RuntimeError("OpenAI Realtime is currently rate limited or the quota is exhausted.") from exc
+        raise RuntimeError(f"OpenAI Realtime could not be started (HTTP {exc.code}).") from exc
     except (URLError, TimeoutError, OSError, ValueError) as exc:
-        raise RuntimeError("OpenAI Realtime ist vom UI-Server nicht erreichbar.") from exc
+        raise RuntimeError("OpenAI Realtime is unreachable from the UI server.") from exc
     secret = payload.get("value") if isinstance(payload, dict) else None
     if not isinstance(secret, str) or not secret:
-        raise RuntimeError("OpenAI Realtime hat keinen gültigen Sitzungsschlüssel geliefert.")
+        raise RuntimeError("OpenAI Realtime did not return a valid session key.")
     return secret

@@ -32,7 +32,7 @@ def _request(path: str, payload: dict | None = None, timeout: float = 5) -> dict
         detail = exc.read(500).decode("utf-8", errors="replace")
         raise RuntimeError(f"LM Studio HTTP {exc.code}: {detail}") from exc
     except (URLError, TimeoutError) as exc:
-        raise RuntimeError(f"LM Studio ist nicht erreichbar: {exc}") from exc
+        raise RuntimeError(f"LM Studio is unreachable: {exc}") from exc
 
 
 def model_status() -> dict:
@@ -40,16 +40,16 @@ def model_status() -> dict:
     try:
         models = _request("/api/v1/models")["models"]
     except (RuntimeError, KeyError, ValueError):
-        return {"ready": False, "model": MODEL, "reason": "LM Studio API nicht erreichbar"}
+        return {"ready": False, "model": MODEL, "reason": "LM Studio API is unreachable"}
     for model in models:
         instances = model.get("loaded_instances") or []
         if model.get("key") == MODEL or any(item.get("id") == MODEL for item in instances):
             quant = (model.get("quantization") or {}).get("name")
             return {"ready": bool(instances), "model": MODEL,
                     "quantization": quant, "loaded": bool(instances),
-                    "reason": "" if instances else f"{MODEL} muss in LM Studio geladen sein"}
+                    "reason": "" if instances else f"{MODEL} must be loaded in LM Studio"}
     return {"ready": False, "model": MODEL,
-            "reason": f"{MODEL} ist in LM Studio nicht installiert"}
+            "reason": f"{MODEL} is not installed in LM Studio"}
 
 
 def ensure_model_loaded() -> dict:
@@ -58,14 +58,14 @@ def ensure_model_loaded() -> dict:
         try:
             models = _request("/api/v1/models")["models"]
         except (KeyError, ValueError) as exc:
-            raise RuntimeError("LM Studio lieferte keine Modellliste.") from exc
+            raise RuntimeError("LM Studio did not return a model list.") from exc
         selected = next((model for model in models if model.get("key") == MODEL), None)
         if selected is None:
-            raise RuntimeError(f"{MODEL} ist in LM Studio nicht installiert.")
+            raise RuntimeError(f"{MODEL} is not installed in LM Studio.")
         if not selected.get("loaded_instances"):
             loaded = _request("/api/v1/models/load", {"model": MODEL}, timeout=180)
             if loaded.get("status") != "loaded":
-                raise RuntimeError(f"LM Studio konnte {MODEL} nicht laden.")
+                raise RuntimeError(f"LM Studio could not load {MODEL}.")
         result = model_status()
         if not result["ready"]:
             raise RuntimeError(result["reason"])
@@ -86,7 +86,7 @@ def reply(text: str, previous_response_id: str | None = None) -> dict:
                        if item.get("type") == "message" and isinstance(item.get("content"), str)).strip()
     response_id = result.get("response_id")
     if not answer or not isinstance(response_id, str) or not response_id.startswith("resp_"):
-        raise RuntimeError("LM Studio lieferte keine vollständige Antwort")
+        raise RuntimeError("LM Studio did not return a complete response")
     return {"reply": answer, "responseId": response_id}
 
 
@@ -105,7 +105,7 @@ def tool_reply(messages: list[dict], tools: list[dict]) -> dict:
     result = _request("/v1/chat/completions", payload, timeout=120)
     choices = result.get("choices") or []
     if not choices or choices[0].get("finish_reason") not in {"stop", "tool_calls"}:
-        raise RuntimeError("Lokales Modell lieferte keine vollständige Antwort/Werkzeuganfrage.")
+        raise RuntimeError("The local model did not return a complete response or tool request.")
     message = choices[0].get("message") or {}
     # Do not speak reasoning or attempt to interpret malformed tool text as code.
     return {"role": "assistant", "content": message.get("content") or "",

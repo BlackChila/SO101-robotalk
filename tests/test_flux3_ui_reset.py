@@ -21,7 +21,7 @@ class UiResetSafetyTests(unittest.TestCase):
         bounds = {name: (-100.0, 100.0) for name in NAMES}
         flux3_ui_reset.assert_measured_in_bounds(measured, bounds)
         measured["shoulder_lift"] = -101.0
-        with self.assertRaisesRegex(RuntimeError, "außerhalb der Kalibrierung"):
+        with self.assertRaisesRegex(RuntimeError, "outside calibration"):
             flux3_ui_reset.assert_measured_in_bounds(measured, bounds)
 
     def test_uncommissioned_reset_never_connects_to_robot(self) -> None:
@@ -35,13 +35,13 @@ class UiResetSafetyTests(unittest.TestCase):
         self.assertEqual(factory.call_count, 1)
         fake_controller.connect.assert_not_called()
         self.assertEqual(report["outcome"], "aborted")
-        self.assertIn("nicht validiert", report["error"])
+        self.assertIn("not been validated", report["error"])
 
     def test_tracking_fault_stops_before_next_goal(self) -> None:
         goal = dict.fromkeys(NAMES, 0.0)
         flux3_ui_reset.assert_tracking(goal, dict(goal, elbow_flex=2.0))
         actual = dict(goal, elbow_flex=15.1)
-        with self.assertRaisesRegex(RuntimeError, "Nachführfehler elbow_flex"):
+        with self.assertRaisesRegex(RuntimeError, "Tracking error elbow_flex"):
             flux3_ui_reset.assert_tracking(goal, actual)
 
     def test_lagging_goal_is_limited_and_final_pose_uses_proven_tolerance(self) -> None:
@@ -89,7 +89,7 @@ class UiResetSafetyTests(unittest.TestCase):
             report = Path(temp_dir) / "report.json"
             self.assertEqual(flux3_ui_reset.run(report), 1)
             saved = json.loads(report.read_text())
-        self.assertIn("Nachführfehler elbow_flex", saved["error"])
+        self.assertIn("Tracking error elbow_flex", saved["error"])
         self.assertEqual(controller.robot.bus.sync_write.call_count, 2)
         controller.close.assert_called_once()
 
@@ -113,7 +113,7 @@ class UiResetSafetyTests(unittest.TestCase):
             current_goal if register == "Goal_Position" else start)
         with patch.object(flux3_ui_reset.time, "monotonic", side_effect=lambda: clock[0]), \
              patch.object(flux3_ui_reset.time, "sleep", side_effect=lambda seconds: clock.__setitem__(0, clock[0] + seconds)), \
-             self.assertRaisesRegex(RuntimeError, "Keine gemessene Bewegung"):
+             self.assertRaisesRegex(RuntimeError, "No measured movement"):
             flux3_ui_reset.move_monitored(controller, [])
         sent = [call.args[1]["elbow_flex"]
                 for call in controller.robot.bus.sync_write.call_args_list]

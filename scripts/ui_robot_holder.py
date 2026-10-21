@@ -190,7 +190,7 @@ def command_loop(controller: FluxStartController, report: dict, report_path: Pat
                 response = snapshot(controller, command["model"], Path(command["observation_path"]))
             elif command.get("op") == "return_to_start":
                 if task_active:
-                    raise RuntimeError("Zuerst die laufende Aufgabe stoppen.")
+                    raise RuntimeError("Stop the running task first.")
                 require_commissioned(controller.saved)
                 move_monitored(controller, report["telemetry"], already_holding=True)
                 measured = _hold_measured(controller)
@@ -261,9 +261,9 @@ def run(report_path: Path) -> int:
                     controller.robot.bus.disconnect(disable_torque=False)
             except BaseException as exc:
                 report["outcome"] = "aborted"
-                action = ("Drehmoment aus" if release_reason == "operator_release"
-                          else "Halteziel oder Drehmoment")
-                report["cleanup_error"] = f"{action} nicht verifizierbar: {type(exc).__name__}: {exc}"
+                action = ("Torque off" if release_reason == "operator_release"
+                          else "Hold goal or torque")
+                report["cleanup_error"] = f"{action} could not be verified: {type(exc).__name__}: {exc}"
         report["ended_at_unix"] = time.time()
         report_path.write_text(json.dumps(report, indent=2) + "\n")
     return 0 if report["outcome"] == "released_after_hold" else 1

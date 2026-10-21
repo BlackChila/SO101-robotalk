@@ -62,7 +62,7 @@ class SearchTests(unittest.IsolatedAsyncioTestCase):
         with patch.object(search.realtime_voice, '_api_key', return_value='test'), \
              patch.object(search.httpx, 'AsyncClient', return_value=client), \
              patch.object(search, 'TIMEOUT_S', 0.01):
-            with self.assertRaisesRegex(RuntimeError, 'Zeitlimit'):
+            with self.assertRaisesRegex(RuntimeError, 'timed out'):
                 await search.search('Wetter')
 
     async def test_blank_or_oversize_query_never_reaches_network(self):

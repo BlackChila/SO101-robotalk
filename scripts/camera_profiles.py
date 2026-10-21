@@ -45,7 +45,7 @@ def camera_profile(model_id: str, geometry: str | None = None) -> dict:
             "model": model_id, "version": "conversation-preview-v3",
             "geometry": "independent_4x3", "cameras": {}, "slots": {},
             "observer_cameras": {
-                "cam0": {**deepcopy(CAPTURE_CAMERAS["scene"]), "fps": 15, "label": "Overhead-Kamera"},
+                "cam0": {**deepcopy(CAPTURE_CAMERAS["scene"]), "fps": 15, "label": "Overhead camera"},
                 "cam1": {**deepcopy(X5_CAMERA), "fps": 15, "label": "Insta360 X5"},
                 # Display uses 4:3; face detection requests the native raw frame.
                 "wrist": {**deepcopy(CAPTURE_CAMERAS["wrist"]), "fps": 15},

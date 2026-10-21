@@ -42,7 +42,7 @@ def project_x5(rgb: np.ndarray, filter_spec: str) -> np.ndarray:
         input=rgb.tobytes(), capture_output=True, timeout=5, check=True,
     )
     if len(result.stdout) != 960 * 720 * 3:
-        raise RuntimeError("Unvollständiges X5-Perspektivbild.")
+        raise RuntimeError("Incomplete X5 perspective image.")
     return np.frombuffer(result.stdout, dtype=np.uint8).reshape(720, 960, 3).copy()
 
 
@@ -91,7 +91,7 @@ class CameraPair:
         for role, config in self.profile["cameras"].items():
             device = Path(config["path"])
             if not device.exists():
-                errors[role] = f"{role} nicht verbunden: {device}"
+                errors[role] = f"{role} is not connected: {device}"
                 continue
             try:
                 if role == "cam0":
@@ -100,7 +100,7 @@ class CameraPair:
                     camera = cv2.VideoCapture(str(device), cv2.CAP_V4L2)
                     try:
                         if not camera.isOpened():
-                            errors[role] = f"{role} lässt sich nicht öffnen: {device}"
+                            errors[role] = f"{role} could not be opened: {device}"
                             continue
                         camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
                         camera.set(cv2.CAP_PROP_FRAME_WIDTH, config["width"])
@@ -115,14 +115,14 @@ class CameraPair:
                                 break
                         if role in self.cameras:
                             break
-                        errors[role] = f"{role} liefert kein sichtbares Bild: {device}"
+                        errors[role] = f"{role} is not providing a visible image: {device}"
                     finally:
                         if role not in self.cameras:
                             camera.release()
             except Exception as exc:
                 errors[role] = f"{role}: {exc}"
         if not self.cameras:
-            raise RuntimeError("Keine MolmoAct2-Kamera bereit: " + "; ".join(errors.values()))
+            raise RuntimeError("No MolmoAct2 camera is ready: " + "; ".join(errors.values()))
         for observer in self.observers.values():
             observer.start()
         self.start_streaming()
@@ -133,7 +133,7 @@ class CameraPair:
             ok, frame = camera.read()
             config = self.profile["cameras"][role]
             if not ok or frame is None or frame.shape != (config["height"], config["width"], 3):
-                raise RuntimeError(f"Kein gültiges Bild von {role}.")
+                raise RuntimeError(f"No valid image from {role}.")
             frames[role] = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         return frames
 
@@ -151,10 +151,10 @@ class CameraPair:
                 ok, bgr = camera.read()
                 timestamp = time.monotonic()
                 if not ok or bgr is None or bgr.shape != (config["height"], config["width"], 3):
-                    raise RuntimeError(f"Kein gültiges Bild von {role}.")
+                    raise RuntimeError(f"No valid image from {role}.")
                 rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
                 if self.model_id == "molmoact2" and role not in self.adjusting_exposure and rgb[::16, ::16].mean() < 2:
-                    raise RuntimeError(f"Kamera {role} liefert ein schwarzes Bild.")
+                    raise RuntimeError(f"Camera {role} is providing a black image.")
                 with self.condition:
                     self.latest[role] = (rgb, timestamp)
                     self.condition.notify_all()
@@ -163,7 +163,7 @@ class CameraPair:
                 if self.model_id == "molmoact2":
                     self.failed_roles.add(role)
                     if len(self.failed_roles) == len(self.cameras):
-                        self.capture_error = f"Keine MolmoAct2-Kamera mehr bereit: {exc}"
+                        self.capture_error = f"No MolmoAct2 camera remains ready: {exc}"
                 else:
                     self.capture_error = str(exc)
                 self.condition.notify_all()
@@ -176,7 +176,7 @@ class CameraPair:
                     raise RuntimeError(self.capture_error)
                 active_roles = self.cameras.keys() - self.failed_roles
                 if not active_roles:
-                    raise RuntimeError("Keine Kamera mehr bereit.")
+                    raise RuntimeError("No cameras remain ready.")
                 if active_roles <= self.latest.keys():
                     timestamps = {role: self.latest[role][1] for role in active_roles}
                     now = time.monotonic()
@@ -186,7 +186,7 @@ class CameraPair:
                                 timestamps)
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
-                    raise TimeoutError("Kein frisches synchrones Kamerapaar.")
+                    raise TimeoutError("No fresh synchronized camera pair.")
                 self.condition.wait(min(remaining, 0.05))
 
     def read_views(self, *, after: float = 0.0, with_meta: bool = False,
@@ -203,7 +203,7 @@ class CameraPair:
             if self.profile["geometry"] == "highres_4x3" or self.model_id == "molmoact2":
                 rgb = crop_4x3(rgb, config["crop"] if role != "cam1" else None)
             if rgb[::16, ::16].mean() < 2:
-                raise RuntimeError(f"Kamera {role} liefert ein schwarzes Bild.")
+                raise RuntimeError(f"Camera {role} is providing a black image.")
             views[role] = rgb.copy()
         if self.model_id == "molmoact2" and len(views) == 1:
             source = next(iter(views))
@@ -230,7 +230,7 @@ class CameraPair:
             bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
             ok, encoded = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, 80])
             if not ok:
-                raise RuntimeError(f"Vorschau für {role} konnte nicht kodiert werden.")
+                raise RuntimeError(f"The preview for {role} could not be encoded.")
             result[role] = {"width": rgb.shape[1], "height": rgb.shape[0],
                             "jpeg": base64.b64encode(encoded).decode("ascii")}
         return result
@@ -267,7 +267,7 @@ class CameraPair:
                 self.brightness[role] = control
             except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as exc:
                 self.brightness[role] = None
-                print(f"Helligkeitssteuerung {role} nicht bereit: {exc}", file=sys.stderr, flush=True)
+                print(f"Brightness control for {role} is not ready: {exc}", file=sys.stderr, flush=True)
 
     def brightness_metadata(self) -> dict:
         return {role: self.brightness.get(role) for role in self.active_camera_roles()}
@@ -311,12 +311,12 @@ class CameraPair:
     def set_camera_brightness(self, role: str, value: int) -> dict:
         control = self.brightness_metadata().get(role)
         if control is None:
-            raise RuntimeError("Diese Kamera hat keine verfügbare Helligkeitssteuerung.")
+            raise RuntimeError("This camera has no available brightness control.")
         device = self.camera_config(role)["path"]
         # Read the actual current setting so rollback also preserves external adjustments.
         previous = probe_brightness(device)
         if previous is None:
-            raise RuntimeError("Die Helligkeitssteuerung ist nicht mehr verfügbar.")
+            raise RuntimeError("Brightness control is no longer available.")
         from camera_brightness import validate_brightness
         validate_brightness(value, previous)
         try:
@@ -329,7 +329,7 @@ class CameraPair:
                 self.brightness[role] = set_brightness(device, previous["value"], previous)
             except Exception as rollback_error:
                 self.brightness[role] = None
-                raise RuntimeError(f"Helligkeit nicht gespeichert; Wiederherstellung nicht bestätigt: {rollback_error}") from exc
+                raise RuntimeError(f"Brightness was not saved; rollback was not confirmed: {rollback_error}") from exc
             raise
 
     def initialize_exposure(self) -> None:
@@ -343,7 +343,7 @@ class CameraPair:
                 self.exposure[role] = self._exposure_default(role, control)
             except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as exc:
                 self.exposure[role] = None
-                print(f"Belichtungssteuerung {role} nicht bereit: {exc}", file=sys.stderr, flush=True)
+                print(f"Exposure control for {role} is not ready: {exc}", file=sys.stderr, flush=True)
 
     def _exposure_default(self, role: str, control: dict | None) -> dict | None:
         if control is None:
@@ -356,11 +356,11 @@ class CameraPair:
 
     def set_camera_exposure(self, role: str, value: int) -> dict:
         if self.exposure_metadata().get(role) is None:
-            raise RuntimeError("Diese Kamera hat keine verfügbare Belichtungssteuerung.")
+            raise RuntimeError("This camera has no available exposure control.")
         device = self.camera_config(role)["path"]
         previous = probe_exposure(device)
         if previous is None:
-            raise RuntimeError("Die Belichtungssteuerung ist nicht mehr verfügbar.")
+            raise RuntimeError("Exposure control is no longer available.")
         validate_exposure(value, previous)
         self.adjusting_exposure.add(role)
         try:
@@ -368,7 +368,7 @@ class CameraPair:
             # USB buffers can still contain sensor frames from the old shutter.
             result = self.settings_preview(role)
             if result.get("cameraExposure", {}).get(role) is None:
-                raise RuntimeError("Die Kamera ist während der Belichtungsänderung ausgefallen.")
+                raise RuntimeError("The camera failed while changing exposure.")
             save_exposure(device, value)
             return result
         except Exception as exc:
@@ -378,10 +378,10 @@ class CameraPair:
                 # the restored shutter has produced a valid fresh image.
                 restored = self.settings_preview(role)
                 if restored.get("cameraExposure", {}).get(role) is None:
-                    raise RuntimeError("Die Kamera liefert kein bestätigtes Wiederherstellungsbild.")
+                    raise RuntimeError("The camera is not providing a confirmed recovery image.")
             except Exception as rollback_error:
                 self.exposure[role] = None
-                raise RuntimeError(f"Belichtung nicht gespeichert; Wiederherstellung nicht bestätigt: {rollback_error}") from exc
+                raise RuntimeError(f"Exposure was not saved; rollback was not confirmed: {rollback_error}") from exc
             raise
         finally:
             self.adjusting_exposure.discard(role)
@@ -398,14 +398,14 @@ class CameraPair:
 
     def set_insta360_view(self, view: dict) -> dict:
         if self.insta360_view() is None:
-            raise RuntimeError("Insta360 wird von diesem Kameraprofil nicht verwendet oder ist nicht bereit.")
+            raise RuntimeError("Insta360 is unused by this camera profile or is not ready.")
         view = validate_view(view)
         previous = self.profile
         self.profile = {**previous, "x5_view": view, "x5_projection": projection_filter(view)}
         try:
             result = self.preview()
             if result["insta360View"] is None:
-                raise RuntimeError("Insta360 ist nicht mehr bereit.")
+                raise RuntimeError("Insta360 is no longer ready.")
             save_view(view)
             return result
         except Exception:
@@ -430,14 +430,14 @@ class CameraPair:
                     with self.condition:
                         while True:
                             if role not in self.cameras or role in self.failed_roles or self.stop_event.is_set():
-                                raise RuntimeError("Kamera nicht verfügbar.")
+                                raise RuntimeError("Camera unavailable.")
                             frame = self.latest.get(role)
                             if frame and frame[1] > after and time.monotonic() - frame[1] <= 0.5:
                                 rgb, stamp = frame[0].copy(), frame[1]
                                 break
                             remaining = deadline - time.monotonic()
                             if remaining <= 0:
-                                raise TimeoutError("Kein frisches Kamerabild.")
+                                raise TimeoutError("No fresh camera image.")
                             self.condition.wait(min(remaining, 0.05))
                     config = self.profile["cameras"][role]
                     if config.get("crop"):
@@ -498,7 +498,7 @@ class PhysicalFrameServer:
             except (ConnectionRefusedError, FileNotFoundError):
                 self.path.unlink(missing_ok=True)
             else:
-                raise RuntimeError("Ein anderer Kamera-Worker besitzt den physischen Stream.")
+                raise RuntimeError("Another camera worker owns the physical stream.")
             finally:
                 probe.close()
         listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -529,7 +529,7 @@ class PhysicalFrameServer:
             hello, _ = receive_packet(connection)
             if (hello.get("op") != "hello" or hello.get("model") != self.pair.model_id
                     or hello.get("version") != self.pair.profile["version"]):
-                send_packet(connection, {"ok": False, "error": "Kameraprofil passt nicht."})
+                send_packet(connection, {"ok": False, "error": "Camera profile mismatch."})
                 return
             send_packet(connection, {"ok": True, "model": self.pair.model_id,
                                      "version": self.pair.profile["version"]})
@@ -537,12 +537,12 @@ class PhysicalFrameServer:
             while not self.stop_event.is_set():
                 command, _ = receive_packet(connection)
                 if command.get("op") != "frame":
-                    send_packet(connection, {"ok": False, "error": "Unbekannter Frame-Befehl."})
+                    send_packet(connection, {"ok": False, "error": "Unknown frame command."})
                     continue
                 after = float(command.get("after", 0.0))
                 timeout_s = float(command.get("timeout_s", 0.8))
                 if not 0 <= after <= time.monotonic() or not 0.05 <= timeout_s <= 1.0:
-                    raise ValueError("Ungültiger Zeitstempel oder Timeout.")
+                    raise ValueError("Invalid timestamp or timeout.")
                 views, timestamps = self.pair.read_views(after=after, with_meta=True,
                                                          timeout_s=timeout_s)
                 payload = b"".join(views[role].tobytes() for role in self.pair.profile["cameras"])
@@ -611,7 +611,7 @@ def serve(model_id: str) -> None:
                         raise ValueError("Conversation cameras provide previews only.")
                     result = pair.preview() if op == "preview" else pair.capture()
                 else:
-                    raise ValueError("Unbekannter Kamera-Befehl.")
+                    raise ValueError("Unknown camera command.")
                 print("RESULT_JSON:" + json.dumps(result), flush=True)
             except Exception as exc:
                 print("ERROR_JSON:" + json.dumps({"error": str(exc)}), flush=True)

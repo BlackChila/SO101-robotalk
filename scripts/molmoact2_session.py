@@ -29,7 +29,7 @@ CHECKPOINT = "lerobot/MolmoAct2-SO100_101-LeRobot"
 
 def _valid_task(value: Any) -> str:
     if not isinstance(value, str) or not 1 <= len(value.strip()) <= 500:
-        raise ValueError("Task muss zwischen 1 und 500 Zeichen enthalten.")
+        raise ValueError("The task must contain 1 to 500 characters.")
     return value.strip()
 
 
@@ -39,11 +39,11 @@ def load_live_camera_images(camera_npz: str, torch) -> dict[str, Any]:
     images = {}
     with np.load(camera_npz, allow_pickle=False) as saved:
         if set(saved.files) != {"cam0", "cam1"}:
-            raise ValueError("MolmoAct2 braucht cam0 und cam1.")
+            raise ValueError("MolmoAct2 requires cam0 and cam1.")
         for role in ("cam0", "cam1"):
             rgb = saved[role]
             if rgb.shape != (1, 720, 960, 3) or rgb.dtype != np.uint8:
-                raise ValueError(f"Ungültiges Livebild für {role}: {rgb.shape}")
+                raise ValueError(f"Invalid live image for {role}: {rgb.shape}")
             images[f"observation.images.{role}"] = (
                 torch.from_numpy(rgb[0].copy()).permute(2, 0, 1).float() / 255
             )
@@ -64,7 +64,7 @@ class MolmoRuntime:
         from camera_profiles import crop_4x3
 
         if not torch.cuda.is_available():
-            raise RuntimeError("CUDA ist für MolmoAct2 nicht verfügbar.")
+            raise RuntimeError("CUDA is unavailable for MolmoAct2.")
         config = PreTrainedConfig.from_pretrained(RUNTIME)
         config.checkpoint_path = str(SOURCE)
         config.device = "cuda"
@@ -72,9 +72,9 @@ class MolmoRuntime:
         # Differently tokenized tasks should not trigger CUDA graph recapture.
         config.enable_inference_cuda_graph = False
         if config.image_keys != ["observation.images.cam0", "observation.images.cam1"]:
-            raise RuntimeError(f"Unerwartete Kamera-Eingänge: {config.image_keys}")
+            raise RuntimeError(f"Unexpected camera inputs: {config.image_keys}")
         if config.chunk_size != 30:
-            raise RuntimeError(f"Unerwartete Aktionslänge: {config.chunk_size}")
+            raise RuntimeError(f"Unexpected action length: {config.chunk_size}")
 
         torch.manual_seed(0)
         started = time.monotonic()
@@ -136,17 +136,17 @@ class MolmoRuntime:
             torch.cuda.synchronize()
             infer_seconds = round(time.monotonic() - started, 2)
             if tuple(actions.shape) != (1, 30, 6) or not torch.isfinite(actions).all():
-                raise RuntimeError("MolmoAct2 lieferte keinen gültigen 30×6-Aktionsblock.")
+                raise RuntimeError("MolmoAct2 did not return a valid 30×6 action block.")
             converted_rows = ([self.post(actions[:, index, :]).squeeze(0).cpu()
                                for index in range(30)] if all_actions else
                               [self.post(actions[:, 0, :]).squeeze(0).cpu()])
             first = converted_rows[0]
             if tuple(first.shape) != (6,) or not torch.isfinite(first).all():
-                raise RuntimeError("MolmoAct2-Nachverarbeitung lieferte ungültige Werte.")
+                raise RuntimeError("MolmoAct2 postprocessing returned invalid values.")
 
         values = [float(value) for value in first]
         if not all(math.isfinite(value) for value in values):
-            raise RuntimeError("MolmoAct2-Nachverarbeitung lieferte ungültige Werte.")
+            raise RuntimeError("MolmoAct2 postprocessing returned invalid values.")
         result = {
             "model": "molmoact2",
             "checkpoint": CHECKPOINT,
@@ -165,7 +165,7 @@ class MolmoRuntime:
         if all_actions:
             if any(tuple(row.shape) != (6,) or not torch.isfinite(row).all()
                    for row in converted_rows):
-                raise RuntimeError("MolmoAct2-Nachverarbeitung lieferte keinen gültigen Aktionsblock.")
+                raise RuntimeError("MolmoAct2 postprocessing did not return a valid action block.")
             result["actions"] = [dict(zip(JOINTS, (float(v) for v in row), strict=True))
                                  for row in converted_rows]
             result["inferenceMode"] = "live_prediction_pending_guarded_execution"

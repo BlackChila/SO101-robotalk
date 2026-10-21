@@ -19,7 +19,7 @@ class ModelInferenceTests(unittest.TestCase):
                   "actionCount": 1, "actions": [action]}
         with (patch.object(model_inference.session, "predict_chunk", return_value=report),
               patch.object(model_inference.session, "stop") as stop):
-            with self.assertRaisesRegex(RuntimeError, "Ungültiger Aktionsblock"):
+            with self.assertRaisesRegex(RuntimeError, "Invalid action block"):
                 model_inference.predict_physical_chunk("molmoact2", "Ball",
                                                        observation_npz="/tmp/camera.npz", state={})
         stop.assert_called_once()
@@ -56,7 +56,7 @@ class ModelInferenceTests(unittest.TestCase):
             patch.object(model_inference.session, "set_task", return_value=report),
             patch.object(model_inference.session, "stop") as stop,
         ):
-            with self.assertRaisesRegex(RuntimeError, "Ungültiger"):
+            with self.assertRaisesRegex(RuntimeError, "Invalid"):
                 model_inference.infer("molmoact2", "Hallo")
             stop.assert_called_once()
 

@@ -150,7 +150,7 @@ class ConversationTaskWarmupTests(unittest.TestCase):
 
         def authorize():
             if revoked.is_set():
-                raise RuntimeError("Lokaler Auftrag wurde abgebrochen.")
+                raise RuntimeError("The local task was cancelled.")
 
         with patch.object(asr_web, "physical_task_loop") as worker, \
              ThreadPoolExecutor(max_workers=1) as pool:
@@ -160,7 +160,7 @@ class ConversationTaskWarmupTests(unittest.TestCase):
                                    authorize=authorize, timeout_s=2)
                 self.assertTrue(self.lock.waiting.wait(1))
                 revoked.set()
-                with self.assertRaisesRegex(RuntimeError, "abgebrochen"):
+                with self.assertRaisesRegex(RuntimeError, "cancelled"):
                     task.result(timeout=1)
                 worker.assert_not_called()
                 self.assertIsNone(asr_web._active_task)

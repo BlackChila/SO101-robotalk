@@ -47,5 +47,5 @@ def get_creator_info() -> dict:
     result = {"status": "available", "background": REFERENCE_PATH.read_text(encoding="utf-8")}
     encoded = json.dumps(result, ensure_ascii=False)
     if len(encoded.split()) > MAX_CREATOR_INFO_WORDS or len(encoded.encode("utf-8")) > MAX_CREATOR_INFO_BYTES:
-        raise RuntimeError("Informationen zur Projektperson überschreiten das kompakte Kontextlimit.")
+        raise RuntimeError("Creator information exceeds the compact context limit.")
     return result

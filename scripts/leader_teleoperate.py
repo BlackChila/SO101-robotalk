@@ -108,8 +108,8 @@ def main() -> int:
             "state": state, "pid": os.getpid(), "hold_verified": hold_ok,
             "error": error, "updated_at_unix": time.time(),
             "limited_joints": limited_joints,
-            "message": (("Teleoperation läuft · Gelenkgrenze erreicht: " + ", ".join(limited_joints)
-                         if limited_joints else "Teleoperation läuft. Follower folgt dem Leader.")
+            "message": (("Teleoperation is running · joint limit reached: " + ", ".join(limited_joints)
+                         if limited_joints else "Teleoperation is running. The Follower follows the Leader.")
                         if state == "active" else None),
         }) + "\n")
         temporary.replace(args.report)

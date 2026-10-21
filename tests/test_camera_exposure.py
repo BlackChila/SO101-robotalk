@@ -66,7 +66,7 @@ class CameraExposureTests(unittest.TestCase):
                     session.set_camera_exposure("molmoact2", "cam0", 80)
                 call.assert_not_called()
                 fcntl.flock(lease, fcntl.LOCK_UN)
-                with self.assertRaisesRegex(RuntimeError, "nicht aktiv"):
+                with self.assertRaisesRegex(RuntimeError, "not active"):
                     session.set_camera_exposure("molmoact2", "cam0", 80)
                 call.assert_not_called()
                 session._model_id = "molmoact2"

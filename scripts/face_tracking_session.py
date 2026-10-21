@@ -30,9 +30,9 @@ class FaceTrackingSession:
                 or not status.get("active") or status.get("state") != "holding"
                 or status.get("returnRequested")
                 or self.task_active()):
-            raise RuntimeError("Face-Tracking erfordert einen gehaltenen Gesprächsarm ohne Manipulationsauftrag.")
+            raise RuntimeError("Face tracking requires a held conversation robot with no manipulation task.")
         if status.get("taskWasStarted"):
-            raise RuntimeError("Nach einer Manipulation erst eine neue Gesprächssitzung in geprüfter Haltung starten.")
+            raise RuntimeError("After manipulation, start a new conversation session in a verified hold first.")
         return status
 
     def _disable_locked(self, reason=None):
@@ -46,7 +46,7 @@ class FaceTrackingSession:
             try:
                 self.send_motion(session_id, {"op": "face_tracking", "enabled": False})
             except (RuntimeError, OSError) as exc:
-                self.error = f"Tracking gestoppt; Controller-Halt prüfen: {exc}"
+                self.error = f"Tracking stopped; check the controller hold: {exc}"
                 raise
 
     def disable(self, reason=None):
@@ -63,7 +63,7 @@ class FaceTrackingSession:
             # shutdown cleanup retain their authoritative, unscoped stop path.
             with self.lock:
                 if require_owner and self.session_id and session_id != self.session_id:
-                    raise RuntimeError("Face-Tracking gehört einer anderen Gesprächssitzung.")
+                    raise RuntimeError("Face tracking belongs to another conversation session.")
             if action in {"disable", "stop"}:
                 self.disable()
                 if action == "stop":
@@ -75,9 +75,9 @@ class FaceTrackingSession:
                             self.mode = "off"
                 return self.status()
             if action not in {"preview", "enable"}:
-                raise ValueError("Unbekannte Face-Tracking-Aktion.")
+                raise ValueError("Unknown face-tracking action.")
             if self.camera.model_id not in {"conversation", "molmoact2"}:
-                raise RuntimeError("Zuerst die Gesprächskameras öffnen.")
+                raise RuntimeError("Open the conversation cameras first.")
             if action == "enable":
                 self._ready(session_id)
             with self.lock:
@@ -86,7 +86,7 @@ class FaceTrackingSession:
             try:
                 vision = self.camera.face_tracking("start")
                 if not vision.get("running"):
-                    raise RuntimeError(vision.get("error") or "Gesichtsdetektor nicht bereit.")
+                    raise RuntimeError(vision.get("error") or "The face detector is not ready.")
             except (RuntimeError, OSError, ValueError) as exc:
                 with self.lock:
                     if operation_generation == self.generation:
@@ -94,7 +94,7 @@ class FaceTrackingSession:
                 raise
             with self.lock:
                 if operation_generation != self.generation:
-                    raise RuntimeError("Face-Tracking-Start wurde durch Stop abgebrochen.")
+                    raise RuntimeError("Face-tracking startup was cancelled by stop.")
                 self.mode = "preview"
                 self.error = None
                 if action == "enable":
@@ -121,7 +121,7 @@ class FaceTrackingSession:
                 motion = self._ready(session_id)
                 control = motion.get("faceTracking", {})
                 if control.get("request_id") == request_id and (control.get("error") or control.get("state") == "blocked"):
-                    raise RuntimeError(control.get("error") or "Motorcontroller hat Face-Tracking abgelehnt.")
+                    raise RuntimeError(control.get("error") or "The motor controller rejected face tracking.")
                 vision = self.camera.face_tracking("status")
                 if not vision.get("running") or vision.get("error"):
                     raise RuntimeError(vision.get("error") or "Gesichtsdetektor wurde beendet.")
