@@ -31,9 +31,9 @@ with balanced speech levels.
 [![SO-101 robot placing a ball in a bowl — 1080p demo preview](assets/demo/SO101-robotalk-preview.jpg)](https://github.com/BlackChila/SO101-robotalk/raw/refs/heads/main/assets/demo/SO101-robotalk.mp4)
 
 <details>
-<summary>Play the smaller web version directly here (720p, 8.7 MB)</summary>
+<summary>Play the smaller web version directly here (720p, 9.7 MB)</summary>
 
-https://github.com/user-attachments/assets/1b9a116c-c55f-4739-a865-316ae2c05b2d
+https://github.com/user-attachments/assets/19da021a-d9f2-432e-9729-7bec39585895
 
 </details>
 
