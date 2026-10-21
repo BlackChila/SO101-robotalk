@@ -23,6 +23,14 @@ and all current motion paths have not been established. A fresh clone
 does not include models, Python environments, robot calibration, or the external
 MolmoAct2 installation. See [known setup gaps](docs/configuration.md#known-setup-gaps).
 
+## UI preview
+
+Conversation settings with Overhead and side-camera views. This illustrative
+composite uses the actual app layout, simulated backend status and archived
+camera captures edited with AI to remove the cable; it is not a live session.
+
+![Conversation UI with settings open and Overhead and Insta360 camera views](assets/screenshots/conversation-camera-preview.png)
+
 ## Demo video
 
 Full SO-101 demonstration, including pick-and-place: **2:14, 1080p, 26.8 MB**.
