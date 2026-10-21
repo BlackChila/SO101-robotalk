@@ -235,11 +235,11 @@ test('search direction button persists preference and includes it on activation'
       return { ok: true, json: async () => ({ mode: 'tracking' }) };
     } });
   control.setContext(ready);
-  assert.match(button.textContent, /links/);
+  assert.match(button.textContent, /left/);
   await control.command('enable');
   assert.equal(payloads[0].searchDirection, 'left');
   click();
-  assert.match(button.textContent, /rechts/);
+  assert.match(button.textContent, /right/);
   assert.equal(saved.get('so101-face-search-direction'), 'right');
   assert.equal(payloads.length, 1); // Settings never move the running arm.
 });

@@ -22,7 +22,7 @@ export class CameraSettingsToggle {
 export class CameraBrightnessControls {
   constructor(panel, onApply, kind = 'brightness') {
     this.kind = kind;
-    this.label = kind === 'exposure' ? 'Belichtung' : 'Helligkeit';
+    this.label = kind === 'exposure' ? 'Exposure' : 'Brightness';
     this.panel = panel;
     this.input = panel.querySelector('input');
     this.output = panel.querySelector('output');
@@ -35,14 +35,14 @@ export class CameraBrightnessControls {
     this.disabled = true;
     this.input.addEventListener('input', () => {
       this.dirty = true;
-      this.message.textContent = `${this.label} geändert · anschließend übernehmen.`;
+      this.message.textContent = `${this.label} changed · apply to save.`;
       this.update();
     });
     this.reset.addEventListener('click', () => {
       if (this.disabled || !this.control) return;
       this.input.value = this.control.default;
       this.dirty = true;
-      this.message.textContent = `Standard für ${this.label} gewählt · anschließend übernehmen.`;
+      this.message.textContent = `Default ${this.label.toLowerCase()} selected · apply to save.`;
       this.update();
     });
     this.apply.addEventListener('click', () => {
@@ -61,11 +61,11 @@ export class CameraBrightnessControls {
       if (!this.dirty || applied) {
         this.input.value = control.value;
         this.dirty = false;
-        this.message.textContent = applied ? `${this.label} gespeichert · bei jedem Start wieder verwendet.`
-          : this.kind === 'exposure' ? 'Zu hell? Belichtung reduzieren. Helligkeit verändert den Schwarzwert.' : 'Helligkeit der Kamera manuell einstellen.';
+        this.message.textContent = applied ? `${this.label} saved · restored on each start.`
+          : this.kind === 'exposure' ? 'Too bright? Reduce exposure. Brightness changes the black level.' : 'Adjust camera brightness manually.';
       }
     } else {
-      this.message.textContent = `Diese Kamera bietet keine verfügbare Steuerung für ${this.label}.`;
+      this.message.textContent = `This camera has no available ${this.label.toLowerCase()} control.`;
     }
     if (this.kind === 'exposure') this.panel.hidden = !control;
     this.update();

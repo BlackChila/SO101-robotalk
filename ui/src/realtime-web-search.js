@@ -25,7 +25,7 @@ export function renderSearchResult(host, result) {
     link.rel = 'noopener noreferrer';
     link.textContent = `[${index + 1}]`;
     link.title = cite.title || cite.url;
-    link.setAttribute('aria-label', `Quelle ${index + 1}: ${cite.title || cite.url}`);
+    link.setAttribute('aria-label', `Source ${index + 1}: ${cite.title || cite.url}`);
     paragraph.append(link);
     cursor = cite.end;
   }
@@ -41,7 +41,7 @@ export class RealtimeWebSearch {
 
   stop() {
     for (const [controller, status] of this.pending) {
-      if (status) status.textContent = 'Internetsuche abgebrochen.';
+      if (status) status.textContent = 'Web search cancelled.';
       controller.abort();
     }
     this.pending.clear();
@@ -55,7 +55,7 @@ export class RealtimeWebSearch {
 
   async search(query) {
     if (typeof query !== 'string' || !query.trim() || query.length > 500) {
-      throw new Error('Bitte eine Suchanfrage mit 1 bis 500 Zeichen angeben.');
+      throw new Error('Enter a search query with 1 to 500 characters.');
     }
     let status = null;
     let answer = null;
@@ -64,10 +64,10 @@ export class RealtimeWebSearch {
       const card = doc.createElement('details');
       card.open = true;
       const title = doc.createElement('summary');
-      title.textContent = `Internetsuche · ${query}`;
+      title.textContent = `Web search · ${query}`;
       status = doc.createElement('p');
       status.setAttribute('role', 'status');
-      status.textContent = 'Ich suche im Internet …';
+      status.textContent = 'Searching the web …';
       answer = doc.createElement('div');
       card.append(title, status, answer);
       this.host.append(card);
@@ -83,16 +83,16 @@ export class RealtimeWebSearch {
         body: JSON.stringify({ query }), signal: controller.signal,
       });
       const result = await response.json();
-      if (controller.signal.aborted) throw new Error('Internetsuche abgebrochen.');
-      if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Internetsuche fehlgeschlagen.');
+      if (controller.signal.aborted) throw new Error('Web search cancelled.');
+      if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Web search failed.');
       if (result.status !== 'ok' || typeof result.answer !== 'string' || !Array.isArray(result.citations)) {
-        throw new Error('Ungültiges Suchergebnis.');
+        throw new Error('Invalid search result.');
       }
       if (answer) renderSearchResult(answer, result);
-      if (status) status.textContent = 'Suchergebnis · Quellen sind im Text verlinkt.';
+      if (status) status.textContent = 'Search result · sources are linked in the text.';
       return result;
     } catch (error) {
-      const message = controller.signal.aborted ? 'Internetsuche abgebrochen oder Zeitlimit erreicht.' : error.message;
+      const message = controller.signal.aborted ? 'Web search cancelled or timed out.' : error.message;
       if (status) status.textContent = message;
       throw new Error(message);
     } finally {

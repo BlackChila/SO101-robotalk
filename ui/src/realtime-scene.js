@@ -7,7 +7,7 @@ export function sceneMessages(snapshot, callId) {
     if (!['overhead', 'wrist'].includes(image.camera) || seen.has(image.camera)
       || !/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(image.imageUrl)
       || image.imageUrl.length > 54_000 || !Number.isFinite(image.capturedAt)) {
-      throw new Error('Ungültiges Kamerabild für Realtime.');
+      throw new Error('Invalid camera image for Realtime.');
     }
     seen.add(image.camera);
   }

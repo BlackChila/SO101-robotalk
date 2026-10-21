@@ -47,7 +47,7 @@ test('preview polling preserves unapplied changes, and apply sends orientation a
   assert.deepEqual(h.calls, [{ yaw: -42.5, pitch: 15, roll: 55, zoom: 1.3 }]);
   h.controls.receive({ ...view, yaw: -42.5 }, true);
   assert.equal(h.controls.apply.disabled, true);
-  assert.match(h.controls.message.textContent, /gespeichert/);
+  assert.match(h.controls.message.textContent, /saved/);
 });
 
 test('busy controls cannot apply or reset; defaults require an explicit apply', () => {

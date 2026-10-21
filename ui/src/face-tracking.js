@@ -101,7 +101,7 @@ export class FaceTrackingControls {
       this.localError = '';
       this.showImage();
     } catch (error) {
-      if (epoch === this.epoch) { this.localError = `Status nicht erreichbar: ${error.message}`; this.clearImage(); }
+      if (epoch === this.epoch) { this.localError = `Status unavailable: ${error.message}`; this.clearImage(); }
     } finally {
       this.polling = false;
       this.render();
@@ -184,8 +184,8 @@ export class FaceTrackingControls {
   render() {
     this.showImage();
     if (this.directionButton) {
-      this.directionButton.textContent = this.searchDirection === 'right' ? 'Suchstart: rechts →' : 'Suchstart: links ←';
-      this.directionButton.setAttribute('aria-label', `Suchstart ${this.searchDirection === 'right' ? 'rechts' : 'links'}; Richtung wechseln`);
+      this.directionButton.textContent = this.searchDirection === 'right' ? 'Search start: right →' : 'Search start: left ←';
+      this.directionButton.setAttribute('aria-label', `Search starts ${this.searchDirection === 'right' ? 'right' : 'left'}; change direction`);
     }
   }
 }

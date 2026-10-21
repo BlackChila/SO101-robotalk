@@ -10,7 +10,7 @@ export function waitForRealtimeChannel(channel, peer, timeoutMs = 20_000) {
       error ? reject(error) : resolve();
     };
     const opened = () => finish();
-    const closed = () => finish(new Error('ChatGPT Realtime-Datenkanal wurde nicht geöffnet.'));
+    const closed = () => finish(new Error('ChatGPT Realtime data channel did not open.'));
     const changed = () => {
       if (['failed', 'closed'].includes(peer.connectionState)) closed();
     };
@@ -22,6 +22,6 @@ export function waitForRealtimeChannel(channel, peer, timeoutMs = 20_000) {
     channel.addEventListener('close', closed);
     channel.addEventListener('error', closed);
     peer.addEventListener('connectionstatechange', changed);
-    timer = setTimeout(() => finish(new Error('ChatGPT Realtime-Verbindung hat das Zeitlimit überschritten.')), timeoutMs);
+    timer = setTimeout(() => finish(new Error('ChatGPT Realtime connection timed out.')), timeoutMs);
   });
 }
