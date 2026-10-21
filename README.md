@@ -23,18 +23,6 @@ and all current motion paths have not been established. A fresh clone
 does not include models, Python environments, robot calibration, or the external
 MolmoAct2 installation. See [known setup gaps](docs/configuration.md#known-setup-gaps).
 
-## UI screenshots
-
-UI previews with simulated backend status; no robot or cameras were connected.
-
-Conversation page with settings closed:
-
-![Conversation homepage with settings closed](assets/screenshots/conversation-home.png)
-
-Conversation page with settings open:
-
-![Conversation page with the settings panel open](assets/screenshots/conversation-settings.png)
-
 ## Demo video
 
 Full SO-101 demonstration, including pick-and-place: **2:14, 1080p, 26.8 MB**.
