@@ -3,7 +3,9 @@
 RoboTalk is an experimental browser interface for spoken conversation with an
 SO-101 robot. The conversation workspace is the homepage, with no tab selector.
 It combines OpenAI Realtime or local speech, camera previews, face tracking,
-teleoperation, and optional MolmoAct2 robot tasks. The interface uses German labels.
+teleoperation, and optional MolmoAct2 robot tasks. This guide is in English;
+the interface currently uses German labels, quoted alongside their English
+translations where needed.
 
 This repository continues the conversation functionality of
 [2026-PG-robotalk](https://github.com/BlackChila/2026-PG-robotalk). The separate
@@ -28,18 +30,17 @@ MolmoAct2 installation. See [known setup gaps](docs/configuration.md#known-setup
 | Cloud conversation | OpenAI Realtime; optional scene snapshots, web search, and MolmoAct2 task tools |
 | Local conversation with Qwen speech | Qwen3-ASR → LM Studio tool/vision API → Qwen3-TTS CustomVoice; shared Piper vision and robot tools |
 | Local conversation with Piper speech | Qwen3-ASR → LM Studio → CPU Piper; optional vision and robot tools |
-| Technical background questions | On-demand `get_project_info` in all three conversation modes; compact, sourced [setup notes](docs/project-info.md) with the selected conversation configuration |
-| Who built this setup? | Separate `get_creator_info` lookup for [Eleni Kofekidou / BlackChila](docs/creator-info.md), focused on recent relevant professional work and attribution limits |
+| Project and creator information | On-demand lookups of [setup notes](docs/project-info.md) and [creator background](docs/creator-info.md) in all three conversation modes |
 | Robot interaction | Camera controls, Leader/Follower teleoperation, saved-pose positioning, speech gripper animation, and face tracking |
 
 **Current conversation status, reported by the maintainer:** OpenAI Realtime
-and `Lokal · Piper` are working on the reference setup. Piper provides a
+and Local Piper (`Lokal · Piper` in the UI) are working on the reference setup. Piper provides a
 **fully local workflow**: Qwen3-ASR transcribes speech, a locally hosted LM Studio
 model generates replies and task calls, Piper speaks, and MolmoAct2 runs locally.
 After downloading the required components, this mode needs no OpenAI key or
 cloud conversation service. Use a local LM Studio endpoint for local processing.
 
-`Lokal · Qwen` now uses the same local conversation controller and tool/vision
+Local Qwen (`Lokal · Qwen` in the UI) now uses the same local conversation controller and tool/vision
 protocol as Piper, with Qwen3-TTS CustomVoice speech. Hardware-free tests cover
 the integration; live Qwen voice quality, concurrent runtime performance and
 physical manipulation still need acceptance on the target setup. See the
@@ -62,9 +63,9 @@ in Git.** Installation commands and upstream download links are in
 | Qwen3-ASR-1.7B | Local transcription and the app's ASR startup | ~4.70 GB → `models/asr/qwen3-asr-1.7b/` |
 | Shared robot/camera runtime | Cameras, torque, intro, tracking and teleoperation | `environments/robot/`; no FLUX policy weights |
 | MolmoAct2 converted and original checkpoints | Molmo inference and conversational manipulation | Reference installation uses ~44 GB; external setup required → `models/molmoact2/{runtime,source}` |
-| Qwen3-TTS CustomVoice | `Lokal · Qwen` speech | ~4.52 GB → `models/tts/qwen3-tts-1.7b-customvoice/` |
+| Qwen3-TTS CustomVoice | Local Qwen speech | ~4.52 GB → `models/tts/qwen3-tts-1.7b-customvoice/` |
 | Dialogue model in LM Studio | Both local conversation modes | Reference model: Qwen3.8-27B `Q4_K_M`; installed separately |
-| Piper voice files | `Lokal · Piper` speech | `.onnx` and `.onnx.json` pairs → `models/tts/piper/` |
+| Piper voice files | Local Piper speech | `.onnx` and `.onnx.json` pairs → `models/tts/piper/` |
 | OpenCV YuNet | Face tracking | 232,589 bytes → `models/face-tracking/` |
 
 Sizes above come from the committed manifests or installation notes, exclude
@@ -81,6 +82,40 @@ The maintainer reports successful pick-and-place on the reference setup without
 project-specific fine-tuning. This is an observed result, not a benchmark or a
 guarantee for another robot, scene or task. The dialogue model chooses a tool;
 the separate policy and motor controller produce and execute gated joint actions.
+
+## Function calls and robot features
+
+The conversation model can request the following tools. The application validates
+each call and handles camera access, information lookup or robot execution.
+
+| Function call | What it does | Conversation modes |
+| --- | --- | --- |
+| `execute_molmo_task` | Sends one short movement instruction to MolmoAct2, such as a pick-and-place request. A new instruction replaces the running one. | Realtime, Local Piper, Local Qwen |
+| `reset_robot` | Stops the task and returns to the recorded intro **end pose**, keeping the conversation and loaded model active. | All three |
+| `look_at_scene` | Reads fresh Overhead and Wrist snapshots to describe the surroundings; does not move the arm. | All three |
+| `get_project_info` | Retrieves reference information about the project, hardware, software and selected conversation setup. | All three |
+| `get_creator_info` | Retrieves the project's recorded creator background and attribution. | All three |
+| `search_web` | Looks up current information on the internet and returns a sourced answer. | Realtime only |
+
+Movement tools require an active, configured robot session; manipulation also
+requires the optional MolmoAct2 installation. The app announces requested motor
+actions before execution. Neither local mode exposes web search. A stopped run
+or a model reply does not establish that a physical task succeeded.
+
+Other features use the conversation lifecycle or explicit UI controls:
+
+- **Automatic interaction:** recorded intro gestures, gripper animation driven
+  by speech loudness, and face tracking/search/head-tilt behavior when configured.
+  Tracking yields to manipulation tasks.
+- **Camera settings:** live previews, brightness/exposure controls and Insta360
+  projection/zoom adjustment.
+- **Operator controls:** stop a model run, unload the model, reset the robot,
+  switch motor torque on/off, and start/stop Leader/Follower teleoperation.
+  Ending a conversation requests a return toward the intro **start pose**;
+  the return can be stopped into a measured hold.
+
+See [speech modes and tool behavior](docs/speech-interface.md) and
+[UI controls](ui/README.md) for prerequisites and lifecycle details.
 
 ## Getting started on the reference Linux system
 
@@ -184,9 +219,10 @@ source scripts/asr-env.sh
 python -u scripts/asr_web.py
 ```
 
-Open the app, use the settings gear and choose **Lokal · Piper** or
-**Lokal · Qwen**. Set **Gesprächssprache** to **Deutsch** or **English** before
-starting a call; Piper lists only voices for that language. Pick the voice from
+Open the app, use the settings gear and choose **Local Piper** (`Lokal · Piper`)
+or **Local Qwen** (`Lokal · Qwen`). Set **Conversation language**
+(`Gesprächssprache`) to **German** (`Deutsch`) or **English** before starting a
+call; Piper lists only voices for that language. Pick the voice from
 the name in the conversation heading. The backend starts the selected TTS worker
 automatically; a separate speech-worker terminal is not required.
 
@@ -209,7 +245,7 @@ another arm. New hardware needs its own calibrated and supervised setup.
 - Inspect fresh cameras and commission your own intro/start-pose setup before
   starting a conversation with a connected arm. Settings expose robot reset,
   model unload, torque and teleoperation.
-- `Model Run stoppen` stops the current MolmoAct2 task while preserving the
+- **Stop model run** (`Model Run stoppen`) stops the current MolmoAct2 task while preserving the
   conversation and loaded model. There is no reliable automatic task-success
   detector; supervise and stop the run.
 - Software stops and disconnects are intended to hold the measured pose with
